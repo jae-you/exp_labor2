@@ -1,422 +1,414 @@
-import streamlit as st
+import os
+
+project_dir = "invisible_engineer_v6_3"
+if not os.path.exists(project_dir):
+    os.makedirs(project_dir)
+
+# 1. requirements.txt
+with open(os.path.join(project_dir, "requirements.txt"), "w", encoding="utf-8") as f:
+    f.write("streamlit\n")
+
+# 2. README.md
+readme_code = """# The Invisible Engineer V6.3: Free Will Edition
+
+이 버전은 실험자에게 **완전한 자유도(Free Agency)**를 부여합니다.
+정해진 버튼을 누르는 것이 아니라, 직접 상사에게 메시지를 보내고, 직접 코드를 타이핑해야 합니다.
+
+## 🌟 주요 메커니즘
+
+1.  **Keyword-Driven Chatbot**
+    - 사용자의 채팅 입력에서 `동의`, `거절`, `우려`, `해결` 등의 키워드를 추출하여 시나리오를 분기합니다.
+    - 예: "무리입니다" 입력 -> CEO: "변명은 필요 없어!" (갈등 발생)
+
+2.  **Semantic Code Analysis**
+    - IDE에 작성된 코드 텍스트를 분석하여 엔지니어의 의도를 파악합니다.
+    - 예: 코드에 `block_user`가 있으면 -> '방어적 설계'로 간주.
+
+## 🚀 실행 방법
+`streamlit run app.py`
+"""
+with open(os.path.join(project_dir, "README.md"), "w", encoding="utf-8") as f:
+    f.write(readme_code)
+
+# 3. app.py
+app_code = """import streamlit as st
 import streamlit.components.v1 as components
 
-# 1. 페이지 설정
-st.set_page_config(page_title="The Invisible Engineer V6.2", layout="wide")
+st.set_page_config(page_title="Invisible Engineer V6.3", layout="wide")
+st.markdown(\"\"\"<style>.block-container {padding:0!important;max-width:100%!important;}header,footer{display:none!important;}.stApp{background-color:#1e1e1e;}</style>\"\"\", unsafe_allow_html=True)
 
-# 2. 스타일 설정 (전체화면, 여백 제거)
-st.markdown("""
-    <style>
-        .block-container { padding: 0 !important; max-width: 100% !important; }
-        header, footer { display: none !important; }
-        #MainMenu { visibility: hidden; }
-        .stApp { background-color: #1e1e1e; }
-    </style>
-""", unsafe_allow_html=True)
-
-# 3. HTML/JS 소스코드
-html_code = """
+html_code = \"\"\"
 <!DOCTYPE html>
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
     <style>
-        /* --- THEME --- */
-        :root {
-            --bg-color: #1e1e1e;
-            --chat-bg: #252526;
-            --editor-bg: #1e1e1e;
-            --text-color: #d4d4d4;
-            --accent-color: #3794ff;
-            --user-msg-bg: #0e639c;
-            --other-msg-bg: #333333;
-        }
-        body { margin: 0; padding: 0; font-family: 'Pretendard', sans-serif; background: var(--bg-color); color: var(--text-color); height: 100vh; overflow: hidden; }
+        :root { --bg:#1e1e1e; --chat-bg:#252526; --accent:#3794ff; --user-msg:#0e639c; }
+        body { margin:0; font-family:'Pretendard', sans-serif; background:var(--bg); color:#d4d4d4; height:100vh; display:flex; overflow:hidden; }
         
-        /* LAYOUT */
-        .container { display: flex; width: 100%; height: 100%; }
-        .left-panel { width: 450px; background: var(--chat-bg); border-right: 1px solid #444; display: flex; flex-direction: column; transition: background 0.5s; }
-        .right-panel { flex: 1; display: flex; flex-direction: column; background: var(--editor-bg); position: relative; }
+        .container { display:flex; width:100%; height:100%; }
+        .left-panel { width:450px; background:var(--chat-bg); border-right:1px solid #444; display:flex; flex-direction:column; }
+        .right-panel { flex:1; display:flex; flex-direction:column; background:#1e1e1e; position:relative; }
 
-        /* INTRO OVERLAY (Start Screen) */
-        #intro-overlay {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
-            background: radial-gradient(circle, #2a2a2a 0%, #111 100%);
-            display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 9999;
-        }
-        .intro-card {
-            background: #252526; padding: 40px; border-radius: 12px; border: 1px solid #444; 
-            max-width: 500px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-        }
-        .start-btn {
-            background: var(--accent-color); color: white; border: none; padding: 15px 40px; 
-            font-size: 16px; border-radius: 30px; cursor: pointer; margin-top: 20px; font-weight: bold;
-            transition: transform 0.2s;
-        }
-        .start-btn:hover { transform: scale(1.05); }
+        /* CHAT */
+        .chat-header { padding:15px; border-bottom:1px solid #444; background:#2d2d2d; font-weight:bold; display:flex; justify-content:space-between; }
+        .chat-body { flex:1; padding:20px; overflow-y:auto; display:flex; flex-direction:column; gap:15px; }
+        .msg-row { display:flex; gap:10px; animation:fadeIn 0.3s; }
+        .msg-row.me { flex-direction:row-reverse; }
+        .avatar { width:36px; height:36px; border-radius:50%; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+        .bubble { padding:10px 14px; border-radius:10px; font-size:14px; line-height:1.5; max-width:280px; }
+        .bubble.other { background:#333; }
+        .bubble.me { background:var(--user-msg); color:white; }
+        
+        .chat-input-area { padding:15px; border-top:1px solid #444; background:#2d2d2d; display:flex; gap:10px; }
+        #chat-input { flex:1; background:#3c3c3c; border:1px solid #555; color:white; padding:12px; border-radius:6px; outline:none; }
+        #send-btn { background:var(--accent); color:white; border:none; padding:0 20px; border-radius:6px; cursor:pointer; }
 
-        /* CHAT UI */
-        .chat-header { padding: 15px; border-bottom: 1px solid #444; font-weight: bold; background: #2d2d2d; display: flex; justify-content: space-between; align-items: center; color: #eee; }
-        .status-dot { width: 10px; height: 10px; background: #4ec9b0; border-radius: 50%; display: inline-block; margin-right: 5px; }
+        /* IDE */
+        .ide-header { height:45px; background:#2d2d2d; border-bottom:1px solid #444; display:flex; align-items:center; padding:0 20px; font-size:13px; color:#aaa; }
+        .ide-body { flex:1; padding:30px; overflow-y:auto; position:relative; }
         
-        .chat-body { flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 15px; scroll-behavior: smooth; }
-        .msg-row { display: flex; gap: 10px; animation: fadeIn 0.3s ease; }
-        .msg-row.me { flex-direction: row-reverse; }
+        .mission-box { background:#252526; padding:20px; border-radius:8px; border-left:4px solid var(--accent); margin-bottom:20px; }
+        .chips-area { display:flex; gap:10px; margin-bottom:15px; flex-wrap:wrap; }
+        .chip { background:#333; padding:5px 12px; border-radius:15px; font-size:12px; cursor:pointer; border:1px solid #444; transition:0.2s; }
+        .chip:hover { border-color:var(--accent); color:white; }
         
-        .avatar { width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 20px; flex-shrink: 0; }
-        
-        .bubble { padding: 12px 16px; border-radius: 12px; font-size: 14px; line-height: 1.5; max-width: 280px; position: relative; }
-        .bubble.other { background: var(--other-msg-bg); border-top-left-radius: 2px; }
-        .bubble.me { background: var(--user-msg-bg); color: white; border-top-right-radius: 2px; }
-        .sender { font-size: 11px; color: #888; margin-bottom: 4px; }
-        
-        /* INTERVIEW MODE STYLES */
-        .interview-mode .left-panel { background: #1a1a1a; }
-        .interview-mode .chat-header { background: #3d1a1a; border-bottom: 1px solid #ff4b4b; color: white; }
-        .profile-card { background: #333; padding: 15px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #9cdcfe; display: none; animation: slideIn 0.5s; }
-        .profile-title { font-size: 16px; font-weight: bold; color: white; margin-bottom: 5px; }
-        .profile-detail { font-size: 12px; color: #aaa; line-height: 1.4; }
-
-        /* REPLY AREA */
-        .reply-area { padding: 15px; border-top: 1px solid #444; background: #2d2d2d; min-height: 80px; }
-        .typing-indicator { font-size: 12px; color: #888; margin-bottom: 10px; font-style: italic; display: none; }
-        
-        .choice-btn {
-            display: block; width: 100%; text-align: left; padding: 12px; margin-bottom: 8px;
-            background: #3c3c3c; border: 1px solid #444; color: #ddd; border-radius: 8px;
-            cursor: pointer; transition: all 0.2s; font-size: 13px;
+        #code-editor { 
+            width:100%; height:300px; background:#111; color:#d4d4d4; border:1px solid #444; 
+            padding:15px; font-family:'Consolas', monospace; font-size:14px; line-height:1.6; outline:none; resize:none; border-radius:6px;
         }
-        .choice-btn:hover { background: #444; border-color: var(--accent-color); }
-        .choice-btn strong { color: var(--accent-color); margin-right: 5px; }
+        
+        .deploy-btn { background:var(--accent); color:white; border:none; padding:12px 30px; border-radius:6px; margin-top:15px; cursor:pointer; float:right; }
+        
+        /* OVERLAYS */
+        .overlay { position:absolute; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); display:flex; justify-content:center; align-items:center; flex-direction:column; z-index:10; }
+        .intro-card { background:#252526; padding:40px; border-radius:12px; text-align:center; max-width:500px; box-shadow:0 10px 30px rgba(0,0,0,0.5); }
+        
+        /* REPORT */
+        #report-screen { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:#111; z-index:100; padding:50px; overflow-y:auto; }
+        .stat-bar { height:10px; background:#333; border-radius:5px; overflow:hidden; margin-top:5px; }
+        .stat-fill { height:100%; transition:width 1s; }
 
-        /* IDE UI */
-        .ide-header { height: 45px; background: #2d2d2d; border-bottom: 1px solid #444; display: flex; align-items: center; padding: 0 20px; color: #ccc; font-size: 13px; }
-        .ide-body { flex: 1; padding: 40px; overflow-y: auto; display: flex; flex-direction: column; align-items: center; justify-content: center; }
-        
-        .locked-state { text-align: center; color: #666; }
-        .locked-icon { font-size: 50px; margin-bottom: 20px; opacity: 0.3; }
-        
-        /* CODING MISSION */
-        .coding-container { width: 100%; max-width: 800px; animation: slideUp 0.5s ease; }
-        .mission-card { background: #252526; padding: 20px; border-radius: 8px; border-left: 4px solid var(--accent-color); margin-bottom: 20px; }
-        .mission-title { font-size: 18px; font-weight: bold; margin-bottom: 10px; color: white; }
-        .task-desc { font-size: 14px; color: #ccc; line-height: 1.6; }
-        
-        .code-editor { background: #111; padding: 20px; border-radius: 8px; font-family: 'Consolas', monospace; font-size: 14px; border: 1px solid #444; }
-        .code-line { margin-bottom: 10px; color: #d4d4d4; display: flex; align-items: center; }
-        .input-slot { 
-            background: #2d2d2d; border: 1px solid #555; color: var(--accent-color); 
-            padding: 5px 10px; border-radius: 4px; font-family: inherit; width: 250px; outline: none; margin-left: 10px;
-        }
-        .input-slot:focus { border-color: var(--accent-color); background: #333; }
-        
-        .deploy-btn { 
-            background: var(--accent-color); color: white; border: none; padding: 12px 30px; 
-            border-radius: 6px; font-size: 14px; cursor: pointer; margin-top: 20px; float: right; 
-        }
-
-        /* REPORT SCREEN */
-        .report-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 200; padding: 50px; overflow-y: auto; display: none; }
-        .stat-card { background: #222; padding: 25px; border-radius: 12px; margin-bottom: 20px; border: 1px solid #333; }
-
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-        @keyframes slideIn { from { opacity: 0; transform: translateX(-20px); } to { opacity: 1; transform: translateX(0); } }
-        
-        .hidden { display: none !important; }
+        @keyframes fadeIn { from{opacity:0; transform:translateY(5px);} to{opacity:1; transform:translateY(0);} }
     </style>
 </head>
 <body>
 
-    <div id="intro-overlay">
+    <div id="intro-screen" class="overlay" style="z-index:999;">
         <div class="intro-card">
-            <div style="font-size: 60px; margin-bottom: 20px;">👨‍💻</div>
-            <h1 style="color:white; margin:0 0 10px 0;">The Invisible Engineer</h1>
-            <p style="color:#aaa; font-size:14px; line-height:1.6;">
-                당신은 AI 시스템의 핵심 로직을 설계하는 수석 엔지니어입니다.<br>
-                당신의 코드는 시스템의 효율성뿐만 아니라,<br>
-                <strong>누군가의 하루</strong>를 결정합니다.
+            <h1>The Invisible Engineer</h1>
+            <p style="color:#aaa; line-height:1.6;">
+                당신은 AI 시스템의 설계자입니다.<br>
+                채팅을 통해 상사/동료와 소통하고,<br>
+                직접 코드를 작성하여 시스템을 구축하십시오.<br>
+                <strong>당신의 말과 코드가 결과를 바꿉니다.</strong>
             </p>
-            <button class="start-btn" onclick="startGame()">업무 시작하기</button>
+            <button class="deploy-btn" onclick="startGame()" style="float:none;">프로젝트 시작</button>
         </div>
     </div>
 
-    <div class="container" id="main-container">
-        <div class="left-panel" id="left-panel">
-            <div class="chat-header" id="chat-header">
-                <span id="chat-title">💬 Company Messenger</span>
-                <div><span class="status-dot"></span>Online</div>
+    <div class="container">
+        <div class="left-panel">
+            <div class="chat-header">
+                <span id="chat-title">💬 Project Room</span>
+                <span style="font-size:12px; color:#4ec9b0;">● Online</span>
             </div>
-            <div class="chat-body" id="chat-body">
-                <div id="profile-card" class="profile-card">
-                    <div class="profile-title">👤 인터뷰 대상: 이지은 매니저</div>
-                    <div class="profile-detail">
-                        • CS 운영팀 7년차 (신입 교육 담당)<br>
-                        • 최근 상태: <span style="color:#ff4b4b">⚠️ 고위험군 (Burnout)</span><br>
-                        • "AI 도입 후 일이 더 힘들어졌어요..."
-                    </div>
-                </div>
-                </div>
-            <div class="reply-area">
-                <div id="typing-indicator" class="typing-indicator">상대방 입력 중...</div>
-                <div id="choices-container"></div>
+            <div class="chat-body" id="chat-body"></div>
+            <div class="chat-input-area">
+                <input type="text" id="chat-input" placeholder="메시지를 입력하세요..." disabled>
+                <button id="send-btn" onclick="handleUserChat()" disabled>Send</button>
             </div>
         </div>
 
         <div class="right-panel">
-            <div class="ide-header"><span>Terminal - zsh</span></div>
-            <div class="ide-body" id="ide-body">
-                <div class="locked-state">
-                    <div class="locked-icon">🔒</div>
-                    <h2>대기 중...</h2>
-                    <p>메신저에서 업무 협의가 끝나면 에디터가 열립니다.</p>
+            <div class="ide-header"><span>config.yaml</span></div>
+            <div class="ide-body">
+                <div id="ide-overlay" class="overlay">
+                    <div style="text-align:center; color:#666;">
+                        <div style="font-size:40px; margin-bottom:10px;">🔒</div>
+                        <div>메신저에서 업무 협의가 필요합니다.</div>
+                    </div>
+                </div>
+                
+                <div id="ide-content" style="opacity:0.3; pointer-events:none;">
+                    <div class="mission-box">
+                        <h3 id="mission-title" style="margin-top:0;">Mission Pending...</h3>
+                        <p id="mission-desc" style="color:#aaa; font-size:14px;">대화가 진행되면 미션이 활성화됩니다.</p>
+                    </div>
+                    <div class="chips-area" id="chips-area"></div>
+                    <textarea id="code-editor" placeholder="# 여기에 코드를 직접 작성하거나 수정하세요."></textarea>
+                    <button class="deploy-btn" onclick="deployCode()">🚀 배포 (Deploy)</button>
                 </div>
             </div>
         </div>
     </div>
 
-    <div id="report-screen" class="report-overlay">
-        <div style="max-width: 800px; margin: 0 auto; background: #222; padding: 40px; border-radius: 12px;">
-            <h1>📊 시뮬레이션 결과 리포트</h1>
+    <div id="report-screen">
+        <div style="max-width:800px; margin:0 auto; background:#222; padding:40px; border-radius:12px;">
+            <h1>📊 최종 시뮬레이션 결과</h1>
             <div id="report-content"></div>
-            <div style="text-align: center; margin-top:30px;">
-                <p style="color:#ccc; margin-bottom:20px;">참여해 주셔서 감사합니다.</p>
-                <button class="deploy-btn" style="float:none;" onclick="location.reload()">처음으로 돌아가기</button>
+            <div style="text-align:center; margin-top:30px;">
+                <button class="deploy-btn" onclick="location.reload()" style="float:none;">다시 하기</button>
             </div>
         </div>
     </div>
 
 <script>
-    // --- PERSONAS ---
+    // --- STATE & DATA ---
+    let stage = 0; 
+    let userResponseHistory = [];
+    let deployedCodes = [];
+
     const avatars = {
-        ceo: { icon: "👔", color: "#ce9178", name: "최대표" },
-        pm: { icon: "📊", color: "#4ec9b0", name: "박팀장" },
-        agent: { icon: "🎧", color: "#9cdcfe", name: "이지은 매니저" },
-        me: { icon: "👨‍💻", color: "#0e639c", name: "나" }
+        ceo: { name:"최대표", color:"#ce9178", icon:"👔" },
+        pm: { name:"박팀장", color:"#4ec9b0", icon:"📊" },
+        agent: { name:"이지은 매니저", color:"#9cdcfe", icon:"🎧" }
     };
 
-    // --- SCRIPT DATA ---
-    const script = {
-        // [STAGE 1]
-        intro: {
-            msgs: [
-                { role: 'ceo', text: "김 수석, 이번 AICC 프로젝트 아주 중요해. 이사회에서 난리야." },
-                { role: 'ceo', text: "경쟁사는 상담원 30% 감축했다는데 우린 뭐하냐고 하네. 무조건 **'효율'**과 **'속도'**가 최우선이야." }
-            ],
-            choices: [
-                { label: "수용", text: "알겠습니다. 처리 속도(AHT) 단축을 최우선 목표로 설계하겠습니다.", next: 'task_v1' },
-                { label: "우려", text: "대표님, 무조건적인 속도 경쟁은 품질 저하를 부를 수 있습니다.", next: 'intro_arg' }
-            ]
+    const scenarios = [
+        {
+            id: "stage1",
+            role: "ceo",
+            msgs: ["김 수석, 경쟁사가 치고 올라오네. 우리도 내년엔 무조건 **AICC(AI 콜센터)** 가야 해.", "핵심은 **속도**와 **비용 절감**이야. 알겠지?"],
+            ide: {
+                title: "Quest 1: 초기 아키텍처 설계",
+                desc: "CEO의 지시: 처리 속도(AHT)를 최우선으로 하는 설정을 입력하십시오.",
+                chips: [
+                    { label: "속도 중심 (Gatekeeper)", code: "strategy: Speed_First\\nfallback: Block_Call" },
+                    { label: "품질 중심 (Copilot)", code: "strategy: Human_First\\nfallback: Handover" }
+                ]
+            }
         },
-        intro_arg: {
-            msgs: [ { role: 'ceo', text: "지금 품질 따질 때가 아니야! 일단 숫자를 만들어야 투자를 받는다고. 그냥 시키는 대로 해." } ],
-            choices: [ { label: "포기", text: "네... 일단 지표 달성에 집중하겠습니다.", next: 'task_v1' } ]
+        {
+            id: "stage2",
+            role: "pm",
+            msgs: ["수석님, V1 배포하고 민원이 폭주 중입니다. AI가 말을 못 알아듣는다고 난리예요.", "속도도 좋지만 **정확도**를 높여야 할 것 같습니다. 어떻게 생각하세요?"],
+            ide: {
+                title: "Quest 2: 로직 고도화",
+                desc: "PM 요청: 오분류를 줄이고 맥락을 파악하도록 수정하십시오.",
+                chips: [
+                    { label: "문맥 분석 (Context)", code: "model: Deep_Context\\nlatency: 800ms" },
+                    { label: "키워드 유지 (Simple)", code: "model: Keyword_Only\\nlatency: 200ms" }
+                ]
+            }
         },
-        
-        // [STAGE 2]
-        feedback_v1: {
-            msgs: [
-                { role: 'pm', text: "수석님, V1 지표 확인하셨어요? 속도는 빠른데... **오분류(Error)**가 너무 많아요." },
-                { role: 'pm', text: "고객이 '환불'이라고 했는데 AI가 '상품 추천'을 해버려서 민원이 폭주 중입니다. 정확도 좀 높여주세요." }
-            ],
-            choices: [
-                { label: "해결책", text: "문맥 분석 기능을 강화해서 정확도를 높이겠습니다.", next: 'task_v2' }
-            ]
-        },
-
-        // [STAGE 3: INTERVIEW]
-        feedback_v2: {
-            mode: 'interview', // Trigger interview UI
-            msgs: [
-                { role: 'agent', text: "안녕하세요 엔지니어님. 현장 운영을 맡고 있는 이지은입니다. 인터뷰 요청주셔서 왔습니다." },
-                { role: 'agent', text: "솔직히 말씀드려도 될까요? 지금 시스템... 저희한테는 **'족쇄'** 같습니다." }
-            ],
-            choices: [
-                { label: "질문", text: "어떤 부분이 가장 힘드신가요? 구체적으로 말씀해주세요.", next: 'interview_deep' },
-                { label: "방어", text: "데이터상으로는 효율이 많이 올랐는데요?", next: 'interview_conflict' }
-            ]
-        },
-        interview_deep: {
-            msgs: [
-                { role: 'agent', text: "AI가 앞에서 고객 말을 자르고 기계적인 답변만 하니까, 제가 전화를 받으면 고객은 이미 머리 끝까지 화가 나 있어요." },
-                { role: 'agent', text: "저는 하루 종일 **'죄송합니다, 기계가 실수를 했네요'**라고 사과만 하다가 끝나요. 이게 상담 업무인가요? 욕받이지." },
-                { role: 'agent', text: "그리고 0.1초 만에 다음 콜 꽂히는 거... 저희도 사람인데 숨 쉴 틈은 주셔야죠." }
-            ],
-            choices: [
-                { label: "공감/해결", text: "그런 고충이 있는 줄 몰랐습니다. 상담원 보호와 휴식권을 보장하는 기능을 즉시 추가하겠습니다.", next: 'task_v3' }
-            ]
-        },
-        interview_conflict: {
-            msgs: [
-                { role: 'agent', text: "그 데이터가 사람 갈아넣어서 만든 숫자잖아요! 제 팀원 절반이 이번 달에 그만뒀어요. 시스템이 사람을 쫓아내고 있다고요." }
-            ],
-            choices: [
-                { label: "수용", text: "죄송합니다. 제가 숫자에만 매몰됐었네요. 바로 수정하겠습니다.", next: 'task_v3' }
-            ]
+        {
+            id: "stage3",
+            role: "agent",
+            isInterview: true,
+            msgs: ["(인터뷰룸) 안녕하세요 엔지니어님. 현장 매니저 이지은입니다.", "솔직히 지금 시스템... 저희한텐 지옥이에요. 쉴 틈도 없고, 화난 고객만 넘어오고... 제발 **사람**을 고려해주세요."],
+            ide: {
+                title: "Quest 3: 지속 가능성 (Human-Centric)",
+                desc: "현장 피드백: 상담원 보호 및 휴식권 보장 로직을 구현하십시오.",
+                chips: [
+                    { label: "욕설 차단 (Shield)", code: "protection: Active_Shield\\naction: Disconnect" },
+                    { label: "동적 휴식 (Rest)", code: "pacing: Dynamic_Break\\ntrigger: High_Stress" }
+                ]
+            }
         }
-    };
+    ];
 
-    // --- GAME ENGINE ---
-    function startGame() {
-        document.getElementById('intro-overlay').style.display = 'none';
-        playScene('intro');
-    }
-
-    function renderMsg(role, text) {
-        const chatBody = document.getElementById('chat-body');
+    // --- CHAT ENGINE ---
+    function addMsg(role, text) {
+        const body = document.getElementById('chat-body');
         const isMe = role === 'me';
-        const sender = avatars[role];
+        const sender = isMe ? {name:"나", color:"#0e639c", icon:"👨‍💻"} : avatars[role];
         
-        const row = document.createElement('div');
-        row.className = `msg-row ${isMe ? 'me' : ''}`;
-        row.innerHTML = `
+        const div = document.createElement('div');
+        div.className = `msg-row ${isMe ? 'me' : ''}`;
+        div.innerHTML = `
             <div class="avatar" style="background:${sender.color}">${sender.icon}</div>
             <div>
-                <div class="sender" style="text-align:${isMe?'right':'left'}">${sender.name}</div>
+                <div style="font-size:11px; color:#888; margin-bottom:4px; text-align:${isMe?'right':'left'}">${sender.name}</div>
                 <div class="bubble ${isMe ? 'me' : 'other'}">${text}</div>
             </div>
         `;
-        chatBody.appendChild(row);
-        chatBody.scrollTop = chatBody.scrollHeight;
+        body.appendChild(div);
+        body.scrollTop = body.scrollHeight;
     }
 
-    function typeWriter(role, text, callback) {
-        const ind = document.getElementById('typing-indicator');
-        ind.style.display = 'block';
-        ind.innerText = `${avatars[role].name} 입력 중...`;
-        
-        setTimeout(() => {
-            ind.style.display = 'none';
-            renderMsg(role, text);
-            if(callback) callback();
-        }, 1000); 
-    }
-
-    function playScene(sceneId) {
-        const scene = script[sceneId];
-        
-        // INTERVIEW MODE TRIGGER
-        if (scene.mode === 'interview') {
-            document.getElementById('main-container').classList.add('interview-mode');
-            document.getElementById('chat-title').innerText = "🎙️ 현장 사용자 인터뷰";
-            document.getElementById('profile-card').style.display = 'block';
-        }
-
-        let msgIndex = 0;
-        function nextMsg() {
-            if (msgIndex < scene.msgs.length) {
-                const m = scene.msgs[msgIndex++];
-                typeWriter(m.role, m.text, nextMsg);
+    function botTyping(role, texts, callback) {
+        let i = 0;
+        function next() {
+            if(i < texts.length) {
+                const ind = document.getElementById('chat-input');
+                ind.placeholder = `${avatars[role].name} 입력 중...`;
+                setTimeout(() => {
+                    addMsg(role, texts[i]);
+                    i++;
+                    next();
+                }, 1000);
             } else {
-                showChoices(scene.choices);
+                document.getElementById('chat-input').placeholder = "메시지를 입력하세요...";
+                enableInput();
+                if(callback) callback();
             }
         }
-        nextMsg();
+        next();
     }
 
-    function showChoices(choices) {
-        const container = document.getElementById('choices-container');
-        container.innerHTML = '';
-        choices.forEach(c => {
-            const btn = document.createElement('button');
-            btn.className = 'choice-btn';
-            btn.innerHTML = `<strong>[${c.label}]</strong> ${c.text}`;
-            btn.onclick = () => {
-                container.innerHTML = '';
-                renderMsg('me', c.text);
-                if (c.next.startsWith('task_')) {
-                    setTimeout(() => startIdeMission(c.next), 800);
-                } else {
-                    setTimeout(() => playScene(c.next), 800);
-                }
-            };
-            container.appendChild(btn);
-        });
+    // --- GAME FLOW ---
+    function startGame() {
+        document.getElementById('intro-screen').style.display = 'none';
+        playStage(0);
+    }
+
+    function playStage(idx) {
+        stage = idx;
+        const s = scenarios[idx];
+        
+        // UI Change for Interview
+        if(s.isInterview) {
+            document.querySelector('.left-panel').style.background = '#1a1a1a';
+            document.getElementById('chat-title').innerText = "🎙️ 현장 인터뷰 (Recording)";
+        }
+
+        botTyping(s.role, s.msgs);
+    }
+
+    function enableInput() {
+        document.getElementById('chat-input').disabled = false;
+        document.getElementById('send-btn').disabled = false;
+        document.getElementById('chat-input').focus();
+    }
+
+    function handleUserChat() {
+        const input = document.getElementById('chat-input');
+        const text = input.value.trim();
+        if(!text) return;
+
+        addMsg('me', text);
+        input.value = "";
+        input.disabled = true;
+        document.getElementById('send-btn').disabled = true;
+
+        // KEYWORD ANALYSIS (Simple Logic)
+        const lower = text.toLowerCase();
+        let reaction = "";
+        let role = scenarios[stage].role;
+
+        // Simple sentiment check
+        if (stage === 0) { // CEO
+            if (text.match(/무리|힘들|어렵|품질|걱정/)) {
+                reaction = "변명은 필요 없어! 결과로 증명하게. 지금 바로 코딩 시작해.";
+            } else {
+                reaction = "좋아, 믿고 맡기겠네. 바로 작업 시작하게.";
+            }
+        } else if (stage === 1) { // PM
+            if (text.match(/데이터|확인|검토/)) {
+                reaction = "데이터는 충분합니다. 고객 이탈 막으려면 지금 당장 수정해야 해요.";
+            } else {
+                reaction = "네, 부탁드립니다. 이번엔 제대로 부탁해요.";
+            }
+        } else if (stage === 2) { // Agent
+            if (text.match(/죄송|몰랐|수정|반영/)) {
+                reaction = "감사합니다... 엔지니어님만 믿겠습니다. 제발 도와주세요.";
+            } else {
+                reaction = "저희도 사람입니다... 기계 취급하지 말아주세요.";
+            }
+        }
+
+        setTimeout(() => {
+            addMsg(role, reaction);
+            setTimeout(() => unlockIDE(), 1000);
+        }, 800);
     }
 
     // --- IDE LOGIC ---
-    function startIdeMission(taskId) {
-        const ideBody = document.getElementById('ide-body');
-        let data = {};
+    function unlockIDE() {
+        const overlay = document.getElementById('ide-overlay');
+        const content = document.getElementById('ide-content');
         
-        if (taskId === 'task_v1') {
-            data = { 
-                title: "Quest 1: 효율성 극대화", 
-                desc: "CEO 지시: 상담원 연결을 최소화하고 처리 속도를 높이십시오.",
-                items: [ {l:"Priority", v:"High_Speed"}, {l:"Latency", v:"200ms"}, {l:"Fallback", v:"Block_Call"} ] 
+        overlay.style.display = 'none';
+        content.style.opacity = '1';
+        content.style.pointerEvents = 'auto';
+        
+        const s = scenarios[stage].ide;
+        document.getElementById('mission-title').innerText = s.title;
+        document.getElementById('mission-desc').innerText = s.desc;
+        
+        // Create Chips
+        const area = document.getElementById('chips-area');
+        area.innerHTML = '';
+        s.chips.forEach(c => {
+            const btn = document.createElement('div');
+            btn.className = 'chip';
+            btn.innerText = "+ " + c.label;
+            btn.onclick = () => {
+                const editor = document.getElementById('code-editor');
+                editor.value += c.code + "\\n"; // Append code
             };
-        } else if (taskId === 'task_v2') {
-            data = { 
-                title: "Quest 2: 정확도 개선", 
-                desc: "PM 요청: 오분류를 줄이기 위해 문맥 분석을 강화하십시오.",
-                items: [ {l:"Model", v:"Context_Aware_v2"}, {l:"Intent_Check", v:"Deep_Analysis"} ] 
-            };
-        } else if (taskId === 'task_v3') {
-            data = { 
-                title: "Quest 3: 지속 가능성 (Human-Centric)", 
-                desc: "사용자 피드백: 상담원 보호 및 휴식권 보장 로직을 구현하십시오.",
-                items: [ {l:"Protection", v:"Abuse_Shield_On"}, {l:"Input_Filter", v:"Sanitize_Tone"}, {l:"Break_Rule", v:"Dynamic_Rest_3min"} ] 
-            };
-        }
-
-        ideBody.innerHTML = `
-            <div class="coding-container">
-                <div class="mission-card">
-                    <div style="font-size:18px; font-weight:bold; color:white; margin-bottom:10px;">${data.title}</div>
-                    <div class="task-desc">${data.desc}</div>
-                </div>
-                <div class="code-editor">
-                    <div style="color:#6a9955; margin-bottom:15px;"># config.yaml</div>
-                    ${data.items.map(i => `
-                        <div class="code-line">
-                            <span style="color:#9cdcfe; width:120px;">${i.l}:</span> 
-                            <input class="input-slot" type="text" value="${i.v}">
-                        </div>`).join('')}
-                </div>
-                <button class="deploy-btn" onclick="deploy('${taskId}')">🚀 코드 배포 (Deploy)</button>
-            </div>
-        `;
+            area.appendChild(btn);
+        });
+        
+        // Clear editor for new stage? Or keep? -> Clear looks cleaner for mission
+        document.getElementById('code-editor').value = "";
     }
 
-    function deploy(taskId) {
-        const ideBody = document.getElementById('ide-body');
-        ideBody.innerHTML = `<div class="locked-state"><h2>🚀 Deploying...</h2><p>서버에 변경사항을 적용 중입니다.</p></div>`;
+    function deployCode() {
+        const code = document.getElementById('code-editor').value;
+        if(code.trim().length < 5) {
+            alert("코드를 작성해야 배포할 수 있습니다.");
+            return;
+        }
         
+        deployedCodes.push(code);
+        
+        // Lock IDE again
+        const overlay = document.getElementById('ide-overlay');
+        const content = document.getElementById('ide-content');
+        overlay.style.display = 'flex';
+        overlay.innerHTML = "<h2 style='color:#4ec9b0'>🚀 배포 완료!</h2><p>시스템 적용 중...</p>";
+        content.style.opacity = '0.3';
+        content.style.pointerEvents = 'none';
+
         setTimeout(() => {
-            ideBody.innerHTML = `<div class="locked-state"><div style="font-size:50px; opacity:0.3">🔒</div><h2>대기 중...</h2><p>메신저 반응을 확인하세요.</p></div>`;
-            
-            if (taskId === 'task_v1') {
-                renderMsg('System', '✅ V1.0 배포 완료. (1주일 경과...)');
-                setTimeout(() => playScene('feedback_v1'), 1500);
-            } else if (taskId === 'task_v2') {
-                renderMsg('System', '✅ V2.0 배포 완료. 현장 인터뷰 연결 중...');
-                setTimeout(() => playScene('feedback_v2'), 2000);
+            overlay.innerHTML = "<div>메신저를 확인하세요.</div>";
+            if (stage < 2) {
+                playStage(stage + 1);
             } else {
-                document.getElementById('report-screen').style.display = 'block';
-                renderReport();
+                showReport();
             }
         }, 2000);
     }
 
-    function renderReport() {
-        document.getElementById('report-content').innerHTML = `
-            <div class="stat-card" style="border-left: 5px solid #ce9178;">
-                <h3>Step 1: Efficiency (CEO)</h3>
-                <p style="color:#aaa">초기엔 효율성만 추구했습니다. -> <strong>조직 불안정 야기</strong></p>
+    function showReport() {
+        const rScreen = document.getElementById('report-screen');
+        rScreen.style.display = 'block';
+        
+        // Analyze final code
+        const finalCode = deployedCodes[2] || "";
+        let resultType = "Balanced";
+        if(finalCode.includes("Shield") || finalCode.includes("Rest")) resultType = "Human-Centric";
+        else if(finalCode.includes("Speed")) resultType = "Efficiency-First";
+
+        const content = document.getElementById('report-content');
+        content.innerHTML = `
+            <div class="stat-card" style="margin-bottom:20px; border-left:5px solid #ce9178; padding:20px; background:#333;">
+                <h3>Step 1: CEO의 압박</h3>
+                <p>당신은 효율성을 요구받았습니다.</p>
             </div>
-            <div class="stat-card" style="border-left: 5px solid #9cdcfe;">
-                <h3>Step 3: Empathy (Agent)</h3>
-                <p style="color:#aaa">현장의 목소리를 듣고 시스템을 수정했습니다. -> <strong>지속 가능한 공존 모델 달성</strong></p>
+            <div class="stat-card" style="margin-bottom:20px; border-left:5px solid #9cdcfe; padding:20px; background:#333;">
+                <h3>Step 3: 현장의 호소</h3>
+                <p>당신은 상담원의 고통을 마주했습니다.</p>
             </div>
-            <p style="margin-top:20px; line-height:1.6; color:#ccc; text-align:center;">
-                "기술적 결정은 언제나 정치적이고 윤리적인 결과를 낳습니다."
-            </p>
+            <div style="background:#252526; padding:20px; border-radius:8px; text-align:center;">
+                <h2>최종 설계 성향: <span style="color:#4ec9b0">${resultType}</span></h2>
+                <p style="color:#aaa;">"엔지니어의 코드는 누군가의 삶이 됩니다."</p>
+            </div>
         `;
     }
 
 </script>
 </body>
 </html>
-"""
+\"\"\"
 
 components.html(html_code, height=950, scrolling=False)
+"""
+with open(os.path.join(project_dir, "app.py"), "w", encoding="utf-8") as f:
+    f.write(app_code)
+
+print(f"✅ V6.3 생성 완료: {project_dir}")
+print("1. cd invisible_engineer_v6_3")
+print("2. streamlit run app.py")
