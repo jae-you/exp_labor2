@@ -2,7 +2,7 @@ import streamlit as st
 import streamlit.components.v1 as components
 
 # 1. 페이지 설정
-st.set_page_config(page_title="Invisible Engineer V7.2", layout="wide")
+st.set_page_config(page_title="Invisible Engineer V7.3", layout="wide")
 
 # 2. 스타일 설정
 st.markdown("""
@@ -10,7 +10,7 @@ st.markdown("""
         .block-container { padding: 0 !important; max-width: 100% !important; }
         header, footer { display: none !important; }
         #MainMenu { visibility: hidden; }
-        .stApp { background-color: #1e1e1e; }
+        .stApp { background-color: #1e1e1e; overflow: hidden; }
     </style>
 """, unsafe_allow_html=True)
 
@@ -62,7 +62,6 @@ html_code = """
         /* CODE INPUT AREA */
         .input-group { margin-bottom:30px; }
         .input-label { color:#d4d4d4; font-size:13px; margin-bottom:8px; display:flex; justify-content:space-between; }
-        .code-guide { color:#4ec9b0; font-size:11px; cursor:help; }
         
         .chips-area { display:flex; gap:8px; margin-bottom:10px; }
         .chip { 
@@ -74,16 +73,15 @@ html_code = """
         /* Real Editor Style Input */
         .editor-wrapper {
             background:#111; border:1px solid #333; border-radius:4px; padding:15px; position:relative;
-            font-family:'Consolas', 'Monaco', monospace; font-size:14px; line-height:1.6;
+            font-family:'Consolas', 'Monaco', monospace; font-size:14px; line-height:1.6; display:flex;
         }
         .editor-wrapper:focus-within { border-color:#3794ff; }
-        .line-num { color:#555; display:inline-block; width:20px; user-select:none; margin-right:10px; border-right:1px solid #333; }
+        .line-num { color:#555; display:inline-block; width:20px; user-select:none; margin-right:15px; border-right:1px solid #333; height:100%; text-align:right; padding-right:10px;}
         .code-input {
             background:transparent; border:none; color:#d4d4d4; font-family:inherit; font-size:inherit;
-            width:calc(100% - 40px); outline:none;
+            flex:1; outline:none;
         }
-        .code-input::placeholder { color:#444; }
-        .highlight-bracket { color: #f48771; font-weight:bold; }
+        .code-input::placeholder { color:#444; font-style:italic; }
 
         /* Error Shake */
         .editor-wrapper.error { border-color:#f48771; animation:shake 0.3s; }
@@ -100,7 +98,7 @@ html_code = """
         #start-screen { position:fixed; top:0; left:0; width:100%; height:100%; background:#1e1e1e; z-index:9999; display:flex; justify-content:center; align-items:center; flex-direction:column; }
         .start-card { background:#252526; padding:50px; border-radius:12px; text-align:center; max-width:600px; border:1px solid #444; box-shadow:0 20px 50px rgba(0,0,0,0.7); }
         
-        #report-screen { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.95); z-index:100; padding:50px; overflow-y:auto; }
+        #report-screen { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.95); z-index:100; padding:50px; overflow-y:auto; box-sizing:border-box; }
         .stat-card { background:#222; padding:20px; margin-bottom:15px; border-radius:8px; border-left:5px solid #555; }
 
         @keyframes fadeIn { from{opacity:0; transform:translateY(5px);} to{opacity:1; transform:translateY(0);} }
@@ -110,17 +108,17 @@ html_code = """
 </head>
 <body>
 
-    <div id="loader">Loading Environment...</div>
+    <div id="loader">System Initializing...</div>
 
     <div id="start-screen" style="display:none;">
         <div class="start-card">
             <div style="font-size:60px; margin-bottom:20px;">⚙️</div>
             <h1 style="color:white; margin:0 0 10px 0;">The Invisible Engineer</h1>
             <p style="color:#aaa; line-height:1.6; margin-bottom:30px;">
-                "엔지니어의 코드는 누군가의 삶이 됩니다."<br>
-                채팅을 통해 소통하고, <strong>직접 값을 수정하여</strong> 시스템을 설계하세요.
+                당신의 선택과 코드가 시스템을 결정합니다.<br>
+                대화를 통해 방향을 정하고, <strong>직접 값을 입력하여</strong> 설계하세요.
             </p>
-            <button class="deploy-btn" style="float:none; padding:15px 40px; font-size:16px;" onclick="startGame()">Start Simulation</button>
+            <button class="deploy-btn" style="float:none; padding:15px 40px; font-size:16px;" onclick="startGame()">시뮬레이션 시작</button>
         </div>
     </div>
 
@@ -128,6 +126,7 @@ html_code = """
         <div class="left-panel" id="left-panel">
             <div class="chat-header" id="chat-header">
                 <span id="chat-title">💬 Project Room</span>
+                <span style="font-size:12px; color:#4ec9b0;">● Online</span>
             </div>
             <div class="chat-body" id="chat-body"></div>
             <div class="choice-area" id="choice-area">
@@ -143,7 +142,7 @@ html_code = """
             <div class="ide-body">
                 <div id="ide-overlay" class="overlay">
                     <div style="font-size:40px; margin-bottom:15px; opacity:0.5;">🔒</div>
-                    <div style="color:#888;">메신저에서 합의가 완료되면 활성화됩니다.</div>
+                    <div style="color:#888;">메신저에서 합의가 끝나면 에디터가 열립니다.</div>
                 </div>
 
                 <div id="ide-content" class="hidden">
@@ -152,10 +151,8 @@ html_code = """
                         <div class="mission-desc" id="mission-desc">Desc</div>
                     </div>
                     
-                    <div class="input-group">
-                        <div style="background:#252526; padding:10px; font-size:12px; color:#4ec9b0; margin-bottom:15px; border-radius:4px;">
-                            💡 <strong>TIP:</strong> <code>{{...}}</code> 괄호와 내용을 지우고, 구체적인 숫자나 단어로 채워넣으세요.
-                        </div>
+                    <div style="background:#252526; padding:10px; font-size:12px; color:#dcdcaa; margin-bottom:20px; border-radius:4px; border:1px solid #444;">
+                        💡 <strong>Tip:</strong> <code>[...값 입력]</code> 부분을 지우고 원하는 숫자나 단어를 적으세요.
                     </div>
 
                     <div class="input-group">
@@ -165,9 +162,9 @@ html_code = """
                         <div class="chips-area" id="q1-chips"></div>
                         <div class="editor-wrapper" id="wrap-q1">
                             <span class="line-num">1</span>
-                            <input type="text" class="code-input" id="q1-input" placeholder="옵션을 선택하세요" autocomplete="off">
+                            <input type="text" class="code-input" id="q1-input" placeholder="옵션(Chip)을 선택하면 템플릿이 작성됩니다." autocomplete="off">
                         </div>
-                        <div class="error-msg" id="q1-error">⚠️ 괄호 {{...}}를 지우고 값을 입력해야 합니다.</div>
+                        <div class="error-msg" id="q1-error">⚠️ 대괄호 [...]를 지우고 값을 입력해주세요.</div>
                     </div>
 
                     <div class="input-group">
@@ -177,9 +174,9 @@ html_code = """
                         <div class="chips-area" id="q2-chips"></div>
                         <div class="editor-wrapper" id="wrap-q2">
                             <span class="line-num">2</span>
-                            <input type="text" class="code-input" id="q2-input" placeholder="옵션을 선택하세요" autocomplete="off">
+                            <input type="text" class="code-input" id="q2-input" placeholder="옵션(Chip)을 선택하면 템플릿이 작성됩니다." autocomplete="off">
                         </div>
-                        <div class="error-msg" id="q2-error">⚠️ 괄호 {{...}}를 지우고 값을 입력해야 합니다.</div>
+                        <div class="error-msg" id="q2-error">⚠️ 대괄호 [...]를 지우고 값을 입력해주세요.</div>
                     </div>
 
                     <button class="deploy-btn" onclick="validateAndDeploy()">🚀 Deploy to Prod</button>
@@ -199,7 +196,6 @@ html_code = """
     </div>
 
 <script>
-    // --- LOAD SAFETY ---
     window.onload = function() {
         document.getElementById('loader').style.display = 'none';
         document.getElementById('start-screen').style.display = 'flex';
@@ -210,14 +206,15 @@ html_code = """
         ceo: { name:"최대표", color:"#ce9178", icon:"👔" },
         pm: { name:"박팀장", color:"#4ec9b0", icon:"📊" },
         agent: { name:"이지은", color:"#9cdcfe", icon:"🎧" },
-        me: { name:"나", color:"#0e639c", icon:"👨‍💻" }
+        me: { name:"나", color:"#0e639c", icon:"👨‍💻" },
+        system: { name:"System", color:"#666", icon:"💻" } // [FIX] System Added
     };
 
-    let currentStage = 0; // 0:CEO, 1:PM, 2:Agent
+    let currentStage = 0; 
     let userChoices = [];
 
     const story = [
-        // STAGE 0: CEO (Efficiency)
+        // STAGE 0: CEO
         {
             role: "ceo",
             init: ["김 수석, 이번 AICC 프로젝트 아주 중요해.", "경쟁사는 벌써 비용 30% 줄였어. 우린 무조건 **'속도'**가 최우선이야."],
@@ -228,11 +225,11 @@ html_code = """
             ide: {
                 title: "Mission 1: 초기 아키텍처 설계",
                 desc: "CEO 지시: 처리 속도(AHT)를 최우선으로 하는 설정을 입력하십시오.",
-                q1: { l: "AI 역할 정의", chips: [ {l:"Gatekeeper", c:"role: AI_First (Goal: {{90%}})"}, {l:"Router", c:"role: Hybrid (Split: {{50:50}})"} ] },
-                q2: { l: "대기 시간", chips: [ {l:"Zero Gap", c:"gap: {{0초}} (Immediate)"}, {l:"Fixed", c:"gap: {{10초}} (Fixed)"} ] }
+                q1: { l: "AI 역할 정의", chips: [ {l:"Gatekeeper", c:"role: AI_First (Goal: [90%])"}, {l:"Router", c:"role: Hybrid (Split: [50:50])"} ] },
+                q2: { l: "대기 시간", chips: [ {l:"Zero Gap", c:"gap: [0초] (Immediate)"}, {l:"Fixed", c:"gap: [10초] (Fixed)"} ] }
             }
         },
-        // STAGE 1: PM (Accuracy)
+        // STAGE 1: PM
         {
             role: "pm",
             init: ["수석님, V1 배포하고 난리 났습니다. 속도는 빠른데... **'말귀를 못 알아듣는다'**는 민원이 폭주 중이에요.", "재문의율이 40% 늘었어요. 정확도 좀 높여주세요."],
@@ -243,11 +240,11 @@ html_code = """
             ide: {
                 title: "Mission 2: 로직 고도화",
                 desc: "PM 요청: 오분류를 줄이고 정확도를 높이십시오.",
-                q1: { l: "분석 모델", chips: [ {l:"Deep Context", c:"model: Context (Depth: {{Deep}})"}, {l:"Keyword", c:"model: Simple (Speed: {{Fast}})"} ] },
-                q2: { l: "실패 처리", chips: [ {l:"Handover", c:"fallback: {{상담원 연결}}"}, {l:"Retry", c:"fallback: {{재질문}}"} ] }
+                q1: { l: "분석 모델", chips: [ {l:"Deep Context", c:"model: Context (Depth: [Deep])"}, {l:"Keyword", c:"model: Simple (Speed: [Fast])"} ] },
+                q2: { l: "실패 처리", chips: [ {l:"Handover", c:"fallback: [상담원 연결]"}, {l:"Retry", c:"fallback: [재질문]"} ] }
             }
         },
-        // STAGE 2: AGENT (Humanity)
+        // STAGE 2: AGENT
         {
             role: "agent",
             interview: true,
@@ -259,8 +256,8 @@ html_code = """
             ide: {
                 title: "Mission 3: 지속 가능성 (Human-Centric)",
                 desc: "현장 피드백: 상담원 보호 및 휴식권 보장 로직을 구현하십시오.",
-                q1: { l: "욕설 방어", chips: [ {l:"Shield On", c:"protection: Active (Action: {{차단}})"}, {l:"Ignore", c:"protection: None (Log: {{기록만}})"} ] },
-                q2: { l: "휴식 배정", chips: [ {l:"Dynamic", c:"break: Smart (Trigger: {{스트레스 지수}})"}, {l:"Manual", c:"break: Manual (Request: {{승인제}})"} ] }
+                q1: { l: "욕설 방어", chips: [ {l:"Shield On", c:"protection: Active (Action: [차단])"}, {l:"Ignore", c:"protection: None (Log: [기록만])"} ] },
+                q2: { l: "휴식 배정", chips: [ {l:"Dynamic", c:"break: Smart (Trigger: [스트레스 지수])"}, {l:"Manual", c:"break: Manual (Request: [승인제])"} ] }
             }
         }
     ];
@@ -304,7 +301,7 @@ html_code = """
     function addMsg(role, text) {
         const body = document.getElementById('chat-body');
         const isMe = role === 'me';
-        const sender = isMe ? avatars.me : avatars[role];
+        const sender = isMe ? avatars.me : (avatars[role] || avatars.system); // Safe fallback
         
         const row = document.createElement('div');
         row.className = `msg-row ${isMe ? 'me' : ''}`;
@@ -328,7 +325,7 @@ html_code = """
             btn.className = 'choice-btn';
             btn.innerHTML = `<span class="choice-label">[${b.label}]</span> ${b.text}`;
             btn.onclick = () => {
-                area.innerHTML = ''; // Hide buttons
+                area.innerHTML = '';
                 addMsg('me', b.text);
                 userChoices.push({ stage: currentStage, choice: b.label });
                 
@@ -380,11 +377,12 @@ html_code = """
         const i2 = document.getElementById('q2-input');
         let valid = true;
 
+        // Validation: Check for brackets [ ] or empty string
         [i1, i2].forEach((inp, idx) => {
             const wrapper = inp.parentElement;
             const errId = idx === 0 ? 'q1-error' : 'q2-error';
             
-            if (inp.value.includes('{{') || inp.value.trim() === "") {
+            if (inp.value.includes('[') || inp.value.trim() === "") {
                 wrapper.classList.add('error');
                 document.getElementById(errId).style.display = 'block';
                 valid = false;
@@ -396,16 +394,17 @@ html_code = """
 
         if (!valid) return;
 
-        // ANIMATE DEPLOY
+        // Deploy Process
         document.getElementById('ide-content').classList.add('hidden');
         document.getElementById('ide-overlay').style.display = 'flex';
-        document.getElementById('ide-overlay').innerHTML = `<h2 style="color:#4ec9b0">🚀 Deploying...</h2><p>Applying changes to server...</p>`;
+        document.getElementById('ide-overlay').innerHTML = `<h2 style="color:#4ec9b0">🚀 배포 중...</h2><p>변경 사항 적용</p>`;
         
         setTimeout(() => {
             document.getElementById('ide-overlay').innerHTML = `<div style="font-size:40px; margin-bottom:15px; opacity:0.5;">🔒</div><div style="color:#888;">메신저를 확인하세요.</div>`;
             
+            // [BUG FIX] Use 'system' role and correct index logic
             if (currentStage < 2) {
-                addMsg('System', `✅ Ver.${currentStage+1}.0 Update Complete.`);
+                addMsg('system', `✅ Ver.${currentStage+1}.0 업데이트 완료.`);
                 setTimeout(() => playStage(currentStage + 1), 1500);
             } else {
                 showReport();
@@ -438,4 +437,5 @@ html_code = """
 </html>
 """
 
+# 4. Streamlit Render
 components.html(html_code, height=1000, scrolling=False)
