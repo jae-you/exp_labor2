@@ -1,55 +1,43 @@
-import os
-
-project_dir = "invisible_engineer_v7"
-if not os.path.exists(project_dir):
-    os.makedirs(project_dir)
-
-# 1. requirements.txt
-with open(os.path.join(project_dir, "requirements.txt"), "w", encoding="utf-8") as f:
-    f.write("streamlit\n")
-
-# 2. README.md
-readme_code = """# The Invisible Engineer V7.0: Logic-Based Interaction
-
-이 버전은 **'선택에 따른 결과 분기(Branching Narrative)'**와 **'스켈레톤 프롬프트 엔지니어링'**을 결합한 최종 완성형 실험 도구입니다.
-
-## 🕹️ 주요 기능
-
-1.  **Rule-Based Chat Engine:**
-    - 사용자의 응답(순응/저항/제안)에 따라 상대방(CEO, PM, Agent)의 반응 스크립트가 달라집니다.
-    - 갈등 상황을 유발하여 엔지니어의 심리적 압박감을 실감 나게 구현했습니다.
-
-2.  **Skeleton Prompt IDE:**
-    - 칩을 클릭하면 템플릿이 입력되고, 사용자는 `{{변수}}`를 직접 수정해야 합니다.
-    - 수정하지 않으면 배포가 불가능하도록 Validation Check가 포함되어 있습니다.
-
-## 🚀 실행 방법
-`streamlit run app.py`
-"""
-with open(os.path.join(project_dir, "README.md"), "w", encoding="utf-8") as f:
-    f.write(readme_code)
-
-# 3. app.py
-app_code = """import streamlit as st
+import streamlit as st
 import streamlit.components.v1 as components
 
-st.set_page_config(page_title="Invisible Engineer V7", layout="wide")
-st.markdown(\"\"\"<style>.block-container{padding:0!important;max-width:100%!important;}header,footer{display:none!important;}.stApp{background-color:#1e1e1e;overflow:hidden;}</style>\"\"\", unsafe_allow_html=True)
+# 1. 페이지 설정
+st.set_page_config(page_title="Invisible Engineer V7.1 (Safe)", layout="wide")
 
-html_code = \"\"\"
+# 2. 스타일 설정
+st.markdown("""
+    <style>
+        .block-container { padding: 0 !important; max-width: 100% !important; }
+        header, footer { display: none !important; }
+        #MainMenu { visibility: hidden; }
+        .stApp { background-color: #1e1e1e; }
+    </style>
+""", unsafe_allow_html=True)
+
+# 3. HTML/JS 소스코드
+html_code = """
 <!DOCTYPE html>
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
     <style>
-        :root { --bg:#1e1e1e; --chat-bg:#252526; --accent:#3794ff; --user-msg:#0e639c; --error:#f48771; }
-        html, body { margin:0; padding:0; width:100%; height:100%; font-family:'Pretendard', sans-serif; background:var(--bg); color:#d4d4d4; overflow:hidden; }
+        /* [핵심] 높이 강제 설정 */
+        html, body { margin:0; padding:0; width:100%; height:1000px; background-color:#1e1e1e; font-family:'Pretendard', sans-serif; color:#d4d4d4; overflow:hidden; }
         
-        .container { display:flex; width:100%; height:100%; }
+        /* 로딩 텍스트 (화면 안 뜰 때 대비) */
+        #loader { 
+            position:fixed; top:50%; left:50%; transform:translate(-50%, -50%); 
+            color: #3794ff; font-size: 20px; font-weight:bold; z-index:0;
+        }
+
+        .container { display:flex; width:100%; height:100%; position:relative; z-index:1; }
         
-        /* --- LEFT: CHAT --- */
-        .left-panel { width:450px; background:var(--chat-bg); border-right:1px solid #444; display:flex; flex-direction:column; transition:0.3s; }
-        .chat-header { padding:15px; border-bottom:1px solid #444; background:#2d2d2d; font-weight:bold; display:flex; align-items:center; color:white; }
+        /* --- PANELS --- */
+        .left-panel { width:450px; background:#252526; border-right:1px solid #444; display:flex; flex-direction:column; transition:0.3s; }
+        .right-panel { flex:1; display:flex; flex-direction:column; background:#1e1e1e; position:relative; }
+
+        /* CHAT UI */
+        .chat-header { padding:15px; border-bottom:1px solid #444; background:#2d2d2d; font-weight:bold; display:flex; align-items:center; justify-content:space-between; color:white; }
         .chat-body { flex:1; padding:20px; overflow-y:auto; display:flex; flex-direction:column; gap:15px; }
         
         .msg-row { display:flex; gap:10px; animation:fadeIn 0.3s; }
@@ -57,46 +45,43 @@ html_code = \"\"\"
         .avatar { width:36px; height:36px; border-radius:50%; display:flex; align-items:center; justify-content:center; flex-shrink:0; font-size:18px; }
         .bubble { padding:12px 16px; border-radius:12px; font-size:14px; line-height:1.5; max-width:280px; box-shadow:0 2px 5px rgba(0,0,0,0.2); }
         .bubble.other { background:#383838; border-top-left-radius:2px; }
-        .bubble.me { background:var(--user-msg); color:white; border-top-right-radius:2px; }
+        .bubble.me { background:#0e639c; color:white; border-top-right-radius:2px; }
         .sender-name { font-size:11px; color:#888; margin-bottom:4px; }
 
-        /* CHOICES AREA */
-        .choice-area { padding:15px; border-top:1px solid #444; background:#2d2d2d; min-height:80px; display:flex; flex-direction:column; gap:8px; }
+        /* CHOICES */
+        .choice-area { padding:15px; border-top:1px solid #444; background:#2d2d2d; min-height:100px; display:flex; flex-direction:column; gap:8px; }
         .choice-btn { 
             background:#3c3c3c; border:1px solid #555; color:#ddd; padding:12px; border-radius:8px; 
             cursor:pointer; text-align:left; transition:0.2s; font-size:13px;
         }
-        .choice-btn:hover { border-color:var(--accent); background:#444; color:white; }
-        .choice-label { color:var(--accent); font-weight:bold; margin-right:5px; }
+        .choice-btn:hover { border-color:#3794ff; background:#444; color:white; }
+        .choice-label { color:#3794ff; font-weight:bold; margin-right:5px; }
 
-        /* --- RIGHT: IDE --- */
-        .right-panel { flex:1; display:flex; flex-direction:column; background:#1e1e1e; position:relative; }
+        /* IDE UI */
         .ide-header { height:45px; background:#2d2d2d; border-bottom:1px solid #444; display:flex; align-items:center; padding:0 20px; color:#aaa; font-size:13px; }
         .ide-body { flex:1; padding:30px; overflow-y:auto; position:relative; }
 
-        /* MISSION CARD */
-        .mission-box { background:#252526; padding:20px; border-radius:8px; border-left:4px solid var(--accent); margin-bottom:20px; }
+        .mission-box { background:#252526; padding:20px; border-radius:8px; border-left:4px solid #3794ff; margin-bottom:20px; }
         .mission-title { font-size:18px; font-weight:bold; color:white; margin-bottom:10px; }
         .mission-desc { color:#ccc; font-size:14px; line-height:1.6; }
 
-        /* INPUT AREA */
-        .input-group { margin-bottom:20px; }
+        .input-group { margin-bottom:25px; }
         .chips-area { display:flex; gap:10px; margin-bottom:10px; }
-        .chip { background:#333; padding:8px 15px; border-radius:20px; font-size:12px; cursor:pointer; border:1px solid #444; transition:0.2s; }
-        .chip:hover { border-color:var(--accent); color:white; }
+        .chip { background:#333; padding:8px 15px; border-radius:20px; font-size:12px; cursor:pointer; border:1px solid #444; color:#ccc; }
+        .chip:hover { border-color:#3794ff; color:white; }
         
         .code-input-wrapper { position:relative; }
         .code-input { 
             width:100%; background:#111; border:1px solid #444; color:#d4d4d4; 
             padding:15px; border-radius:6px; font-family:'Consolas', monospace; font-size:14px; outline:none; 
-            box-sizing:border-box; transition:0.2s;
+            box-sizing:border-box;
         }
-        .code-input:focus { border-color:var(--accent); }
-        .code-input.error { border-color:var(--error); animation:shake 0.3s; }
-        .error-msg { color:var(--error); font-size:12px; margin-top:5px; display:none; }
+        .code-input:focus { border-color:#3794ff; }
+        .code-input.error { border-color:#f48771; animation:shake 0.3s; }
+        .error-msg { color:#f48771; font-size:12px; margin-top:5px; display:none; }
 
         .deploy-btn { 
-            background:var(--accent); color:white; border:none; padding:12px 30px; border-radius:6px; 
+            background:#3794ff; color:white; border:none; padding:12px 30px; border-radius:6px; 
             font-size:14px; font-weight:bold; cursor:pointer; float:right; margin-top:10px; 
         }
         
@@ -109,7 +94,7 @@ html_code = \"\"\"
         .start-card { background:#252526; padding:50px; border-radius:12px; text-align:center; max-width:500px; border:1px solid #444; box-shadow:0 20px 50px rgba(0,0,0,0.5); }
 
         /* REPORT SCREEN */
-        #report-screen { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:#111; z-index:100; padding:50px; overflow-y:auto; }
+        #report-screen { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:#111; z-index:100; padding:50px; overflow-y:auto; box-sizing:border-box; }
         .stat-card { background:#222; padding:25px; border-radius:12px; margin-bottom:20px; border-left:5px solid #555; }
 
         @keyframes fadeIn { from{opacity:0; transform:translateY(5px);} to{opacity:1; transform:translateY(0);} }
@@ -119,27 +104,26 @@ html_code = \"\"\"
 </head>
 <body>
 
-    <div id="start-screen">
-        <div class="start-card">
+    <div id="loader">System Initializing...</div>
+
+    <div id="start-screen" style="display:none;"> <div class="start-card">
             <div style="font-size:60px; margin-bottom:20px;">⚙️</div>
             <h1 style="color:white; margin:0 0 10px 0;">The Invisible Engineer</h1>
             <p style="color:#aaa; line-height:1.6; margin-bottom:30px;">
-                당신의 말(Chat)과 코드(Prompt)가<br>
-                시스템의 방향을 결정합니다.<br>
-                상사, 동료, 그리고 사용자와 대화하며 최적의 설계를 찾아보세요.
+                당신의 선택과 코드가 시스템을 결정합니다.<br>
+                <strong>대화형 시뮬레이션</strong>을 시작하시겠습니까?
             </p>
             <button class="deploy-btn" style="float:none;" onclick="startGame()">시뮬레이션 시작</button>
         </div>
     </div>
 
-    <div class="container">
-        <div class="left-panel" id="left-panel">
+    <div class="container" id="main-ui" style="opacity:0;"> <div class="left-panel" id="left-panel">
             <div class="chat-header" id="chat-header">
                 <span id="chat-title">💬 Team Messenger</span>
             </div>
             <div class="chat-body" id="chat-body"></div>
             <div class="choice-area" id="choice-area">
-                <div id="typing" style="color:#666; font-size:12px; padding:10px; display:none;">상대방 입력 중...</div>
+                <div id="typing" style="color:#666; font-size:12px; padding:10px; display:none;">입력 중...</div>
             </div>
         </div>
 
@@ -162,7 +146,7 @@ html_code = \"\"\"
                         <div class="chips-area" id="q1-chips"></div>
                         <div class="code-input-wrapper">
                             <input type="text" class="code-input" id="q1-input" placeholder="옵션을 선택하면 템플릿이 입력됩니다.">
-                            <div class="error-msg" id="q1-error">⚠️ {{...}} 부분을 수정해야 합니다.</div>
+                            <div class="error-msg" id="q1-error">⚠️ {{...}} 부분을 구체적인 값으로 수정해주세요.</div>
                         </div>
                     </div>
 
@@ -171,7 +155,7 @@ html_code = \"\"\"
                         <div class="chips-area" id="q2-chips"></div>
                         <div class="code-input-wrapper">
                             <input type="text" class="code-input" id="q2-input" placeholder="옵션을 선택하면 템플릿이 입력됩니다.">
-                            <div class="error-msg" id="q2-error">⚠️ {{...}} 부분을 수정해야 합니다.</div>
+                            <div class="error-msg" id="q2-error">⚠️ {{...}} 부분을 구체적인 값으로 수정해주세요.</div>
                         </div>
                     </div>
 
@@ -192,6 +176,12 @@ html_code = \"\"\"
     </div>
 
 <script>
+    // --- LOAD SAFETY ---
+    window.onload = function() {
+        document.getElementById('loader').style.display = 'none';
+        document.getElementById('start-screen').style.display = 'flex';
+    };
+
     // --- DATA ---
     const avatars = {
         ceo: { name:"최대표", color:"#ce9178", icon:"👔" },
@@ -201,7 +191,7 @@ html_code = \"\"\"
     };
 
     let currentStage = 0;
-    let userChoices = []; // Log user choices for report
+    let userChoices = [];
 
     // ★ RULE-BASED SCENARIOS ★
     const story = [
@@ -313,9 +303,10 @@ html_code = \"\"\"
         }
     ];
 
-    // --- GAME ENGINE ---
+    // --- ENGINE ---
     function startGame() {
         document.getElementById('start-screen').style.display = 'none';
+        document.getElementById('main-ui').style.opacity = '1';
         playStage(0);
     }
 
@@ -323,7 +314,6 @@ html_code = \"\"\"
         currentStage = idx;
         const s = story[idx];
         
-        // UI Setup
         if(s.interview) {
             document.getElementById('left-panel').style.background = '#151515';
             document.getElementById('chat-title').innerHTML = "🎙️ 현장 인터뷰 <span style='color:red; font-size:12px'>● REC</span>";
@@ -332,10 +322,8 @@ html_code = \"\"\"
             document.getElementById('chat-title').innerText = "💬 Project Room";
         }
 
-        // Clear choices
         document.getElementById('choice-area').innerHTML = '<div id="typing" style="color:#666; font-size:12px; padding:10px; display:none;">상대방 입력 중...</div>';
         
-        // Bot speaks init msgs
         botTyping(s.role, s.init, () => showChoices(s.branches));
     }
 
@@ -378,11 +366,10 @@ html_code = \"\"\"
             btn.className = 'choice-btn';
             btn.innerHTML = `<span class="choice-label">[${b.label}]</span> ${b.text}`;
             btn.onclick = () => {
-                area.innerHTML = ''; // Hide buttons
+                area.innerHTML = '';
                 addMsg('me', b.text);
                 userChoices.push({ stage: currentStage, choice: b.label });
                 
-                // Reaction delay
                 setTimeout(() => {
                     addMsg(story[currentStage].role, b.reply);
                     setTimeout(() => unlockIDE(), 1000);
@@ -401,7 +388,6 @@ html_code = \"\"\"
         document.getElementById('mission-title').innerText = data.title;
         document.getElementById('mission-desc').innerText = data.desc;
         
-        // Setup Q1
         setupQuestion('q1', data.q1);
         setupQuestion('q2', data.q2);
     }
@@ -420,7 +406,6 @@ html_code = \"\"\"
                 const inp = document.getElementById(`${id}-input`);
                 inp.value = c.c;
                 inp.focus();
-                // Clear error on click
                 inp.classList.remove('error');
                 document.getElementById(`${id}-error`).style.display = 'none';
             };
@@ -447,13 +432,11 @@ html_code = \"\"\"
 
         if (!valid) return;
 
-        // Success -> Deploy Animation
         document.getElementById('ide-content').classList.add('hidden');
         document.getElementById('ide-overlay').style.display = 'flex';
-        document.getElementById('ide-overlay').innerHTML = `<h2 style="color:#4ec9b0">🚀 배포 중...</h2>`;
+        document.getElementById('ide-overlay').innerHTML = `<h2 style="color:#3794ff">🚀 배포 중...</h2>`;
         
         setTimeout(() => {
-            // Restore Overlay
             document.getElementById('ide-overlay').innerHTML = `<div class="lock-icon">🔒</div><div style="color:#888;">메신저를 확인하세요.</div>`;
             
             if (currentStage < 2) {
@@ -469,7 +452,6 @@ html_code = \"\"\"
         document.getElementById('report-screen').style.display = 'block';
         const content = document.getElementById('report-content');
         
-        // Analyze logic (Simple visualization of the path taken)
         const pathHTML = userChoices.map((c, i) => `
             <div class="stat-card" style="border-left: 5px solid ${i==2 ? '#9cdcfe' : '#ce9178'}">
                 <h3>Stage ${i+1}: ${['CEO', 'PM', 'Agent'][i]}</h3>
@@ -490,13 +472,7 @@ html_code = \"\"\"
 </script>
 </body>
 </html>
-\"\"\"
-
-components.html(html_code, height=950, scrolling=False)
 """
-with open(os.path.join(project_dir, "app.py"), "w", encoding="utf-8") as f:
-    f.write(app_code)
 
-print(f"✅ V7.0 생성 완료: {project_dir}")
-print("1. cd invisible_engineer_v7")
-print("2. streamlit run app.py")
+# 4. Streamlit Render (높이 1000px 고정)
+components.html(html_code, height=1000, scrolling=False)
