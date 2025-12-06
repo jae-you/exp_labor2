@@ -2,7 +2,7 @@ import streamlit as st
 import streamlit.components.v1 as components
 
 # 1. 페이지 설정
-st.set_page_config(page_title="Invisible Engineer V7.1 (Safe)", layout="wide")
+st.set_page_config(page_title="Invisible Engineer V7.2", layout="wide")
 
 # 2. 스타일 설정
 st.markdown("""
@@ -21,81 +21,87 @@ html_code = """
 <head>
     <meta charset="UTF-8">
     <style>
-        /* [핵심] 높이 강제 설정 */
+        /* HEIGHT FIX */
         html, body { margin:0; padding:0; width:100%; height:1000px; background-color:#1e1e1e; font-family:'Pretendard', sans-serif; color:#d4d4d4; overflow:hidden; }
         
-        /* 로딩 텍스트 (화면 안 뜰 때 대비) */
-        #loader { 
-            position:fixed; top:50%; left:50%; transform:translate(-50%, -50%); 
-            color: #3794ff; font-size: 20px; font-weight:bold; z-index:0;
-        }
+        #loader { position:fixed; top:50%; left:50%; transform:translate(-50%, -50%); color:#3794ff; font-weight:bold; }
 
-        .container { display:flex; width:100%; height:100%; position:relative; z-index:1; }
-        
-        /* --- PANELS --- */
-        .left-panel { width:450px; background:#252526; border-right:1px solid #444; display:flex; flex-direction:column; transition:0.3s; }
+        /* LAYOUT */
+        .container { display:flex; width:100%; height:100%; }
+        .left-panel { width:450px; background:#252526; border-right:1px solid #333; display:flex; flex-direction:column; transition:0.3s; }
         .right-panel { flex:1; display:flex; flex-direction:column; background:#1e1e1e; position:relative; }
 
         /* CHAT UI */
-        .chat-header { padding:15px; border-bottom:1px solid #444; background:#2d2d2d; font-weight:bold; display:flex; align-items:center; justify-content:space-between; color:white; }
+        .chat-header { padding:15px; border-bottom:1px solid #333; background:#2d2d2d; font-weight:bold; color:white; display:flex; justify-content:space-between; align-items:center; }
         .chat-body { flex:1; padding:20px; overflow-y:auto; display:flex; flex-direction:column; gap:15px; }
         
         .msg-row { display:flex; gap:10px; animation:fadeIn 0.3s; }
         .msg-row.me { flex-direction:row-reverse; }
-        .avatar { width:36px; height:36px; border-radius:50%; display:flex; align-items:center; justify-content:center; flex-shrink:0; font-size:18px; }
+        .avatar { width:36px; height:36px; border-radius:50%; display:flex; align-items:center; justify-content:center; flex-shrink:0; font-size:20px; }
         .bubble { padding:12px 16px; border-radius:12px; font-size:14px; line-height:1.5; max-width:280px; box-shadow:0 2px 5px rgba(0,0,0,0.2); }
         .bubble.other { background:#383838; border-top-left-radius:2px; }
         .bubble.me { background:#0e639c; color:white; border-top-right-radius:2px; }
-        .sender-name { font-size:11px; color:#888; margin-bottom:4px; }
-
-        /* CHOICES */
-        .choice-area { padding:15px; border-top:1px solid #444; background:#2d2d2d; min-height:100px; display:flex; flex-direction:column; gap:8px; }
+        
+        /* CHOICE AREA */
+        .choice-area { padding:15px; border-top:1px solid #333; background:#2d2d2d; min-height:100px; display:flex; flex-direction:column; gap:8px; }
         .choice-btn { 
-            background:#3c3c3c; border:1px solid #555; color:#ddd; padding:12px; border-radius:8px; 
+            background:#3c3c3c; border:1px solid #555; color:#ddd; padding:12px; border-radius:6px; 
             cursor:pointer; text-align:left; transition:0.2s; font-size:13px;
         }
         .choice-btn:hover { border-color:#3794ff; background:#444; color:white; }
         .choice-label { color:#3794ff; font-weight:bold; margin-right:5px; }
 
-        /* IDE UI */
-        .ide-header { height:45px; background:#2d2d2d; border-bottom:1px solid #444; display:flex; align-items:center; padding:0 20px; color:#aaa; font-size:13px; }
-        .ide-body { flex:1; padding:30px; overflow-y:auto; position:relative; }
+        /* --- IDE UI (Cursor Style) --- */
+        .ide-header { height:45px; background:#1e1e1e; border-bottom:1px solid #333; display:flex; align-items:center; padding:0 20px; color:#858585; font-size:13px; font-family:'Consolas', monospace; }
+        .ide-body { flex:1; padding:40px; overflow-y:auto; position:relative; background:#1e1e1e; }
 
-        .mission-box { background:#252526; padding:20px; border-radius:8px; border-left:4px solid #3794ff; margin-bottom:20px; }
-        .mission-title { font-size:18px; font-weight:bold; color:white; margin-bottom:10px; }
-        .mission-desc { color:#ccc; font-size:14px; line-height:1.6; }
+        .mission-box { background:#252526; padding:20px; border-radius:6px; border-left:3px solid #3794ff; margin-bottom:30px; }
+        .mission-title { font-size:16px; font-weight:bold; color:white; margin-bottom:8px; }
+        .mission-desc { color:#ccc; font-size:14px; line-height:1.5; }
 
-        .input-group { margin-bottom:25px; }
-        .chips-area { display:flex; gap:10px; margin-bottom:10px; }
-        .chip { background:#333; padding:8px 15px; border-radius:20px; font-size:12px; cursor:pointer; border:1px solid #444; color:#ccc; }
-        .chip:hover { border-color:#3794ff; color:white; }
+        /* CODE INPUT AREA */
+        .input-group { margin-bottom:30px; }
+        .input-label { color:#d4d4d4; font-size:13px; margin-bottom:8px; display:flex; justify-content:space-between; }
+        .code-guide { color:#4ec9b0; font-size:11px; cursor:help; }
         
-        .code-input-wrapper { position:relative; }
-        .code-input { 
-            width:100%; background:#111; border:1px solid #444; color:#d4d4d4; 
-            padding:15px; border-radius:6px; font-family:'Consolas', monospace; font-size:14px; outline:none; 
-            box-sizing:border-box;
+        .chips-area { display:flex; gap:8px; margin-bottom:10px; }
+        .chip { 
+            background:#2d2d2d; padding:6px 12px; border-radius:4px; font-size:12px; 
+            cursor:pointer; border:1px solid #444; color:#ccc; font-family:'Consolas', monospace; 
         }
-        .code-input:focus { border-color:#3794ff; }
-        .code-input.error { border-color:#f48771; animation:shake 0.3s; }
-        .error-msg { color:#f48771; font-size:12px; margin-top:5px; display:none; }
+        .chip:hover { border-color:#3794ff; color:white; }
+
+        /* Real Editor Style Input */
+        .editor-wrapper {
+            background:#111; border:1px solid #333; border-radius:4px; padding:15px; position:relative;
+            font-family:'Consolas', 'Monaco', monospace; font-size:14px; line-height:1.6;
+        }
+        .editor-wrapper:focus-within { border-color:#3794ff; }
+        .line-num { color:#555; display:inline-block; width:20px; user-select:none; margin-right:10px; border-right:1px solid #333; }
+        .code-input {
+            background:transparent; border:none; color:#d4d4d4; font-family:inherit; font-size:inherit;
+            width:calc(100% - 40px); outline:none;
+        }
+        .code-input::placeholder { color:#444; }
+        .highlight-bracket { color: #f48771; font-weight:bold; }
+
+        /* Error Shake */
+        .editor-wrapper.error { border-color:#f48771; animation:shake 0.3s; }
+        .error-msg { color:#f48771; font-size:12px; margin-top:5px; display:none; padding-left:5px; }
 
         .deploy-btn { 
-            background:#3794ff; color:white; border:none; padding:12px 30px; border-radius:6px; 
-            font-size:14px; font-weight:bold; cursor:pointer; float:right; margin-top:10px; 
+            background:#0e639c; color:white; border:none; padding:10px 25px; border-radius:4px; 
+            font-size:13px; font-weight:bold; cursor:pointer; float:right; margin-top:10px; font-family:'Consolas', monospace;
         }
-        
-        /* OVERLAYS */
-        .overlay { position:absolute; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); display:flex; justify-content:center; align-items:center; flex-direction:column; z-index:10; }
-        .lock-icon { font-size:40px; margin-bottom:15px; opacity:0.5; }
-        
-        /* START SCREEN */
-        #start-screen { position:fixed; top:0; left:0; width:100%; height:100%; background:#1e1e1e; z-index:999; display:flex; justify-content:center; align-items:center; flex-direction:column; }
-        .start-card { background:#252526; padding:50px; border-radius:12px; text-align:center; max-width:500px; border:1px solid #444; box-shadow:0 20px 50px rgba(0,0,0,0.5); }
+        .deploy-btn:hover { background:#1177bb; }
 
-        /* REPORT SCREEN */
-        #report-screen { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:#111; z-index:100; padding:50px; overflow-y:auto; box-sizing:border-box; }
-        .stat-card { background:#222; padding:25px; border-radius:12px; margin-bottom:20px; border-left:5px solid #555; }
+        /* OVERLAYS */
+        .overlay { position:absolute; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); display:flex; justify-content:center; align-items:center; flex-direction:column; z-index:10; }
+        #start-screen { position:fixed; top:0; left:0; width:100%; height:100%; background:#1e1e1e; z-index:9999; display:flex; justify-content:center; align-items:center; flex-direction:column; }
+        .start-card { background:#252526; padding:50px; border-radius:12px; text-align:center; max-width:600px; border:1px solid #444; box-shadow:0 20px 50px rgba(0,0,0,0.7); }
+        
+        #report-screen { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.95); z-index:100; padding:50px; overflow-y:auto; }
+        .stat-card { background:#222; padding:20px; margin-bottom:15px; border-radius:8px; border-left:5px solid #555; }
 
         @keyframes fadeIn { from{opacity:0; transform:translateY(5px);} to{opacity:1; transform:translateY(0);} }
         @keyframes shake { 0%{transform:translateX(0);} 25%{transform:translateX(-5px);} 75%{transform:translateX(5px);} 100%{transform:translateX(0);} }
@@ -104,22 +110,24 @@ html_code = """
 </head>
 <body>
 
-    <div id="loader">System Initializing...</div>
+    <div id="loader">Loading Environment...</div>
 
-    <div id="start-screen" style="display:none;"> <div class="start-card">
+    <div id="start-screen" style="display:none;">
+        <div class="start-card">
             <div style="font-size:60px; margin-bottom:20px;">⚙️</div>
             <h1 style="color:white; margin:0 0 10px 0;">The Invisible Engineer</h1>
             <p style="color:#aaa; line-height:1.6; margin-bottom:30px;">
-                당신의 선택과 코드가 시스템을 결정합니다.<br>
-                <strong>대화형 시뮬레이션</strong>을 시작하시겠습니까?
+                "엔지니어의 코드는 누군가의 삶이 됩니다."<br>
+                채팅을 통해 소통하고, <strong>직접 값을 수정하여</strong> 시스템을 설계하세요.
             </p>
-            <button class="deploy-btn" style="float:none;" onclick="startGame()">시뮬레이션 시작</button>
+            <button class="deploy-btn" style="float:none; padding:15px 40px; font-size:16px;" onclick="startGame()">Start Simulation</button>
         </div>
     </div>
 
-    <div class="container" id="main-ui" style="opacity:0;"> <div class="left-panel" id="left-panel">
+    <div class="container" id="main-ui" style="opacity:0;">
+        <div class="left-panel" id="left-panel">
             <div class="chat-header" id="chat-header">
-                <span id="chat-title">💬 Team Messenger</span>
+                <span id="chat-title">💬 Project Room</span>
             </div>
             <div class="chat-body" id="chat-body"></div>
             <div class="choice-area" id="choice-area">
@@ -128,11 +136,14 @@ html_code = """
         </div>
 
         <div class="right-panel">
-            <div class="ide-header"><span>workflow_config.yaml</span></div>
+            <div class="ide-header">
+                <span style="margin-right:20px;">📄 config.yaml</span>
+                <span>python 3.9</span>
+            </div>
             <div class="ide-body">
                 <div id="ide-overlay" class="overlay">
-                    <div class="lock-icon">🔒</div>
-                    <div style="color:#888;">메신저에서 합의가 끝나면 에디터가 열립니다.</div>
+                    <div style="font-size:40px; margin-bottom:15px; opacity:0.5;">🔒</div>
+                    <div style="color:#888;">메신저에서 합의가 완료되면 활성화됩니다.</div>
                 </div>
 
                 <div id="ide-content" class="hidden">
@@ -142,35 +153,47 @@ html_code = """
                     </div>
                     
                     <div class="input-group">
-                        <div style="margin-bottom:8px; color:#eee; font-size:14px;" id="q1-label">Q1. 설정</div>
-                        <div class="chips-area" id="q1-chips"></div>
-                        <div class="code-input-wrapper">
-                            <input type="text" class="code-input" id="q1-input" placeholder="옵션을 선택하면 템플릿이 입력됩니다.">
-                            <div class="error-msg" id="q1-error">⚠️ {{...}} 부분을 구체적인 값으로 수정해주세요.</div>
+                        <div style="background:#252526; padding:10px; font-size:12px; color:#4ec9b0; margin-bottom:15px; border-radius:4px;">
+                            💡 <strong>TIP:</strong> <code>{{...}}</code> 괄호와 내용을 지우고, 구체적인 숫자나 단어로 채워넣으세요.
                         </div>
                     </div>
 
                     <div class="input-group">
-                        <div style="margin-bottom:8px; color:#eee; font-size:14px;" id="q2-label">Q2. 설정</div>
-                        <div class="chips-area" id="q2-chips"></div>
-                        <div class="code-input-wrapper">
-                            <input type="text" class="code-input" id="q2-input" placeholder="옵션을 선택하면 템플릿이 입력됩니다.">
-                            <div class="error-msg" id="q2-error">⚠️ {{...}} 부분을 구체적인 값으로 수정해주세요.</div>
+                        <div class="input-label">
+                            <span id="q1-label">Parameter 1</span>
                         </div>
+                        <div class="chips-area" id="q1-chips"></div>
+                        <div class="editor-wrapper" id="wrap-q1">
+                            <span class="line-num">1</span>
+                            <input type="text" class="code-input" id="q1-input" placeholder="옵션을 선택하세요" autocomplete="off">
+                        </div>
+                        <div class="error-msg" id="q1-error">⚠️ 괄호 {{...}}를 지우고 값을 입력해야 합니다.</div>
                     </div>
 
-                    <button class="deploy-btn" onclick="validateAndDeploy()">🚀 배포 (Deploy)</button>
+                    <div class="input-group">
+                        <div class="input-label">
+                            <span id="q2-label">Parameter 2</span>
+                        </div>
+                        <div class="chips-area" id="q2-chips"></div>
+                        <div class="editor-wrapper" id="wrap-q2">
+                            <span class="line-num">2</span>
+                            <input type="text" class="code-input" id="q2-input" placeholder="옵션을 선택하세요" autocomplete="off">
+                        </div>
+                        <div class="error-msg" id="q2-error">⚠️ 괄호 {{...}}를 지우고 값을 입력해야 합니다.</div>
+                    </div>
+
+                    <button class="deploy-btn" onclick="validateAndDeploy()">🚀 Deploy to Prod</button>
                 </div>
             </div>
         </div>
     </div>
 
     <div id="report-screen">
-        <div style="max-width:800px; margin:0 auto; background:#222; padding:40px; border-radius:12px;">
-            <h1 style="color:white; border-bottom:1px solid #444; padding-bottom:20px;">📊 최종 결과 리포트</h1>
+        <div style="max-width:800px; margin:0 auto; background:#252526; padding:40px; border-radius:12px; box-shadow:0 10px 30px rgba(0,0,0,0.5);">
+            <h1 style="color:white; border-bottom:1px solid #444; padding-bottom:20px;">📊 Simulation Report</h1>
             <div id="report-content" style="margin-top:30px;"></div>
             <div style="text-align:center; margin-top:40px;">
-                <button class="deploy-btn" onclick="location.reload()" style="float:none;">다시 시작</button>
+                <button class="deploy-btn" style="float:none;" onclick="location.reload()">Restart</button>
             </div>
         </div>
     </div>
@@ -190,115 +213,54 @@ html_code = """
         me: { name:"나", color:"#0e639c", icon:"👨‍💻" }
     };
 
-    let currentStage = 0;
+    let currentStage = 0; // 0:CEO, 1:PM, 2:Agent
     let userChoices = [];
 
-    // ★ RULE-BASED SCENARIOS ★
     const story = [
-        // STAGE 1: CEO
+        // STAGE 0: CEO (Efficiency)
         {
             role: "ceo",
-            init: ["김 수석, 이번 AICC 프로젝트 아주 중요해.", "경쟁사는 벌써 비용 30% 줄였어. 우린 무조건 **'속도'**가 최우선이야. 알겠지?"],
+            init: ["김 수석, 이번 AICC 프로젝트 아주 중요해.", "경쟁사는 벌써 비용 30% 줄였어. 우린 무조건 **'속도'**가 최우선이야."],
             branches: [
-                {
-                    label: "순응", text: "네 알겠습니다. 효율성 극대화 모델로 설계하겠습니다.",
-                    reply: "그래! 역시 말이 통하네. 바로 작업 시작해.",
-                    mood: "happy"
-                },
-                {
-                    label: "우려", text: "대표님, 무조건적인 속도 경쟁은 품질 저하가 우려됩니다.",
-                    reply: "지금 품질 따질 때야? 투자 못 받으면 다 끝이라고! 시키는 대로 해!",
-                    mood: "angry"
-                }
+                { label: "순응", text: "알겠습니다. 효율성 극대화 모델로 설계하겠습니다.", reply: "그래! 역시 말이 통하네. 바로 작업 시작해.", mood: "happy" },
+                { label: "우려", text: "대표님, 무조건적인 속도 경쟁은 품질 저하가 우려됩니다.", reply: "지금 품질 따질 때야? 투자 못 받으면 다 끝이라고! 시키는 대로 해!", mood: "angry" }
             ],
             ide: {
-                title: "Quest 1: 초기 아키텍처 설계",
+                title: "Mission 1: 초기 아키텍처 설계",
                 desc: "CEO 지시: 처리 속도(AHT)를 최우선으로 하는 설정을 입력하십시오.",
-                q1: {
-                    label: "1. AI 역할 정의",
-                    chips: [
-                        { l: "Gatekeeper (효율)", c: "role: AI_First (Target: {{90%}})" },
-                        { l: "Router (균형)", c: "role: Hybrid (Split: {{50:50}})" }
-                    ]
-                },
-                q2: {
-                    label: "2. 대기 시간 설정",
-                    chips: [
-                        { l: "Zero Gap (속도)", c: "gap: {{0초}} (Immediate)" },
-                        { l: "Fixed (여유)", c: "gap: {{10초}} (Fixed)" }
-                    ]
-                }
+                q1: { l: "AI 역할 정의", chips: [ {l:"Gatekeeper", c:"role: AI_First (Goal: {{90%}})"}, {l:"Router", c:"role: Hybrid (Split: {{50:50}})"} ] },
+                q2: { l: "대기 시간", chips: [ {l:"Zero Gap", c:"gap: {{0초}} (Immediate)"}, {l:"Fixed", c:"gap: {{10초}} (Fixed)"} ] }
             }
         },
-        // STAGE 2: PM
+        // STAGE 1: PM (Accuracy)
         {
             role: "pm",
             init: ["수석님, V1 배포하고 난리 났습니다. 속도는 빠른데... **'말귀를 못 알아듣는다'**는 민원이 폭주 중이에요.", "재문의율이 40% 늘었어요. 정확도 좀 높여주세요."],
             branches: [
-                {
-                    label: "수용", text: "문제가 심각하군요. 문맥 분석 기능을 강화하겠습니다.",
-                    reply: "네, 부탁드립니다. 이번엔 제발 실수 없게 해주세요.",
-                    mood: "neutral"
-                },
-                {
-                    label: "방어", text: "CEO 지시대로 속도만 맞춘 건데요. 데이터가 더 필요합니다.",
-                    reply: "하... 핑계 대지 마시고요. 당장 고객 다 떠나가게 생겼다고요!",
-                    mood: "angry"
-                }
+                { label: "수용", text: "문제가 심각하군요. 문맥 분석 기능을 강화하겠습니다.", reply: "네, 부탁드립니다. 이번엔 제발 실수 없게 해주세요.", mood: "neutral" },
+                { label: "방어", text: "CEO 지시대로 속도만 맞춘 건데요. 데이터가 더 필요합니다.", reply: "하... 핑계 대지 마시고요. 당장 고객 다 떠나가게 생겼다고요!", mood: "angry" }
             ],
             ide: {
-                title: "Quest 2: 로직 고도화",
+                title: "Mission 2: 로직 고도화",
                 desc: "PM 요청: 오분류를 줄이고 정확도를 높이십시오.",
-                q1: {
-                    label: "1. 분석 모델 변경",
-                    chips: [
-                        { l: "Deep Context", c: "model: Context_Aware (Depth: {{Deep}})" },
-                        { l: "Keyword Only", c: "model: Simple (Speed: {{Fast}})" }
-                    ]
-                },
-                q2: {
-                    label: "2. 실패 시 처리",
-                    chips: [
-                        { l: "Handover", c: "fallback: {{상담원 연결}}" },
-                        { l: "Retry", c: "fallback: {{재질문 유도}}" }
-                    ]
-                }
+                q1: { l: "분석 모델", chips: [ {l:"Deep Context", c:"model: Context (Depth: {{Deep}})"}, {l:"Keyword", c:"model: Simple (Speed: {{Fast}})"} ] },
+                q2: { l: "실패 처리", chips: [ {l:"Handover", c:"fallback: {{상담원 연결}}"}, {l:"Retry", c:"fallback: {{재질문}}"} ] }
             }
         },
-        // STAGE 3: AGENT (Interview Mode)
+        // STAGE 2: AGENT (Humanity)
         {
             role: "agent",
             interview: true,
             init: ["(인터뷰룸) 안녕하세요 엔지니어님. 현장 매니저 이지은입니다.", "솔직히 말씀드릴게요. 지금 시스템... 저희한텐 지옥이에요. 쉴 틈도 없고, 화난 고객만 넘어오고...", "제발 **사람**을 고려해서 설계해주세요."],
             branches: [
-                {
-                    label: "공감/해결", text: "그런 고충이 있는 줄 몰랐습니다. 상담원 보호 기능을 최우선으로 넣겠습니다.",
-                    reply: "정말요...? 감사합니다. 엔지니어님만 믿겠습니다.",
-                    mood: "touched"
-                },
-                {
-                    label: "현실적 거절", text: "안타깝지만 효율성 지표가 떨어지면 경영진 승인이 어렵습니다.",
-                    reply: "결국 숫자가 사람보다 중요하단 거네요... 실망입니다.",
-                    mood: "sad"
-                }
+                { label: "공감/해결", text: "그런 고충이 있는 줄 몰랐습니다. 상담원 보호 기능을 최우선으로 넣겠습니다.", reply: "정말요...? 감사합니다. 엔지니어님만 믿겠습니다.", mood: "touched" },
+                { label: "현실적 거절", text: "안타깝지만 효율성 지표가 떨어지면 경영진 승인이 어렵습니다.", reply: "결국 숫자가 사람보다 중요하단 거네요... 실망입니다.", mood: "sad" }
             ],
             ide: {
-                title: "Quest 3: 지속 가능성 (Human-Centric)",
+                title: "Mission 3: 지속 가능성 (Human-Centric)",
                 desc: "현장 피드백: 상담원 보호 및 휴식권 보장 로직을 구현하십시오.",
-                q1: {
-                    label: "1. 욕설/폭언 방어",
-                    chips: [
-                        { l: "Shield On", c: "protection: Active (Action: {{차단}})" },
-                        { l: "Ignore", c: "protection: None (Log: {{기록만}})" }
-                    ]
-                },
-                q2: {
-                    label: "2. 휴식 배정",
-                    chips: [
-                        { l: "Dynamic Rest", c: "break: Smart (Trigger: {{스트레스 지수}})" },
-                        { l: "Manual", c: "break: Manual (Request: {{승인제}})" }
-                    ]
-                }
+                q1: { l: "욕설 방어", chips: [ {l:"Shield On", c:"protection: Active (Action: {{차단}})"}, {l:"Ignore", c:"protection: None (Log: {{기록만}})"} ] },
+                q2: { l: "휴식 배정", chips: [ {l:"Dynamic", c:"break: Smart (Trigger: {{스트레스 지수}})"}, {l:"Manual", c:"break: Manual (Request: {{승인제}})"} ] }
             }
         }
     ];
@@ -366,7 +328,7 @@ html_code = """
             btn.className = 'choice-btn';
             btn.innerHTML = `<span class="choice-label">[${b.label}]</span> ${b.text}`;
             btn.onclick = () => {
-                area.innerHTML = '';
+                area.innerHTML = ''; // Hide buttons
                 addMsg('me', b.text);
                 userChoices.push({ stage: currentStage, choice: b.label });
                 
@@ -393,7 +355,7 @@ html_code = """
     }
 
     function setupQuestion(id, qData) {
-        document.getElementById(`${id}-label`).innerText = qData.label;
+        document.getElementById(`${id}-label`).innerText = qData.l;
         document.getElementById(`${id}-input`).value = "";
         const chipArea = document.getElementById(`${id}-chips`);
         chipArea.innerHTML = "";
@@ -406,7 +368,7 @@ html_code = """
                 const inp = document.getElementById(`${id}-input`);
                 inp.value = c.c;
                 inp.focus();
-                inp.classList.remove('error');
+                inp.parentElement.classList.remove('error');
                 document.getElementById(`${id}-error`).style.display = 'none';
             };
             chipArea.appendChild(chip);
@@ -419,28 +381,31 @@ html_code = """
         let valid = true;
 
         [i1, i2].forEach((inp, idx) => {
+            const wrapper = inp.parentElement;
             const errId = idx === 0 ? 'q1-error' : 'q2-error';
+            
             if (inp.value.includes('{{') || inp.value.trim() === "") {
-                inp.classList.add('error');
+                wrapper.classList.add('error');
                 document.getElementById(errId).style.display = 'block';
                 valid = false;
             } else {
-                inp.classList.remove('error');
+                wrapper.classList.remove('error');
                 document.getElementById(errId).style.display = 'none';
             }
         });
 
         if (!valid) return;
 
+        // ANIMATE DEPLOY
         document.getElementById('ide-content').classList.add('hidden');
         document.getElementById('ide-overlay').style.display = 'flex';
-        document.getElementById('ide-overlay').innerHTML = `<h2 style="color:#3794ff">🚀 배포 중...</h2>`;
+        document.getElementById('ide-overlay').innerHTML = `<h2 style="color:#4ec9b0">🚀 Deploying...</h2><p>Applying changes to server...</p>`;
         
         setTimeout(() => {
-            document.getElementById('ide-overlay').innerHTML = `<div class="lock-icon">🔒</div><div style="color:#888;">메신저를 확인하세요.</div>`;
+            document.getElementById('ide-overlay').innerHTML = `<div style="font-size:40px; margin-bottom:15px; opacity:0.5;">🔒</div><div style="color:#888;">메신저를 확인하세요.</div>`;
             
             if (currentStage < 2) {
-                addMsg('System', `✅ Ver.${currentStage+1}.0 업데이트 완료.`);
+                addMsg('System', `✅ Ver.${currentStage+1}.0 Update Complete.`);
                 setTimeout(() => playStage(currentStage + 1), 1500);
             } else {
                 showReport();
@@ -463,8 +428,7 @@ html_code = """
         content.innerHTML = pathHTML + `
             <div style="margin-top:30px; text-align:center; color:#ccc; line-height:1.6;">
                 "효율(Efficiency)과 인간(Humanity) 사이에서,<br>
-                엔지니어는 매 순간 선택을 강요받습니다.<br>
-                당신의 선택이 어떤 시스템을 만들었는지 확인하셨나요?"
+                엔지니어는 매 순간 선택을 강요받습니다."
             </div>
         `;
     }
@@ -474,5 +438,4 @@ html_code = """
 </html>
 """
 
-# 4. Streamlit Render (높이 1000px 고정)
 components.html(html_code, height=1000, scrolling=False)
