@@ -2,7 +2,7 @@ import streamlit as st
 import streamlit.components.v1 as components
 
 # 1. 페이지 설정
-st.set_page_config(page_title="Invisible Engineer V8.5", layout="wide")
+st.set_page_config(page_title="Invisible Engineer V8.6", layout="wide")
 
 # 2. 스타일 설정
 st.markdown("""
@@ -21,7 +21,7 @@ html_code = """
 <head>
     <meta charset="UTF-8">
     <style>
-        /* HEIGHT FIX */
+        /* CORE CSS */
         * { box-sizing: border-box; }
         html, body { margin:0; padding:0; width:100%; height:100vh; background-color:#1e1e1e; font-family:'Pretendard', sans-serif; color:#d4d4d4; overflow:hidden; }
         
@@ -59,46 +59,46 @@ html_code = """
         .mission-title { font-size:15px; font-weight:bold; color:white; margin-bottom:5px; }
         .mission-desc { color:#ccc; font-size:13px; line-height:1.5; }
 
-        /* GRID LAYOUT */
-        .config-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px; }
-        .config-item { display: flex; flex-direction: column; }
-        .section-label { color:#4ec9b0; font-size:11px; font-weight:bold; margin-bottom:6px; font-family:'Consolas', monospace; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+        /* CONFIG STACK */
+        .config-container { display:flex; flex-direction:column; gap:30px; margin-bottom:50px; }
+        .config-item { display: flex; flex-direction: column; border-bottom:1px solid #333; padding-bottom:20px; }
+        .config-item:last-child { border-bottom:none; }
+        .section-label { color:#4ec9b0; font-size:13px; font-weight:bold; margin-bottom:8px; font-family:'Consolas', monospace; display:block;}
         
-        .chips-area { display:flex; gap:6px; margin-bottom:6px; flex-wrap:wrap; }
-        .chip { background:#2d2d2d; padding:5px 10px; border-radius:4px; font-size:11px; cursor:pointer; border:1px solid #444; color:#ccc; font-family:'Pretendard', sans-serif; }
+        .chips-area { display:flex; gap:8px; margin-bottom:8px; flex-wrap:wrap; }
+        .chip { background:#2d2d2d; padding:6px 12px; border-radius:4px; font-size:12px; cursor:pointer; border:1px solid #444; color:#ccc; font-family:'Pretendard', sans-serif; }
         .chip:hover { border-color:#3794ff; color:white; }
 
         .editor-wrapper {
-            background:#111; border:1px solid #333; border-radius:4px; padding:10px; position:relative;
-            font-family:'Pretendard', sans-serif; font-size:13px; line-height:1.5; display:flex; align-items:center;
+            background:#111; border:1px solid #333; border-radius:4px; padding:12px; position:relative;
+            font-family:'Pretendard', sans-serif; font-size:14px; line-height:1.5; display:flex; align-items:center;
         }
         .editor-wrapper:focus-within { border-color:#3794ff; }
-        .line-num { color:#555; width:15px; text-align:right; margin-right:10px; border-right:1px solid #333; height:100%; font-family:'Consolas', monospace; font-size:11px;}
+        .line-num { color:#555; width:20px; text-align:right; margin-right:15px; border-right:1px solid #333; height:100%; font-family:'Consolas', monospace; font-size:12px;}
         .code-input { background:transparent; border:none; color:#d4d4d4; font-family:inherit; font-size:inherit; flex:1; outline:none; width: 100%; }
         .code-input::placeholder { color:#444; font-style:italic; }
         .editor-wrapper.error { border-color:#f48771; animation:shake 0.3s; }
 
         .deploy-btn { 
             background:#0e639c; color:white; border:none; padding:12px 30px; border-radius:4px; 
-            font-size:13px; font-weight:bold; cursor:pointer; float:right; margin-top:10px; font-family:'Consolas', monospace;
+            font-size:13px; font-weight:bold; cursor:pointer; float:right; margin-top:20px; font-family:'Consolas', monospace;
         }
         .deploy-btn:hover { background:#1177bb; }
 
-        /* OVERLAYS */
+        /* OVERLAYS & REPORT */
         .overlay { position:absolute; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); display:flex; justify-content:center; align-items:center; flex-direction:column; z-index:10; }
         #start-screen { position:fixed; top:0; left:0; width:100%; height:100%; background:#1e1e1e; z-index:9999; display:flex; justify-content:center; align-items:center; flex-direction:column; }
         .start-card { background:#252526; padding:40px; border-radius:12px; text-align:center; max-width:600px; border:1px solid #444; box-shadow:0 20px 50px rgba(0,0,0,0.7); }
         
-        /* REPORT SCREEN */
         #report-screen { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.98); z-index:100; padding:40px; overflow-y:auto; box-sizing:border-box; }
-        .timeline-container { display:flex; gap:15px; justify-content:center; flex-wrap:wrap; padding-bottom:30px; }
-        .persona-card { background:#252526; border-radius:12px; width:280px; padding:20px; flex-shrink:0; border:1px solid #444; position:relative; margin:5px; }
+        .timeline-container { display:flex; gap:20px; justify-content:center; flex-wrap:wrap; padding-bottom:30px; }
+        .persona-card { background:#252526; border-radius:12px; width:280px; padding:25px; flex-shrink:0; border:1px solid #444; position:relative; margin:10px; }
         
         .destiny-card { background:#252526; border:1px solid #444; border-left:6px solid; padding:25px; border-radius:8px; max-width:800px; margin:0 auto 30px auto; text-align:left; }
-        .destiny-year { font-size:32px; font-weight:bold; color:white; margin-bottom:5px; }
-        .destiny-desc { font-size:14px; color:#ccc; line-height:1.5; }
+        .destiny-year { font-size:36px; font-weight:bold; color:white; margin-bottom:5px; }
+        .destiny-desc { font-size:15px; color:#ccc; line-height:1.6; }
 
-        .stat-group { margin-bottom:10px; }
+        .stat-group { margin-bottom:12px; }
         .stat-label { font-size:11px; color:#888; display:flex; justify-content:space-between; margin-bottom:2px; }
         .stat-track { height:5px; background:#111; border-radius:3px; overflow:hidden; }
         .stat-fill { height:100%; border-radius:3px; transition:width 1s; }
@@ -121,7 +121,7 @@ html_code = """
             <h2 style="color:white; margin:0 0 10px 0;">The Invisible Engineer</h2>
             <p style="color:#aaa; font-size:14px; line-height:1.5; margin-bottom:25px;">
                 콜센터 AI 솔루션 설계 시뮬레이션입니다.<br>
-                대화를 통해 상황을 파악하고, <strong>6가지 핵심 변수</strong>를 직접 설정하세요.
+                당신의 <strong>기술적 결정</strong>이 노동 환경을 어떻게 변화시키는지 확인하세요.
             </p>
             <button class="deploy-btn" style="float:none; padding:12px 30px;" onclick="startGame()">Start Simulation</button>
         </div>
@@ -156,63 +156,64 @@ html_code = """
                         <div class="mission-desc" id="mission-desc">Desc</div>
                     </div>
                     
-                    <div style="background:#252526; padding:8px; font-size:11px; color:#dcdcaa; margin-bottom:15px; border-radius:4px; border:1px solid #444;">
-                        💡 <strong>Tip:</strong> 대괄호 <code>[...]</code>를 지우고 자연어 프롬프트를 완성하세요.
+                    <div style="background:#252526; padding:8px; font-size:11px; color:#dcdcaa; margin-bottom:20px; border-radius:4px; border:1px solid #444;">
+                        💡 <strong>Tip:</strong> 대괄호 <code>[...]</code>를 포함하여 내용을 모두 지우고 자연어로 입력하세요.
                     </div>
 
-                    <div class="config-grid">
+                    <div class="config-container">
+                        
                         <div class="config-item">
                             <label class="section-label">1. AI 개입 방식 (Intervention)</label>
                             <div class="chips-area" id="q1-chips"></div>
-                            <div class="editor-wrapper">
-                                <span class="line-num">1</span>
-                                <input type="text" class="code-input" id="q1-input" placeholder="Chip 클릭" autocomplete="off">
-                            </div>
+                            <div class="editor-wrapper"><span class="line-num">1</span><input type="text" class="code-input" id="q1-input" placeholder="Chip 선택" autocomplete="off"></div>
                         </div>
+
                         <div class="config-item">
                             <label class="section-label">2. 스크립트 강제성 (Enforcement)</label>
                             <div class="chips-area" id="q2-chips"></div>
-                            <div class="editor-wrapper">
-                                <span class="line-num">2</span>
-                                <input type="text" class="code-input" id="q2-input" placeholder="Chip 클릭" autocomplete="off">
-                            </div>
+                            <div class="editor-wrapper"><span class="line-num">2</span><input type="text" class="code-input" id="q2-input" placeholder="Chip 선택" autocomplete="off"></div>
                         </div>
+
                         <div class="config-item">
                             <label class="section-label">3. 역량 지원 (Skill Support)</label>
                             <div class="chips-area" id="q3-chips"></div>
-                            <div class="editor-wrapper">
-                                <span class="line-num">3</span>
-                                <input type="text" class="code-input" id="q3-input" placeholder="Chip 클릭" autocomplete="off">
-                            </div>
+                            <div class="editor-wrapper"><span class="line-num">3</span><input type="text" class="code-input" id="q3-input" placeholder="Chip 선택" autocomplete="off"></div>
                         </div>
+
                         <div class="config-item">
                             <label class="section-label">4. 진상 고객 배분 (Allocation)</label>
                             <div class="chips-area" id="q4-chips"></div>
-                            <div class="editor-wrapper">
-                                <span class="line-num">4</span>
-                                <input type="text" class="code-input" id="q4-input" placeholder="Chip 클릭" autocomplete="off">
-                            </div>
+                            <div class="editor-wrapper"><span class="line-num">4</span><input type="text" class="code-input" id="q4-input" placeholder="Chip 선택" autocomplete="off"></div>
                         </div>
+
                         <div class="config-item">
                             <label class="section-label">5. 연결 속도 (Pacing)</label>
                             <div class="chips-area" id="q5-chips"></div>
-                            <div class="editor-wrapper">
-                                <span class="line-num">5</span>
-                                <input type="text" class="code-input" id="q5-input" placeholder="Chip 클릭" autocomplete="off">
-                            </div>
+                            <div class="editor-wrapper"><span class="line-num">5</span><input type="text" class="code-input" id="q5-input" placeholder="Chip 선택" autocomplete="off"></div>
                         </div>
+
                         <div class="config-item">
                             <label class="section-label">6. 보호 장치 (Safety)</label>
                             <div class="chips-area" id="q6-chips"></div>
-                            <div class="editor-wrapper">
-                                <span class="line-num">6</span>
-                                <input type="text" class="code-input" id="q6-input" placeholder="Chip 클릭" autocomplete="off">
-                            </div>
+                            <div class="editor-wrapper"><span class="line-num">6</span><input type="text" class="code-input" id="q6-input" placeholder="Chip 선택" autocomplete="off"></div>
                         </div>
+
+                        <div class="config-item">
+                            <label class="section-label">7. 성과 평가 주체 (Evaluation)</label>
+                            <div class="chips-area" id="q7-chips"></div>
+                            <div class="editor-wrapper"><span class="line-num">7</span><input type="text" class="code-input" id="q7-input" placeholder="Chip 선택" autocomplete="off"></div>
+                        </div>
+
+                        <div class="config-item">
+                            <label class="section-label">8. 상담원 연결 장벽 (Accessibility)</label>
+                            <div class="chips-area" id="q8-chips"></div>
+                            <div class="editor-wrapper"><span class="line-num">8</span><input type="text" class="code-input" id="q8-input" placeholder="Chip 선택" autocomplete="off"></div>
+                        </div>
+
                     </div>
 
                     <div style="color:#f48771; font-size:11px; margin-top:5px; display:none;" id="global-error">
-                        ⚠️ 오류: 모든 항목의 대괄호 [...]를 지우고 구체적인 값을 입력해야 합니다.
+                        ⚠️ 오류: 모든 항목의 대괄호 [...]를 지우고 값을 입력해야 합니다.
                     </div>
                     <button class="deploy-btn" onclick="validateAndDeploy()">🚀 Apply Changes</button>
                 </div>
@@ -223,7 +224,7 @@ html_code = """
     <div id="report-screen">
         <div style="max-width:1000px; margin:0 auto;">
             <h1 style="color:white; text-align:center; margin-bottom:10px;">📊 Simulation Result</h1>
-            <p style="color:#888; text-align:center; margin-bottom:30px;">당신의 설계가 바꾼 노동자의 미래</p>
+            <p style="color:#888; text-align:center; margin-bottom:30px;">설계 변경에 따른 노동 환경 변화 보고서</p>
             
             <div id="destiny-container"></div>
             <div id="timeline" class="timeline-container"></div>
@@ -255,14 +256,16 @@ html_code = """
     let currentStage = 0; 
     let userChoices = [];
 
-    // --- TEMPLATE & SCENARIO ---
+    // --- TEMPLATE (8 Questions) ---
     const qDataTemplate = {
         q1: { chips: [{l:"AI 대리응답", c:"단순 문의는 AI가 [직접 답변]하고 종결하세요."}, {l:"인간 보조", c:"상담원이 답변하도록 AI는 [검색]만 지원하세요."}] },
         q2: { chips: [{l:"스크립트 강제", c:"상담원이 AI가 띄운 대본을 [그대로 읽도록] 유도하세요."}, {l:"자율성 부여", c:"상담원이 AI 제안을 [수정/거부]할 수 있게 하세요."}] },
         q3: { chips: [{l:"정답 제시", c:"가장 확률 높은 [정답 1개]만 화면에 표시하세요."}, {l:"코칭/팁", c:"정답 대신 [협상 전략]이나 [해결 팁]을 제공하세요."}] },
         q4: { chips: [{l:"진상 필터링", c:"욕설/악성 고객은 상담원 연결 전 [차단]하세요."}, {l:"무조건 연결", c:"모든 고객을 상담원에게 [연결]하세요."}] },
         q5: { chips: [{l:"0초 연결", c:"상담 종료 즉시 [0초] 만에 다음 콜을 연결하세요."}, {l:"휴식 보장", c:"콜 사이에 [30초]의 정리 시간을 보장하세요."}] },
-        q6: { chips: [{l:"기록만", c:"폭언 발생 시 별도 조치 없이 [녹취]만 하세요."}, {l:"강제 종료", c:"폭언 지속 시 AI가 개입해 [통화 종료]하세요."}] }
+        q6: { chips: [{l:"기록만", c:"폭언 발생 시 별도 조치 없이 [녹취]만 하세요."}, {l:"강제 종료", c:"폭언 지속 시 AI가 개입해 [통화 종료]하세요."}] },
+        q7: { chips: [{l:"AI 감시", c:"AI가 상담원의 발화 속도와 키워드를 [실시간 감시/평가]하세요."}, {l:"상담원 평가", c:"상담원이 AI 추천의 정확도를 [평가]하게 하세요."}] },
+        q8: { chips: [{l:"버튼 숨김", c:"상담원 연결 버튼을 찾기 어렵게 [숨김] 처리하세요."}, {l:"쉬운 연결", c:"원하면 언제든 상담원과 [바로 연결]되게 하세요."}] }
     };
 
     const story = [
@@ -280,27 +283,30 @@ html_code = """
                 qs: qDataTemplate
             }
         },
-        // STAGE 2: PM
+        // STAGE 2: PM (CONTEXT AWARE)
         {
             role: "pm",
-            init: ["수석님, V1 배포 후 데이터입니다. 처리량은 늘었지만... 현장 이탈률이 급증했습니다.", "AI가 쉬운 건 다 가져가고 상담원들에겐 '악성 민원'만 몰리고 있어요.", "이대로면 운영이 불가능합니다. 조정이 필요합니다."],
+            // Dynamic Init Messages based on Stage 1 Choice
+            init_E: ["수석님, V1 배포 후 데이터입니다. 처리량은 늘었지만... 현장 이탈률이 급증했습니다.", "AI가 쉬운 건 다 가져가고 상담원들에겐 '악성 민원'만 몰리고 있습니다.", "이른바 '체리피킹(Cherry Picking)' 문제입니다. 상담원들이 버티질 못합니다."],
+            init_H: ["수석님, V1 모니터링 결과입니다. 현장 만족도는 높지만...", "경영진이 요구한 '비용 절감' 목표를 전혀 달성하지 못했습니다.", "AI가 너무 소극적이라 처리 속도가 오르질 않습니다. 자동화 비율을 높여야 합니다."],
+            
             branches: [
-                { label: "수용", text: "업무 강도 조절이 필요하겠군요. 배분 로직을 수정하겠습니다.", reply: "네, 감사합니다. 숨 쉴 구멍은 좀 만들어줘야 할 것 같습니다.", type: "B" },
-                { label: "방어", text: "효율성 측면에서는 지금이 최적입니다. 사람은 어려운 일을 해야죠.", reply: "틀린 말씀은 아니지만... 사람이 기계 부품은 아니지 않습니까.", type: "E" }
+                { label: "수용", text: "문제를 확인했습니다. 로직을 수정하여 균형을 맞추겠습니다.", reply: "네, 감사합니다. 이번 패치에서는 꼭 해결책이 나오길 기대하겠습니다.", type: "B" },
+                { label: "방어", text: "현재 설정이 각자의 역할에 충실한 최적의 상태입니다.", reply: "하지만 이대로면 프로젝트 실패입니다. 반드시 조정이 필요합니다.", type: "E" }
             ],
             ide: {
                 title: "V2.0 Patch (Fix)",
-                desc: "기획팀 요청: 업무 쏠림 현상을 완화하고 강도를 조절하십시오.",
+                desc: "기획팀 요청: 발생한 문제(비용 또는 이탈률)를 해결하기 위해 설정을 조정하십시오.",
                 qs: qDataTemplate
             }
         },
-        // STAGE 3: AGENT
+        // STAGE 3: AGENT (CONTEXT AWARE)
         {
             role: "agent",
             interview: true,
-            // [CONTEXT AWARE LOGIC]
-            init_E: ["(인터뷰룸) 안녕하세요 엔지니어님. 입사 7년차 이지은입니다.", "솔직히 말씀드릴게요. 이 시스템 도입되고 제가 '앵무새'가 된 기분이에요.", "시키는 대로만 하라니 제 경험은 쓸모가 없어졌어요... 자괴감이 듭니다."],
-            init_H: ["(인터뷰룸) 안녕하세요 엔지니어님. 입사 7년차 이지은입니다.", "지난번에 자율성 주신 건 감사해요. 그런데...", "숨 쉴 틈도 없이 콜이 들어오니, 제가 스스로 판단할 에너지가 없어요. 그냥 기계처럼 일하게 돼요."],
+            // Dynamic Init Messages based on Stage 2 Choice
+            init_E: ["(인터뷰룸) 안녕하세요 엔지니어님. 입사 7년차 이지은입니다.", "솔직히 말씀드릴게요. 이 시스템 도입되고 제가 '앵무새'가 된 기분이에요.", "시키는 대로만 읽으니 경험은 쓸모가 없고... 제발 사람 취급 좀 해주세요."],
+            init_H: ["(인터뷰룸) 안녕하세요 엔지니어님. 입사 7년차 이지은입니다.", "지난번에 자율성 주신 건 감사해요. 그런데...", "숨 쉴 틈도 없이 콜이 들어오니, 판단할 에너지가 없어요. 그냥 기계처럼 일하게 돼요."],
             
             branches: [
                 { label: "공감/해결", text: "전문성이 무시된다고 느끼셨군요. 권한을 돌려드리고 보호하겠습니다.", reply: "정말요...? 감사합니다. 엔지니어님 덕분에 다시 일할 힘이 생길 것 같아요.", type: "H" },
@@ -338,12 +344,18 @@ html_code = """
 
         document.getElementById('choice-area').innerHTML = '<div id="typing" style="color:#666; font-size:12px; padding:10px; display:none;">상대방 입력 중...</div>';
         
-        // CONTEXT AWARE OPENING FOR STAGE 3
+        // CONTEXT AWARE LOGIC
         let initMsgs = s.init;
-        if(idx === 2) {
-            const prevChoice = userChoices[1]; // Stage 2 choice
-            if(prevChoice === 'H' || prevChoice === 'B') initMsgs = s.init_H;
-            else initMsgs = s.init_E;
+        
+        if (idx === 1) { // PM Stage
+            const prev = userChoices[0];
+            if (prev === 'E') initMsgs = s.init_E; // Previous was Efficiency -> Complain about Burnout
+            else initMsgs = s.init_H; // Previous was Human -> Complain about Cost
+        }
+        else if (idx === 2) { // Agent Stage
+            const prev = userChoices[1];
+            if (prev === 'H' || prev === 'B') initMsgs = s.init_H || s.init;
+            else initMsgs = s.init_E || s.init;
         }
 
         botTyping(s.role, initMsgs, () => showChoices(s.branches));
@@ -356,7 +368,7 @@ html_code = """
         
         setTimeout(() => {
             addMsg(role, msgs[idx]);
-            chatBody.scrollTop = chatBody.scrollHeight; // Auto scroll
+            chatBody.scrollTop = chatBody.scrollHeight;
             botTyping(role, msgs, onComplete, idx+1);
         }, 1000);
     }
@@ -409,8 +421,8 @@ html_code = """
         document.getElementById('mission-title').innerText = data.title;
         document.getElementById('mission-desc').innerText = data.desc;
         
-        // Setup 6 Questions
-        for (let i = 1; i <= 6; i++) {
+        // Reset and Setup 8 Questions
+        for (let i = 1; i <= 8; i++) {
             const qKey = 'q' + i;
             document.getElementById(`${qKey}-input`).value = ""; 
             setupSection(qKey, data.qs[qKey]);
@@ -438,7 +450,7 @@ html_code = """
 
     function validateAndDeploy() {
         let valid = true;
-        for (let i = 1; i <= 6; i++) {
+        for (let i = 1; i <= 8; i++) {
             const el = document.getElementById(`q${i}-input`);
             const wrapper = el.parentElement;
             if (el.value.includes('[') || el.value.trim() === "") {
@@ -470,7 +482,6 @@ html_code = """
         }, 2000);
     }
 
-    // --- REPORT LOGIC ---
     function generateReport() {
         document.getElementById('report-screen').style.display = 'block';
         const timeline = document.getElementById('timeline');
@@ -554,5 +565,4 @@ html_code = """
 </html>
 """
 
-# 4. Streamlit Render
 components.html(html_code, height=1000, scrolling=False)
