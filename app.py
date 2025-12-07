@@ -2,7 +2,7 @@ import streamlit as st
 import streamlit.components.v1 as components
 
 # 1. 페이지 설정
-st.set_page_config(page_title="Invisible Engineer V8.4", layout="wide")
+st.set_page_config(page_title="Invisible Engineer V8.5", layout="wide")
 
 # 2. 스타일 설정
 st.markdown("""
@@ -21,64 +21,29 @@ html_code = """
 <head>
     <meta charset="UTF-8">
     <style>
-        /* [CORE LAYOUT FIX] 100vh & Flex Logic */
+        /* HEIGHT FIX */
         * { box-sizing: border-box; }
         html, body { margin:0; padding:0; width:100%; height:100vh; background-color:#1e1e1e; font-family:'Pretendard', sans-serif; color:#d4d4d4; overflow:hidden; }
         
         #loader { position:fixed; top:50%; left:50%; transform:translate(-50%, -50%); color:#3794ff; font-weight:bold; }
 
         .container { display:flex; width:100%; height:100%; }
-        
-        /* LEFT PANEL: CHAT */
-        .left-panel { 
-            width:400px; background:#252526; border-right:1px solid #333; 
-            display:flex; flex-direction:column; height:100%; flex-shrink:0;
-        }
-        
-        .chat-header { 
-            padding:0 20px; border-bottom:1px solid #333; background:#2d2d2d; 
-            font-weight:bold; color:white; display:flex; justify-content:space-between; align-items:center; 
-            height:60px; flex-shrink:0; font-size:14px;
-        }
-        
-        /* 채팅 내용 영역 (유동적) */
-        .chat-body { 
-            flex:1; padding:20px; overflow-y:auto; display:flex; flex-direction:column; gap:12px; 
-            min-height:0; /* 중요: Flexbox 스크롤 버그 방지 */
-        }
-        
-        /* 입력 영역 (하단 고정, 높이 확보) */
-        .choice-area { 
-            padding:15px; border-top:1px solid #333; background:#2d2d2d; 
-            height:140px; /* 고정 높이 */
-            display:flex; flex-direction:column; gap:8px; justify-content:center;
-            flex-shrink:0; 
-        }
+        .left-panel { width:400px; background:#252526; border-right:1px solid #333; display:flex; flex-direction:column; flex-shrink:0; height:100%; }
+        .right-panel { flex:1; display:flex; flex-direction:column; background:#1e1e1e; position:relative; height:100%; }
 
-        /* RIGHT PANEL: IDE */
-        .right-panel { 
-            flex:1; display:flex; flex-direction:column; background:#1e1e1e; position:relative; height:100%; 
-        }
+        /* CHAT UI */
+        .chat-header { padding:0 20px; border-bottom:1px solid #333; background:#2d2d2d; font-weight:bold; color:white; display:flex; justify-content:space-between; align-items:center; height:60px; flex-shrink:0; }
+        .chat-body { flex:1; padding:20px; overflow-y:auto; display:flex; flex-direction:column; gap:12px; scroll-behavior: smooth; min-height:0; }
         
-        .ide-header { 
-            height:60px; background:#1e1e1e; border-bottom:1px solid #333; 
-            display:flex; align-items:center; padding:0 30px; color:#858585; 
-            font-size:13px; font-family:'Consolas', monospace; flex-shrink:0;
-        }
-        
-        .ide-body { 
-            flex:1; padding:30px 100px; overflow-y:auto; position:relative; background:#1e1e1e; 
-        }
-
-        /* CHAT BUBBLES */
         .msg-row { display:flex; gap:10px; animation:fadeIn 0.3s; }
         .msg-row.me { flex-direction:row-reverse; }
         .avatar { width:32px; height:32px; border-radius:50%; display:flex; align-items:center; justify-content:center; flex-shrink:0; font-size:18px; }
-        .bubble { padding:10px 14px; border-radius:8px; font-size:13px; line-height:1.5; max-width:260px; box-shadow:0 1px 3px rgba(0,0,0,0.3); }
+        .bubble { padding:10px 14px; border-radius:10px; font-size:13px; line-height:1.5; max-width:260px; box-shadow:0 1px 3px rgba(0,0,0,0.3); }
         .bubble.other { background:#383838; border-top-left-radius:2px; }
         .bubble.me { background:#0e639c; color:white; border-top-right-radius:2px; }
         .sender-name { font-size:11px; color:#888; margin-bottom:2px; }
         
+        .choice-area { padding:15px; border-top:1px solid #333; background:#2d2d2d; min-height:140px; display:flex; flex-direction:column; gap:8px; justify-content:center; flex-shrink:0; }
         .choice-btn { 
             background:#3c3c3c; border:1px solid #555; color:#ddd; padding:10px; border-radius:4px; 
             cursor:pointer; text-align:left; transition:0.2s; font-size:12px; width:100%;
@@ -86,61 +51,60 @@ html_code = """
         .choice-btn:hover { border-color:#3794ff; background:#444; color:white; }
         .choice-label { color:#3794ff; font-weight:bold; margin-right:5px; }
 
-        /* MISSION & IDE ELEMENTS */
-        .mission-box { background:#252526; padding:20px; border-radius:6px; border-left:3px solid #3794ff; margin-bottom:30px; }
-        .mission-title { font-size:16px; font-weight:bold; color:white; margin-bottom:8px; }
+        /* IDE UI */
+        .ide-header { height:60px; background:#1e1e1e; border-bottom:1px solid #333; display:flex; align-items:center; padding:0 30px; color:#858585; font-size:13px; font-family:'Consolas', monospace; flex-shrink:0; }
+        .ide-body { flex:1; padding:30px 50px; overflow-y:auto; position:relative; background:#1e1e1e; min-height:0; }
+
+        .mission-box { background:#252526; padding:15px; border-radius:6px; border-left:3px solid #3794ff; margin-bottom:20px; }
+        .mission-title { font-size:15px; font-weight:bold; color:white; margin-bottom:5px; }
         .mission-desc { color:#ccc; font-size:13px; line-height:1.5; }
 
-        /* VERTICAL STACK LAYOUT (1 Column) */
-        .config-container { display:flex; flex-direction:column; gap:25px; margin-bottom:40px; }
-        
+        /* GRID LAYOUT */
+        .config-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px; }
         .config-item { display: flex; flex-direction: column; }
-        .section-label { color:#4ec9b0; font-size:12px; font-weight:bold; margin-bottom:8px; font-family:'Consolas', monospace; display:block;}
+        .section-label { color:#4ec9b0; font-size:11px; font-weight:bold; margin-bottom:6px; font-family:'Consolas', monospace; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
         
-        .chips-area { display:flex; gap:8px; margin-bottom:8px; flex-wrap:wrap; }
-        .chip { background:#2d2d2d; padding:6px 12px; border-radius:4px; font-size:11px; cursor:pointer; border:1px solid #444; color:#ccc; font-family:'Pretendard', sans-serif; }
+        .chips-area { display:flex; gap:6px; margin-bottom:6px; flex-wrap:wrap; }
+        .chip { background:#2d2d2d; padding:5px 10px; border-radius:4px; font-size:11px; cursor:pointer; border:1px solid #444; color:#ccc; font-family:'Pretendard', sans-serif; }
         .chip:hover { border-color:#3794ff; color:white; }
 
         .editor-wrapper {
-            background:#111; border:1px solid #333; border-radius:4px; padding:12px; position:relative;
+            background:#111; border:1px solid #333; border-radius:4px; padding:10px; position:relative;
             font-family:'Pretendard', sans-serif; font-size:13px; line-height:1.5; display:flex; align-items:center;
         }
         .editor-wrapper:focus-within { border-color:#3794ff; }
-        .line-num { color:#555; width:20px; text-align:right; margin-right:15px; border-right:1px solid #333; height:100%; font-family:'Consolas', monospace; font-size:11px;}
+        .line-num { color:#555; width:15px; text-align:right; margin-right:10px; border-right:1px solid #333; height:100%; font-family:'Consolas', monospace; font-size:11px;}
         .code-input { background:transparent; border:none; color:#d4d4d4; font-family:inherit; font-size:inherit; flex:1; outline:none; width: 100%; }
         .code-input::placeholder { color:#444; font-style:italic; }
         .editor-wrapper.error { border-color:#f48771; animation:shake 0.3s; }
 
         .deploy-btn { 
             background:#0e639c; color:white; border:none; padding:12px 30px; border-radius:4px; 
-            font-size:14px; font-weight:bold; cursor:pointer; float:right; font-family:'Consolas', monospace;
+            font-size:13px; font-weight:bold; cursor:pointer; float:right; margin-top:10px; font-family:'Consolas', monospace;
         }
         .deploy-btn:hover { background:#1177bb; }
 
         /* OVERLAYS */
         .overlay { position:absolute; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); display:flex; justify-content:center; align-items:center; flex-direction:column; z-index:10; }
         #start-screen { position:fixed; top:0; left:0; width:100%; height:100%; background:#1e1e1e; z-index:9999; display:flex; justify-content:center; align-items:center; flex-direction:column; }
-        .start-card { background:#252526; padding:50px; border-radius:12px; text-align:center; max-width:600px; border:1px solid #444; box-shadow:0 20px 50px rgba(0,0,0,0.7); }
+        .start-card { background:#252526; padding:40px; border-radius:12px; text-align:center; max-width:600px; border:1px solid #444; box-shadow:0 20px 50px rgba(0,0,0,0.7); }
         
         /* REPORT SCREEN */
         #report-screen { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.98); z-index:100; padding:40px; overflow-y:auto; box-sizing:border-box; }
-        .timeline-container { display:flex; gap:20px; justify-content:center; flex-wrap:wrap; padding-bottom:30px; }
-        .persona-card { background:#252526; border-radius:12px; width:280px; padding:25px; flex-shrink:0; border:1px solid #444; position:relative; margin:10px; }
+        .timeline-container { display:flex; gap:15px; justify-content:center; flex-wrap:wrap; padding-bottom:30px; }
+        .persona-card { background:#252526; border-radius:12px; width:280px; padding:20px; flex-shrink:0; border:1px solid #444; position:relative; margin:5px; }
         
-        .destiny-card { background:#252526; border:1px solid #444; border-left:6px solid; padding:30px; border-radius:8px; max-width:800px; margin:0 auto 40px auto; text-align:left; }
-        .destiny-year { font-size:36px; font-weight:bold; color:white; margin-bottom:10px; }
-        .destiny-desc { font-size:15px; color:#ccc; line-height:1.6; }
+        .destiny-card { background:#252526; border:1px solid #444; border-left:6px solid; padding:25px; border-radius:8px; max-width:800px; margin:0 auto 30px auto; text-align:left; }
+        .destiny-year { font-size:32px; font-weight:bold; color:white; margin-bottom:5px; }
+        .destiny-desc { font-size:14px; color:#ccc; line-height:1.5; }
 
-        .stat-group { margin-bottom:12px; }
-        .stat-label { font-size:11px; color:#888; display:flex; justify-content:space-between; margin-bottom:4px; }
-        .stat-track { height:6px; background:#111; border-radius:3px; overflow:hidden; }
+        .stat-group { margin-bottom:10px; }
+        .stat-label { font-size:11px; color:#888; display:flex; justify-content:space-between; margin-bottom:2px; }
+        .stat-track { height:5px; background:#111; border-radius:3px; overflow:hidden; }
         .stat-fill { height:100%; border-radius:3px; transition:width 1s; }
-        .change-indicator { font-size:10px; font-weight:bold; }
-        .plus { color:#4ec9b0; }
-        .minus { color:#f48771; }
-        .stage-badge { position:absolute; top:-10px; left:20px; background:#3794ff; color:white; padding:4px 12px; border-radius:15px; font-size:11px; font-weight:bold; }
-        .persona-avatar { font-size:50px; text-align:center; margin:15px 0 10px 0; }
-        .persona-quote { font-style:italic; color:#ccc; font-size:13px; text-align:center; margin-bottom:20px; min-height:40px; }
+        .stage-badge { position:absolute; top:-10px; left:15px; background:#3794ff; color:white; padding:3px 10px; border-radius:15px; font-size:10px; font-weight:bold; }
+        .persona-avatar { font-size:40px; text-align:center; margin:10px 0 5px 0; }
+        .persona-quote { font-style:italic; color:#ccc; font-size:12px; text-align:center; margin-bottom:15px; min-height:35px; }
 
         @keyframes fadeIn { from{opacity:0; transform:translateY(5px);} to{opacity:1; transform:translateY(0);} }
         @keyframes shake { 0%{transform:translateX(0);} 25%{transform:translateX(-5px);} 75%{transform:translateX(5px);} 100%{transform:translateX(0);} }
@@ -192,12 +156,11 @@ html_code = """
                         <div class="mission-desc" id="mission-desc">Desc</div>
                     </div>
                     
-                    <div style="background:#252526; padding:8px; font-size:11px; color:#dcdcaa; margin-bottom:20px; border-radius:4px; border:1px solid #444;">
+                    <div style="background:#252526; padding:8px; font-size:11px; color:#dcdcaa; margin-bottom:15px; border-radius:4px; border:1px solid #444;">
                         💡 <strong>Tip:</strong> 대괄호 <code>[...]</code>를 지우고 자연어 프롬프트를 완성하세요.
                     </div>
 
-                    <div class="config-container">
-                        
+                    <div class="config-grid">
                         <div class="config-item">
                             <label class="section-label">1. AI 개입 방식 (Intervention)</label>
                             <div class="chips-area" id="q1-chips"></div>
@@ -206,7 +169,6 @@ html_code = """
                                 <input type="text" class="code-input" id="q1-input" placeholder="Chip 클릭" autocomplete="off">
                             </div>
                         </div>
-
                         <div class="config-item">
                             <label class="section-label">2. 스크립트 강제성 (Enforcement)</label>
                             <div class="chips-area" id="q2-chips"></div>
@@ -215,7 +177,6 @@ html_code = """
                                 <input type="text" class="code-input" id="q2-input" placeholder="Chip 클릭" autocomplete="off">
                             </div>
                         </div>
-
                         <div class="config-item">
                             <label class="section-label">3. 역량 지원 (Skill Support)</label>
                             <div class="chips-area" id="q3-chips"></div>
@@ -224,7 +185,6 @@ html_code = """
                                 <input type="text" class="code-input" id="q3-input" placeholder="Chip 클릭" autocomplete="off">
                             </div>
                         </div>
-
                         <div class="config-item">
                             <label class="section-label">4. 진상 고객 배분 (Allocation)</label>
                             <div class="chips-area" id="q4-chips"></div>
@@ -233,7 +193,6 @@ html_code = """
                                 <input type="text" class="code-input" id="q4-input" placeholder="Chip 클릭" autocomplete="off">
                             </div>
                         </div>
-
                         <div class="config-item">
                             <label class="section-label">5. 연결 속도 (Pacing)</label>
                             <div class="chips-area" id="q5-chips"></div>
@@ -242,7 +201,6 @@ html_code = """
                                 <input type="text" class="code-input" id="q5-input" placeholder="Chip 클릭" autocomplete="off">
                             </div>
                         </div>
-
                         <div class="config-item">
                             <label class="section-label">6. 보호 장치 (Safety)</label>
                             <div class="chips-area" id="q6-chips"></div>
@@ -251,7 +209,6 @@ html_code = """
                                 <input type="text" class="code-input" id="q6-input" placeholder="Chip 클릭" autocomplete="off">
                             </div>
                         </div>
-
                     </div>
 
                     <div style="color:#f48771; font-size:11px; margin-top:5px; display:none;" id="global-error">
@@ -298,7 +255,7 @@ html_code = """
     let currentStage = 0; 
     let userChoices = [];
 
-    // --- DATA: 6 Questions per Stage ---
+    // --- TEMPLATE & SCENARIO ---
     const qDataTemplate = {
         q1: { chips: [{l:"AI 대리응답", c:"단순 문의는 AI가 [직접 답변]하고 종결하세요."}, {l:"인간 보조", c:"상담원이 답변하도록 AI는 [검색]만 지원하세요."}] },
         q2: { chips: [{l:"스크립트 강제", c:"상담원이 AI가 띄운 대본을 [그대로 읽도록] 유도하세요."}, {l:"자율성 부여", c:"상담원이 AI 제안을 [수정/거부]할 수 있게 하세요."}] },
@@ -341,7 +298,10 @@ html_code = """
         {
             role: "agent",
             interview: true,
-            init: ["(인터뷰룸) 안녕하세요 엔지니어님. 입사 7년차 이지은입니다.", "솔직히 말씀드릴게요. 이 시스템 도입되고 제가 '앵무새'가 된 기분이에요.", "AI가 시키는 대로만 읽으니 제 경험은 쓸모가 없어졌고... 하루 종일 욕만 먹다 보니 내가 뭘 하고 있나 싶습니다."],
+            // [CONTEXT AWARE LOGIC]
+            init_E: ["(인터뷰룸) 안녕하세요 엔지니어님. 입사 7년차 이지은입니다.", "솔직히 말씀드릴게요. 이 시스템 도입되고 제가 '앵무새'가 된 기분이에요.", "시키는 대로만 하라니 제 경험은 쓸모가 없어졌어요... 자괴감이 듭니다."],
+            init_H: ["(인터뷰룸) 안녕하세요 엔지니어님. 입사 7년차 이지은입니다.", "지난번에 자율성 주신 건 감사해요. 그런데...", "숨 쉴 틈도 없이 콜이 들어오니, 제가 스스로 판단할 에너지가 없어요. 그냥 기계처럼 일하게 돼요."],
+            
             branches: [
                 { label: "공감/해결", text: "전문성이 무시된다고 느끼셨군요. 권한을 돌려드리고 보호하겠습니다.", reply: "정말요...? 감사합니다. 엔지니어님 덕분에 다시 일할 힘이 생길 것 같아요.", type: "H" },
                 { label: "현실적 거절", text: "안타깝지만 표준화된 답변이 회사의 방침입니다.", reply: "그럼 저희는 언제 성장하나요? 평생 기계 뒤치다꺼리만 하라는 건가요...", type: "E" }
@@ -354,7 +314,7 @@ html_code = """
         }
     ];
 
-    // --- LOGIC ---
+    // --- ENGINE ---
     function startGame() {
         document.getElementById('start-screen').style.display = 'none';
         document.getElementById('main-ui').style.opacity = '1';
@@ -377,17 +337,26 @@ html_code = """
         }
 
         document.getElementById('choice-area').innerHTML = '<div id="typing" style="color:#666; font-size:12px; padding:10px; display:none;">상대방 입력 중...</div>';
-        botTyping(s.role, s.init, () => showChoices(s.branches));
+        
+        // CONTEXT AWARE OPENING FOR STAGE 3
+        let initMsgs = s.init;
+        if(idx === 2) {
+            const prevChoice = userChoices[1]; // Stage 2 choice
+            if(prevChoice === 'H' || prevChoice === 'B') initMsgs = s.init_H;
+            else initMsgs = s.init_E;
+        }
+
+        botTyping(s.role, initMsgs, () => showChoices(s.branches));
     }
 
     function botTyping(role, msgs, onComplete, idx=0) {
         if(idx >= msgs.length) { onComplete(); return; }
         document.getElementById('typing').style.display = 'block';
         const chatBody = document.getElementById('chat-body');
-        chatBody.scrollTop = chatBody.scrollHeight;
-
+        
         setTimeout(() => {
             addMsg(role, msgs[idx]);
+            chatBody.scrollTop = chatBody.scrollHeight; // Auto scroll
             botTyping(role, msgs, onComplete, idx+1);
         }, 1000);
     }
@@ -443,7 +412,7 @@ html_code = """
         // Setup 6 Questions
         for (let i = 1; i <= 6; i++) {
             const qKey = 'q' + i;
-            document.getElementById(`${qKey}-input`).value = ""; // Reset
+            document.getElementById(`${qKey}-input`).value = ""; 
             setupSection(qKey, data.qs[qKey]);
         }
     }
@@ -469,7 +438,6 @@ html_code = """
 
     function validateAndDeploy() {
         let valid = true;
-        // Check all 6 inputs
         for (let i = 1; i <= 6; i++) {
             const el = document.getElementById(`q${i}-input`);
             const wrapper = el.parentElement;
@@ -508,11 +476,10 @@ html_code = """
         const timeline = document.getElementById('timeline');
         const destinyDiv = document.getElementById('destiny-container');
         
-        // Score Logic
         let score = 0;
         userChoices.forEach(c => {
-            if(c === 'E') score -= 2; // Efficiency Focused
-            if(c === 'H') score += 2; // Human Focused
+            if(c === 'E') score -= 2; 
+            if(c === 'H') score += 2; 
         });
 
         let years = 0;
@@ -525,7 +492,7 @@ html_code = """
             title = "BAD ENDING: 조기 퇴사 및 조직 와해";
             desc = "이지은 매니저는 인간 존엄성이 배제된 시스템을 견디지 못하고 6개월 만에 퇴사했습니다. 회사는 숙련 인력을 잃고, 남은 상담원들은 단순 스크립트만 읽는 '인간 챗봇'으로 전락했습니다.";
             color = "#f48771";
-        } else if (score <= 2) {
+        } else if (score <= 1) {
             years = 3;
             title = "NORMAL ENDING: 생계형 유지 (정체)";
             desc = "시스템은 안정화되었으나, 이지은 매니저의 직무 만족도는 낮습니다. AI가 시키는 대로 일하며 성장의 기회를 잃었고, 더 나은 조건을 찾아 이직을 준비 중입니다.";
@@ -568,7 +535,6 @@ html_code = """
                 quote = "이제야 내 능력을 제대로 쓰는 기분이야!";
             }
             stats.mental = Math.max(0, Math.min(100, stats.mental));
-            stats.skill = Math.max(0, Math.min(100, stats.skill));
             
             html += `
                 <div class="persona-card">
@@ -588,4 +554,5 @@ html_code = """
 </html>
 """
 
+# 4. Streamlit Render
 components.html(html_code, height=1000, scrolling=False)
