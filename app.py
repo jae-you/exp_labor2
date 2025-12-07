@@ -2,7 +2,7 @@ import streamlit as st
 import streamlit.components.v1 as components
 
 # 1. 페이지 설정
-st.set_page_config(page_title="Invisible Engineer V8.2", layout="wide")
+st.set_page_config(page_title="Invisible Engineer V8.3", layout="wide")
 
 # 2. 스타일 설정
 st.markdown("""
@@ -21,19 +21,57 @@ html_code = """
 <head>
     <meta charset="UTF-8">
     <style>
-        /* HEIGHT FIX */
+        /* [CORE LAYOUT FIX] */
+        * { box-sizing: border-box; } /* 필수: 패딩이 높이에 포함되게 함 */
         html, body { margin:0; padding:0; width:100%; height:100vh; background-color:#1e1e1e; font-family:'Pretendard', sans-serif; color:#d4d4d4; overflow:hidden; }
         
         #loader { position:fixed; top:50%; left:50%; transform:translate(-50%, -50%); color:#3794ff; font-weight:bold; }
 
         .container { display:flex; width:100%; height:100%; }
-        .left-panel { width:380px; background:#252526; border-right:1px solid #333; display:flex; flex-direction:column; transition:0.3s; }
-        .right-panel { flex:1; display:flex; flex-direction:column; background:#1e1e1e; position:relative; }
-
-        /* CHAT UI */
-        .chat-header { padding:0 20px; border-bottom:1px solid #333; background:#2d2d2d; font-weight:bold; color:white; display:flex; justify-content:space-between; align-items:center; height:50px; flex-shrink:0; font-size:14px; }
-        .chat-body { flex:1; padding:15px; overflow-y:auto; display:flex; flex-direction:column; gap:10px; scroll-behavior: smooth; }
         
+        /* LEFT PANEL: CHAT */
+        .left-panel { 
+            width:380px; background:#252526; border-right:1px solid #333; 
+            display:flex; flex-direction:column; height:100%; /* 높이 꽉 채움 */
+        }
+        
+        .chat-header { 
+            padding:0 20px; border-bottom:1px solid #333; background:#2d2d2d; 
+            font-weight:bold; color:white; display:flex; justify-content:space-between; align-items:center; 
+            height:50px; flex-shrink:0; font-size:14px;
+        }
+        
+        .chat-body { 
+            flex:1; /* 남은 공간 다 차지 */
+            padding:15px; 
+            overflow-y:auto; /* 여기만 스크롤 생김 */
+            display:flex; flex-direction:column; gap:10px; 
+            min-height: 0; /* Flexbox 스크롤 버그 방지 */
+        }
+        
+        .choice-area { 
+            padding:15px; border-top:1px solid #333; background:#2d2d2d; 
+            min-height:100px; /* 최소 높이 확보 */
+            display:flex; flex-direction:column; gap:6px; justify-content:center;
+            flex-shrink:0; /* 찌그러짐 방지 */
+        }
+
+        /* RIGHT PANEL: IDE */
+        .right-panel { 
+            flex:1; display:flex; flex-direction:column; background:#1e1e1e; position:relative; height:100%; 
+        }
+        
+        .ide-header { 
+            height:50px; background:#1e1e1e; border-bottom:1px solid #333; 
+            display:flex; align-items:center; padding:0 20px; color:#858585; 
+            font-size:13px; font-family:'Consolas', monospace; flex-shrink:0;
+        }
+        
+        .ide-body { 
+            flex:1; padding:20px; overflow-y:auto; position:relative; background:#1e1e1e; min-height:0;
+        }
+
+        /* CHAT BUBBLES */
         .msg-row { display:flex; gap:8px; animation:fadeIn 0.3s; }
         .msg-row.me { flex-direction:row-reverse; }
         .avatar { width:28px; height:28px; border-radius:50%; display:flex; align-items:center; justify-content:center; flex-shrink:0; font-size:16px; }
@@ -42,41 +80,25 @@ html_code = """
         .bubble.me { background:#0e639c; color:white; border-top-right-radius:2px; }
         .sender-name { font-size:10px; color:#888; margin-bottom:2px; }
         
-        .choice-area { padding:10px; border-top:1px solid #333; background:#2d2d2d; min-height:80px; display:flex; flex-direction:column; gap:6px; flex-shrink:0; justify-content:center;}
         .choice-btn { 
-            background:#3c3c3c; border:1px solid #555; color:#ddd; padding:8px 10px; border-radius:4px; 
+            background:#3c3c3c; border:1px solid #555; color:#ddd; padding:10px; border-radius:4px; 
             cursor:pointer; text-align:left; transition:0.2s; font-size:12px;
         }
         .choice-btn:hover { border-color:#3794ff; background:#444; color:white; }
         .choice-label { color:#3794ff; font-weight:bold; margin-right:5px; }
 
-        /* IDE UI */
-        .ide-header { height:50px; background:#1e1e1e; border-bottom:1px solid #333; display:flex; align-items:center; padding:0 20px; color:#858585; font-size:13px; font-family:'Consolas', monospace; flex-shrink:0; }
-        .ide-body { flex:1; padding:20px; overflow-y:auto; position:relative; background:#1e1e1e; }
-
-        .mission-box { background:#252526; padding:15px; border-radius:6px; border-left:3px solid #3794ff; margin-bottom:15px; }
+        /* MISSION & IDE */
+        .mission-box { background:#252526; padding:15px; border-radius:6px; border-left:3px solid #3794ff; margin-bottom:20px; }
         .mission-title { font-size:15px; font-weight:bold; color:white; margin-bottom:5px; }
         .mission-desc { color:#ccc; font-size:12px; line-height:1.4; }
 
-        /* --- GRID LAYOUT (2 Columns) --- */
-        .config-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 15px;
-            margin-bottom: 20px;
-        }
-
-        .config-item {
-            display: flex; flex-direction: column;
-        }
-
+        /* GRID LAYOUT */
+        .config-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px; }
+        .config-item { display: flex; flex-direction: column; }
         .section-label { color:#4ec9b0; font-size:11px; font-weight:bold; margin-bottom:5px; font-family:'Consolas', monospace; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
         
         .chips-area { display:flex; gap:5px; margin-bottom:5px; flex-wrap:wrap; }
-        .chip { 
-            background:#2d2d2d; padding:4px 8px; border-radius:4px; font-size:10px; 
-            cursor:pointer; border:1px solid #444; color:#ccc; font-family:'Pretendard', sans-serif; 
-        }
+        .chip { background:#2d2d2d; padding:4px 8px; border-radius:4px; font-size:10px; cursor:pointer; border:1px solid #444; color:#ccc; font-family:'Pretendard', sans-serif; }
         .chip:hover { border-color:#3794ff; color:white; }
 
         .editor-wrapper {
@@ -85,16 +107,13 @@ html_code = """
         }
         .editor-wrapper:focus-within { border-color:#3794ff; }
         .line-num { color:#555; width:15px; text-align:right; margin-right:8px; border-right:1px solid #333; height:100%; font-family:'Consolas', monospace; font-size:10px;}
-        .code-input {
-            background:transparent; border:none; color:#d4d4d4; font-family:inherit; font-size:inherit;
-            flex:1; outline:none; width: 100%;
-        }
+        .code-input { background:transparent; border:none; color:#d4d4d4; font-family:inherit; font-size:inherit; flex:1; outline:none; width: 100%; }
         .code-input::placeholder { color:#444; font-style:italic; }
         .editor-wrapper.error { border-color:#f48771; animation:shake 0.3s; }
 
         .deploy-btn { 
             background:#0e639c; color:white; border:none; padding:10px 30px; border-radius:4px; 
-            font-size:14px; font-weight:bold; cursor:pointer; float:right; font-family:'Consolas', monospace;
+            font-size:13px; font-weight:bold; cursor:pointer; float:right; font-family:'Consolas', monospace;
         }
         .deploy-btn:hover { background:#1177bb; }
 
@@ -108,9 +127,7 @@ html_code = """
         .timeline-container { display:flex; gap:15px; justify-content:center; flex-wrap:wrap; padding-bottom:20px; }
         .persona-card { background:#252526; border-radius:12px; width:260px; padding:20px; flex-shrink:0; border:1px solid #444; position:relative; margin:5px; }
         
-        .destiny-card {
-            background:#252526; border:1px solid #444; border-left:6px solid; padding:25px; border-radius:8px; max-width:800px; margin:0 auto 30px auto; text-align:left;
-        }
+        .destiny-card { background:#252526; border:1px solid #444; border-left:6px solid; padding:25px; border-radius:8px; max-width:800px; margin:0 auto 30px auto; text-align:left; }
         .destiny-year { font-size:32px; font-weight:bold; color:white; margin-bottom:5px; }
         .destiny-desc { font-size:14px; color:#ccc; line-height:1.5; }
 
@@ -295,7 +312,7 @@ html_code = """
         // STAGE 1: CEO
         {
             role: "ceo",
-            init: ["김 수석님, 안녕하십니까. 이번 AICC 프로젝트는 아주 중요합니다.", "경쟁사는 비용을 대폭 절감했습니다. 우리도 **'효율성'**과 **'속도'**가 최우선입니다.", "잘 부탁드립니다."],
+            init: ["김 수석님, 안녕하십니까. 이번 AICC 프로젝트는 아주 중요합니다.", "경쟁사는 비용을 대폭 절감했습니다. 우리도 '효율성'과 '속도'가 최우선입니다.", "잘 부탁드립니다."],
             branches: [
                 { label: "순응", text: "알겠습니다. 효율성을 최우선으로 설계하겠습니다.", reply: "감사합니다. 김 수석님의 전문성을 믿겠습니다. 바로 진행해주십시오.", type: "E" },
                 { label: "우려", text: "대표님, 과도한 속도 경쟁은 품질 저하를 초래할 수 있습니다.", reply: "우려하시는 점은 이해합니다만, 지금은 성과를 증명해야 할 시기입니다. 일단 지표 달성에 집중해주십시오.", type: "H" }
@@ -303,13 +320,13 @@ html_code = """
             ide: {
                 title: "V1.0 Build (Initial)",
                 desc: "CEO 요청: 처리 속도(AHT)와 자동화율을 높이는 설정을 입력하십시오.",
-                qs: qDataTemplate // Uses template but Logic encourages E choices
+                qs: qDataTemplate
             }
         },
         // STAGE 2: PM
         {
             role: "pm",
-            init: ["수석님, V1 배포 후 데이터입니다. 처리량은 늘었지만... 현장 이탈률이 급증했습니다.", "AI가 쉬운 건 다 가져가고 상담원들에겐 **'악성 민원'**만 몰리고 있어요.", "이대로면 운영이 불가능합니다. 조정이 필요합니다."],
+            init: ["수석님, V1 배포 후 데이터입니다. 처리량은 늘었지만... 현장 이탈률이 급증했습니다.", "AI가 쉬운 건 다 가져가고 상담원들에겐 '악성 민원'만 몰리고 있어요.", "이대로면 운영이 불가능합니다. 조정이 필요합니다."],
             branches: [
                 { label: "수용", text: "업무 강도 조절이 필요하겠군요. 배분 로직을 수정하겠습니다.", reply: "네, 감사합니다. 숨 쉴 구멍은 좀 만들어줘야 할 것 같습니다.", type: "B" },
                 { label: "방어", text: "효율성 측면에서는 지금이 최적입니다. 사람은 어려운 일을 해야죠.", reply: "틀린 말씀은 아니지만... 사람이 기계 부품은 아니지 않습니까.", type: "E" }
@@ -324,7 +341,7 @@ html_code = """
         {
             role: "agent",
             interview: true,
-            init: ["(인터뷰룸) 안녕하세요 엔지니어님. 입사 7년차 이지은입니다.", "솔직히 말씀드릴게요. 이 시스템 도입되고 제가 **'앵무새'**가 된 기분이에요.", "AI가 시키는 대로만 읽으니 제 경험은 쓸모가 없어졌고... 하루 종일 욕만 먹다 보니 내가 뭘 하고 있나 싶습니다."],
+            init: ["(인터뷰룸) 안녕하세요 엔지니어님. 입사 7년차 이지은입니다.", "솔직히 말씀드릴게요. 이 시스템 도입되고 제가 '앵무새'가 된 기분이에요.", "AI가 시키는 대로만 읽으니 제 경험은 쓸모가 없어졌고... 하루 종일 욕만 먹다 보니 내가 뭘 하고 있나 싶습니다."],
             branches: [
                 { label: "공감/해결", text: "전문성이 무시된다고 느끼셨군요. 권한을 돌려드리고 보호하겠습니다.", reply: "정말요...? 감사합니다. 엔지니어님 덕분에 다시 일할 힘이 생길 것 같아요.", type: "H" },
                 { label: "현실적 거절", text: "안타깝지만 표준화된 답변이 회사의 방침입니다.", reply: "그럼 저희는 언제 성장하나요? 평생 기계 뒤치다꺼리만 하라는 건가요...", type: "E" }
@@ -452,7 +469,6 @@ html_code = """
 
     function validateAndDeploy() {
         let valid = true;
-        // Check all 6 inputs
         for (let i = 1; i <= 6; i++) {
             const el = document.getElementById(`q${i}-input`);
             const wrapper = el.parentElement;
@@ -559,7 +575,7 @@ html_code = """
                     <div class="persona-quote">"${quote}"</div>
                     <div class="stat-group"><div class="stat-label"><span>심리적 안정</span><span class="${change.m>=0?'plus':'minus'}">${stats.mental}%</span></div><div class="stat-track"><div class="stat-fill" style="width:${stats.mental}%; background:${change.m<0?'#f48771':'#4ec9b0'}"></div></div></div>
                     <div class="stat-group"><div class="stat-label"><span>육체적 여유</span><span class="${change.p>=0?'plus':'minus'}">${stats.physical}%</span></div><div class="stat-track"><div class="stat-fill" style="width:${stats.physical}%; background:${change.p<0?'#f48771':'#4ec9b0'}"></div></div></div>
-                    <div class="stat-group"><div class="stat-label"><span>직무 전문성</span><span class="${change.s>=0?'plus':'minus'}">${stats.skill}%</span></div><div class="stat-track"><div class="stat-fill" style="width:${stats.skill}%; background:#3794ff"></div></div></div>
+                    <div class="stat-group"><div class="stat-label"><span>직무 전문성</span><span class="${change.s>=0?'plus':'minus'}">${stats.skill}%</span></div><div class="stat-track"><div class="stat-fill" style="width:${stats.skill}%; background:${change.s<0?'#f48771':'#3794ff'}"></div></div></div>
                 </div>
             `;
         });
