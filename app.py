@@ -2,7 +2,7 @@ import streamlit as st
 import streamlit.components.v1 as components
 
 # 1. 페이지 설정
-st.set_page_config(page_title="Invisible Engineer V8.3", layout="wide")
+st.set_page_config(page_title="Invisible Engineer V8.4", layout="wide")
 
 # 2. 스타일 설정
 st.markdown("""
@@ -21,8 +21,8 @@ html_code = """
 <head>
     <meta charset="UTF-8">
     <style>
-        /* [CORE LAYOUT FIX] */
-        * { box-sizing: border-box; } /* 필수: 패딩이 높이에 포함되게 함 */
+        /* [CORE LAYOUT FIX] 100vh & Flex Logic */
+        * { box-sizing: border-box; }
         html, body { margin:0; padding:0; width:100%; height:100vh; background-color:#1e1e1e; font-family:'Pretendard', sans-serif; color:#d4d4d4; overflow:hidden; }
         
         #loader { position:fixed; top:50%; left:50%; transform:translate(-50%, -50%); color:#3794ff; font-weight:bold; }
@@ -31,29 +31,28 @@ html_code = """
         
         /* LEFT PANEL: CHAT */
         .left-panel { 
-            width:380px; background:#252526; border-right:1px solid #333; 
-            display:flex; flex-direction:column; height:100%; /* 높이 꽉 채움 */
+            width:400px; background:#252526; border-right:1px solid #333; 
+            display:flex; flex-direction:column; height:100%; flex-shrink:0;
         }
         
         .chat-header { 
             padding:0 20px; border-bottom:1px solid #333; background:#2d2d2d; 
             font-weight:bold; color:white; display:flex; justify-content:space-between; align-items:center; 
-            height:50px; flex-shrink:0; font-size:14px;
+            height:60px; flex-shrink:0; font-size:14px;
         }
         
+        /* 채팅 내용 영역 (유동적) */
         .chat-body { 
-            flex:1; /* 남은 공간 다 차지 */
-            padding:15px; 
-            overflow-y:auto; /* 여기만 스크롤 생김 */
-            display:flex; flex-direction:column; gap:10px; 
-            min-height: 0; /* Flexbox 스크롤 버그 방지 */
+            flex:1; padding:20px; overflow-y:auto; display:flex; flex-direction:column; gap:12px; 
+            min-height:0; /* 중요: Flexbox 스크롤 버그 방지 */
         }
         
+        /* 입력 영역 (하단 고정, 높이 확보) */
         .choice-area { 
             padding:15px; border-top:1px solid #333; background:#2d2d2d; 
-            min-height:100px; /* 최소 높이 확보 */
-            display:flex; flex-direction:column; gap:6px; justify-content:center;
-            flex-shrink:0; /* 찌그러짐 방지 */
+            height:140px; /* 고정 높이 */
+            display:flex; flex-direction:column; gap:8px; justify-content:center;
+            flex-shrink:0; 
         }
 
         /* RIGHT PANEL: IDE */
@@ -62,85 +61,86 @@ html_code = """
         }
         
         .ide-header { 
-            height:50px; background:#1e1e1e; border-bottom:1px solid #333; 
-            display:flex; align-items:center; padding:0 20px; color:#858585; 
+            height:60px; background:#1e1e1e; border-bottom:1px solid #333; 
+            display:flex; align-items:center; padding:0 30px; color:#858585; 
             font-size:13px; font-family:'Consolas', monospace; flex-shrink:0;
         }
         
         .ide-body { 
-            flex:1; padding:20px; overflow-y:auto; position:relative; background:#1e1e1e; min-height:0;
+            flex:1; padding:30px 100px; overflow-y:auto; position:relative; background:#1e1e1e; 
         }
 
         /* CHAT BUBBLES */
-        .msg-row { display:flex; gap:8px; animation:fadeIn 0.3s; }
+        .msg-row { display:flex; gap:10px; animation:fadeIn 0.3s; }
         .msg-row.me { flex-direction:row-reverse; }
-        .avatar { width:28px; height:28px; border-radius:50%; display:flex; align-items:center; justify-content:center; flex-shrink:0; font-size:16px; }
-        .bubble { padding:8px 12px; border-radius:8px; font-size:13px; line-height:1.4; max-width:240px; box-shadow:0 1px 3px rgba(0,0,0,0.3); }
+        .avatar { width:32px; height:32px; border-radius:50%; display:flex; align-items:center; justify-content:center; flex-shrink:0; font-size:18px; }
+        .bubble { padding:10px 14px; border-radius:8px; font-size:13px; line-height:1.5; max-width:260px; box-shadow:0 1px 3px rgba(0,0,0,0.3); }
         .bubble.other { background:#383838; border-top-left-radius:2px; }
         .bubble.me { background:#0e639c; color:white; border-top-right-radius:2px; }
-        .sender-name { font-size:10px; color:#888; margin-bottom:2px; }
+        .sender-name { font-size:11px; color:#888; margin-bottom:2px; }
         
         .choice-btn { 
             background:#3c3c3c; border:1px solid #555; color:#ddd; padding:10px; border-radius:4px; 
-            cursor:pointer; text-align:left; transition:0.2s; font-size:12px;
+            cursor:pointer; text-align:left; transition:0.2s; font-size:12px; width:100%;
         }
         .choice-btn:hover { border-color:#3794ff; background:#444; color:white; }
         .choice-label { color:#3794ff; font-weight:bold; margin-right:5px; }
 
-        /* MISSION & IDE */
-        .mission-box { background:#252526; padding:15px; border-radius:6px; border-left:3px solid #3794ff; margin-bottom:20px; }
-        .mission-title { font-size:15px; font-weight:bold; color:white; margin-bottom:5px; }
-        .mission-desc { color:#ccc; font-size:12px; line-height:1.4; }
+        /* MISSION & IDE ELEMENTS */
+        .mission-box { background:#252526; padding:20px; border-radius:6px; border-left:3px solid #3794ff; margin-bottom:30px; }
+        .mission-title { font-size:16px; font-weight:bold; color:white; margin-bottom:8px; }
+        .mission-desc { color:#ccc; font-size:13px; line-height:1.5; }
 
-        /* GRID LAYOUT */
-        .config-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px; }
-        .config-item { display: flex; flex-direction: column; }
-        .section-label { color:#4ec9b0; font-size:11px; font-weight:bold; margin-bottom:5px; font-family:'Consolas', monospace; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+        /* VERTICAL STACK LAYOUT (1 Column) */
+        .config-container { display:flex; flex-direction:column; gap:25px; margin-bottom:40px; }
         
-        .chips-area { display:flex; gap:5px; margin-bottom:5px; flex-wrap:wrap; }
-        .chip { background:#2d2d2d; padding:4px 8px; border-radius:4px; font-size:10px; cursor:pointer; border:1px solid #444; color:#ccc; font-family:'Pretendard', sans-serif; }
+        .config-item { display: flex; flex-direction: column; }
+        .section-label { color:#4ec9b0; font-size:12px; font-weight:bold; margin-bottom:8px; font-family:'Consolas', monospace; display:block;}
+        
+        .chips-area { display:flex; gap:8px; margin-bottom:8px; flex-wrap:wrap; }
+        .chip { background:#2d2d2d; padding:6px 12px; border-radius:4px; font-size:11px; cursor:pointer; border:1px solid #444; color:#ccc; font-family:'Pretendard', sans-serif; }
         .chip:hover { border-color:#3794ff; color:white; }
 
         .editor-wrapper {
-            background:#111; border:1px solid #333; border-radius:4px; padding:8px; position:relative;
-            font-family:'Pretendard', sans-serif; font-size:12px; line-height:1.4; display:flex; align-items:center;
+            background:#111; border:1px solid #333; border-radius:4px; padding:12px; position:relative;
+            font-family:'Pretendard', sans-serif; font-size:13px; line-height:1.5; display:flex; align-items:center;
         }
         .editor-wrapper:focus-within { border-color:#3794ff; }
-        .line-num { color:#555; width:15px; text-align:right; margin-right:8px; border-right:1px solid #333; height:100%; font-family:'Consolas', monospace; font-size:10px;}
+        .line-num { color:#555; width:20px; text-align:right; margin-right:15px; border-right:1px solid #333; height:100%; font-family:'Consolas', monospace; font-size:11px;}
         .code-input { background:transparent; border:none; color:#d4d4d4; font-family:inherit; font-size:inherit; flex:1; outline:none; width: 100%; }
         .code-input::placeholder { color:#444; font-style:italic; }
         .editor-wrapper.error { border-color:#f48771; animation:shake 0.3s; }
 
         .deploy-btn { 
-            background:#0e639c; color:white; border:none; padding:10px 30px; border-radius:4px; 
-            font-size:13px; font-weight:bold; cursor:pointer; float:right; font-family:'Consolas', monospace;
+            background:#0e639c; color:white; border:none; padding:12px 30px; border-radius:4px; 
+            font-size:14px; font-weight:bold; cursor:pointer; float:right; font-family:'Consolas', monospace;
         }
         .deploy-btn:hover { background:#1177bb; }
 
         /* OVERLAYS */
         .overlay { position:absolute; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); display:flex; justify-content:center; align-items:center; flex-direction:column; z-index:10; }
         #start-screen { position:fixed; top:0; left:0; width:100%; height:100%; background:#1e1e1e; z-index:9999; display:flex; justify-content:center; align-items:center; flex-direction:column; }
-        .start-card { background:#252526; padding:40px; border-radius:12px; text-align:center; max-width:500px; border:1px solid #444; box-shadow:0 20px 50px rgba(0,0,0,0.7); }
+        .start-card { background:#252526; padding:50px; border-radius:12px; text-align:center; max-width:600px; border:1px solid #444; box-shadow:0 20px 50px rgba(0,0,0,0.7); }
         
         /* REPORT SCREEN */
-        #report-screen { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.98); z-index:100; padding:30px; overflow-y:auto; box-sizing:border-box; }
-        .timeline-container { display:flex; gap:15px; justify-content:center; flex-wrap:wrap; padding-bottom:20px; }
-        .persona-card { background:#252526; border-radius:12px; width:260px; padding:20px; flex-shrink:0; border:1px solid #444; position:relative; margin:5px; }
+        #report-screen { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.98); z-index:100; padding:40px; overflow-y:auto; box-sizing:border-box; }
+        .timeline-container { display:flex; gap:20px; justify-content:center; flex-wrap:wrap; padding-bottom:30px; }
+        .persona-card { background:#252526; border-radius:12px; width:280px; padding:25px; flex-shrink:0; border:1px solid #444; position:relative; margin:10px; }
         
-        .destiny-card { background:#252526; border:1px solid #444; border-left:6px solid; padding:25px; border-radius:8px; max-width:800px; margin:0 auto 30px auto; text-align:left; }
-        .destiny-year { font-size:32px; font-weight:bold; color:white; margin-bottom:5px; }
-        .destiny-desc { font-size:14px; color:#ccc; line-height:1.5; }
+        .destiny-card { background:#252526; border:1px solid #444; border-left:6px solid; padding:30px; border-radius:8px; max-width:800px; margin:0 auto 40px auto; text-align:left; }
+        .destiny-year { font-size:36px; font-weight:bold; color:white; margin-bottom:10px; }
+        .destiny-desc { font-size:15px; color:#ccc; line-height:1.6; }
 
-        .stat-group { margin-bottom:8px; }
-        .stat-label { font-size:11px; color:#888; display:flex; justify-content:space-between; margin-bottom:2px; }
-        .stat-track { height:5px; background:#111; border-radius:3px; overflow:hidden; }
+        .stat-group { margin-bottom:12px; }
+        .stat-label { font-size:11px; color:#888; display:flex; justify-content:space-between; margin-bottom:4px; }
+        .stat-track { height:6px; background:#111; border-radius:3px; overflow:hidden; }
         .stat-fill { height:100%; border-radius:3px; transition:width 1s; }
         .change-indicator { font-size:10px; font-weight:bold; }
         .plus { color:#4ec9b0; }
         .minus { color:#f48771; }
-        .stage-badge { position:absolute; top:-10px; left:15px; background:#3794ff; color:white; padding:3px 10px; border-radius:15px; font-size:10px; font-weight:bold; }
-        .persona-avatar { font-size:40px; text-align:center; margin:10px 0 5px 0; }
-        .persona-quote { font-style:italic; color:#ccc; font-size:12px; text-align:center; margin-bottom:15px; min-height:35px; }
+        .stage-badge { position:absolute; top:-10px; left:20px; background:#3794ff; color:white; padding:4px 12px; border-radius:15px; font-size:11px; font-weight:bold; }
+        .persona-avatar { font-size:50px; text-align:center; margin:15px 0 10px 0; }
+        .persona-quote { font-style:italic; color:#ccc; font-size:13px; text-align:center; margin-bottom:20px; min-height:40px; }
 
         @keyframes fadeIn { from{opacity:0; transform:translateY(5px);} to{opacity:1; transform:translateY(0);} }
         @keyframes shake { 0%{transform:translateX(0);} 25%{transform:translateX(-5px);} 75%{transform:translateX(5px);} 100%{transform:translateX(0);} }
@@ -192,11 +192,11 @@ html_code = """
                         <div class="mission-desc" id="mission-desc">Desc</div>
                     </div>
                     
-                    <div style="background:#252526; padding:8px; font-size:11px; color:#dcdcaa; margin-bottom:15px; border-radius:4px; border:1px solid #444;">
+                    <div style="background:#252526; padding:8px; font-size:11px; color:#dcdcaa; margin-bottom:20px; border-radius:4px; border:1px solid #444;">
                         💡 <strong>Tip:</strong> 대괄호 <code>[...]</code>를 지우고 자연어 프롬프트를 완성하세요.
                     </div>
 
-                    <div class="config-grid">
+                    <div class="config-container">
                         
                         <div class="config-item">
                             <label class="section-label">1. AI 개입 방식 (Intervention)</label>
@@ -469,6 +469,7 @@ html_code = """
 
     function validateAndDeploy() {
         let valid = true;
+        // Check all 6 inputs
         for (let i = 1; i <= 6; i++) {
             const el = document.getElementById(`q${i}-input`);
             const wrapper = el.parentElement;
@@ -567,6 +568,7 @@ html_code = """
                 quote = "이제야 내 능력을 제대로 쓰는 기분이야!";
             }
             stats.mental = Math.max(0, Math.min(100, stats.mental));
+            stats.skill = Math.max(0, Math.min(100, stats.skill));
             
             html += `
                 <div class="persona-card">
