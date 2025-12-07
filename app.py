@@ -2,7 +2,7 @@ import streamlit as st
 import streamlit.components.v1 as components
 
 # 1. 페이지 설정
-st.set_page_config(page_title="Invisible Engineer V7.3", layout="wide")
+st.set_page_config(page_title="Invisible Engineer V7.4", layout="wide")
 
 # 2. 스타일 설정
 st.markdown("""
@@ -51,7 +51,7 @@ html_code = """
         .choice-btn:hover { border-color:#3794ff; background:#444; color:white; }
         .choice-label { color:#3794ff; font-weight:bold; margin-right:5px; }
 
-        /* --- IDE UI (Cursor Style) --- */
+        /* IDE UI */
         .ide-header { height:45px; background:#1e1e1e; border-bottom:1px solid #333; display:flex; align-items:center; padding:0 20px; color:#858585; font-size:13px; font-family:'Consolas', monospace; }
         .ide-body { flex:1; padding:40px; overflow-y:auto; position:relative; background:#1e1e1e; }
 
@@ -59,7 +59,6 @@ html_code = """
         .mission-title { font-size:16px; font-weight:bold; color:white; margin-bottom:8px; }
         .mission-desc { color:#ccc; font-size:14px; line-height:1.5; }
 
-        /* CODE INPUT AREA */
         .input-group { margin-bottom:30px; }
         .input-label { color:#d4d4d4; font-size:13px; margin-bottom:8px; display:flex; justify-content:space-between; }
         
@@ -70,7 +69,6 @@ html_code = """
         }
         .chip:hover { border-color:#3794ff; color:white; }
 
-        /* Real Editor Style Input */
         .editor-wrapper {
             background:#111; border:1px solid #333; border-radius:4px; padding:15px; position:relative;
             font-family:'Consolas', 'Monaco', monospace; font-size:14px; line-height:1.6; display:flex;
@@ -82,8 +80,6 @@ html_code = """
             flex:1; outline:none;
         }
         .code-input::placeholder { color:#444; font-style:italic; }
-
-        /* Error Shake */
         .editor-wrapper.error { border-color:#f48771; animation:shake 0.3s; }
         .error-msg { color:#f48771; font-size:12px; margin-top:5px; display:none; padding-left:5px; }
 
@@ -98,8 +94,33 @@ html_code = """
         #start-screen { position:fixed; top:0; left:0; width:100%; height:100%; background:#1e1e1e; z-index:9999; display:flex; justify-content:center; align-items:center; flex-direction:column; }
         .start-card { background:#252526; padding:50px; border-radius:12px; text-align:center; max-width:600px; border:1px solid #444; box-shadow:0 20px 50px rgba(0,0,0,0.7); }
         
-        #report-screen { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.95); z-index:100; padding:50px; overflow-y:auto; box-sizing:border-box; }
-        .stat-card { background:#222; padding:20px; margin-bottom:15px; border-radius:8px; border-left:5px solid #555; }
+        /* --- REPORT SCREEN (PERSONA CARD STYLE) --- */
+        #report-screen { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.95); z-index:100; padding:40px; overflow-y:auto; box-sizing:border-box; }
+        
+        .timeline-container { display:flex; gap:20px; overflow-x:auto; padding-bottom:20px; justify-content:center; }
+        
+        .persona-card { 
+            background:#252526; border-radius:12px; width:280px; padding:20px; flex-shrink:0; border:1px solid #444; position:relative; 
+            transition: transform 0.3s;
+        }
+        .persona-card:hover { transform: translateY(-5px); border-color:#3794ff; }
+        
+        .stage-badge { 
+            position:absolute; top:-10px; left:20px; background:#3794ff; color:white; 
+            padding:4px 12px; border-radius:15px; font-size:11px; font-weight:bold; 
+        }
+        
+        .persona-avatar { font-size:50px; text-align:center; margin:15px 0 10px 0; }
+        .persona-quote { font-style:italic; color:#ccc; font-size:13px; text-align:center; margin-bottom:20px; min-height:40px; }
+        
+        .stat-group { margin-bottom:10px; }
+        .stat-label { font-size:11px; color:#888; display:flex; justify-content:space-between; margin-bottom:3px; }
+        .stat-track { height:6px; background:#111; border-radius:3px; overflow:hidden; }
+        .stat-fill { height:100%; border-radius:3px; transition:width 1s; }
+        
+        .change-indicator { font-size:10px; font-weight:bold; }
+        .plus { color:#4ec9b0; }
+        .minus { color:#f48771; }
 
         @keyframes fadeIn { from{opacity:0; transform:translateY(5px);} to{opacity:1; transform:translateY(0);} }
         @keyframes shake { 0%{transform:translateX(0);} 25%{transform:translateX(-5px);} 75%{transform:translateX(5px);} 100%{transform:translateX(0);} }
@@ -115,8 +136,8 @@ html_code = """
             <div style="font-size:60px; margin-bottom:20px;">⚙️</div>
             <h1 style="color:white; margin:0 0 10px 0;">The Invisible Engineer</h1>
             <p style="color:#aaa; line-height:1.6; margin-bottom:30px;">
-                당신의 선택과 코드가 시스템을 결정합니다.<br>
-                대화를 통해 방향을 정하고, <strong>직접 값을 입력하여</strong> 설계하세요.
+                당신의 선택과 코드가 <strong>'한 사람의 인생'</strong>을 결정합니다.<br>
+                대화하고, 수정하고, 결과를 목격하세요.
             </p>
             <button class="deploy-btn" style="float:none; padding:15px 40px; font-size:16px;" onclick="startGame()">시뮬레이션 시작</button>
         </div>
@@ -152,7 +173,7 @@ html_code = """
                     </div>
                     
                     <div style="background:#252526; padding:10px; font-size:12px; color:#dcdcaa; margin-bottom:20px; border-radius:4px; border:1px solid #444;">
-                        💡 <strong>Tip:</strong> <code>[...값 입력]</code> 부분을 지우고 원하는 숫자나 단어를 적으세요.
+                        💡 <strong>Tip:</strong> <code>[값 입력]</code> 부분을 지우고 원하는 숫자를 입력하세요.
                     </div>
 
                     <div class="input-group">
@@ -162,7 +183,7 @@ html_code = """
                         <div class="chips-area" id="q1-chips"></div>
                         <div class="editor-wrapper" id="wrap-q1">
                             <span class="line-num">1</span>
-                            <input type="text" class="code-input" id="q1-input" placeholder="옵션(Chip)을 선택하면 템플릿이 작성됩니다." autocomplete="off">
+                            <input type="text" class="code-input" id="q1-input" placeholder="Chip을 클릭하세요" autocomplete="off">
                         </div>
                         <div class="error-msg" id="q1-error">⚠️ 대괄호 [...]를 지우고 값을 입력해주세요.</div>
                     </div>
@@ -174,7 +195,7 @@ html_code = """
                         <div class="chips-area" id="q2-chips"></div>
                         <div class="editor-wrapper" id="wrap-q2">
                             <span class="line-num">2</span>
-                            <input type="text" class="code-input" id="q2-input" placeholder="옵션(Chip)을 선택하면 템플릿이 작성됩니다." autocomplete="off">
+                            <input type="text" class="code-input" id="q2-input" placeholder="Chip을 클릭하세요" autocomplete="off">
                         </div>
                         <div class="error-msg" id="q2-error">⚠️ 대괄호 [...]를 지우고 값을 입력해주세요.</div>
                     </div>
@@ -186,11 +207,15 @@ html_code = """
     </div>
 
     <div id="report-screen">
-        <div style="max-width:800px; margin:0 auto; background:#252526; padding:40px; border-radius:12px; box-shadow:0 10px 30px rgba(0,0,0,0.5);">
-            <h1 style="color:white; border-bottom:1px solid #444; padding-bottom:20px;">📊 Simulation Report</h1>
-            <div id="report-content" style="margin-top:30px;"></div>
+        <div style="max-width:1000px; margin:0 auto;">
+            <h1 style="color:white; text-align:center; margin-bottom:40px;">📊 Worker Evolution Report</h1>
+            
+            <div id="timeline" class="timeline-container">
+                </div>
+
             <div style="text-align:center; margin-top:40px;">
-                <button class="deploy-btn" style="float:none;" onclick="location.reload()">Restart</button>
+                <p style="color:#888;">"당신의 기술적 결정이 한 사람의 일상을 이렇게 변화시켰습니다."</p>
+                <button class="deploy-btn" style="float:none;" onclick="location.reload()">Restart Experiment</button>
             </div>
         </div>
     </div>
@@ -201,60 +226,57 @@ html_code = """
         document.getElementById('start-screen').style.display = 'flex';
     };
 
-    // --- DATA ---
     const avatars = {
         ceo: { name:"최대표", color:"#ce9178", icon:"👔" },
         pm: { name:"박팀장", color:"#4ec9b0", icon:"📊" },
         agent: { name:"이지은", color:"#9cdcfe", icon:"🎧" },
         me: { name:"나", color:"#0e639c", icon:"👨‍💻" },
-        system: { name:"System", color:"#666", icon:"💻" } // [FIX] System Added
+        system: { name:"System", color:"#666", icon:"💻" }
     };
 
     let currentStage = 0; 
-    let userChoices = [];
+    let userChoices = []; // Stores choice type: 'E'(Efficiency), 'B'(Balance), 'H'(Human)
 
+    // SCENARIO DATA
     const story = [
-        // STAGE 0: CEO
         {
             role: "ceo",
-            init: ["김 수석, 이번 AICC 프로젝트 아주 중요해.", "경쟁사는 벌써 비용 30% 줄였어. 우린 무조건 **'속도'**가 최우선이야."],
+            init: ["김 수석, 경쟁사가 치고 올라오네.", "우린 무조건 **'속도'**가 최우선이야. 알겠지?"],
             branches: [
-                { label: "순응", text: "알겠습니다. 효율성 극대화 모델로 설계하겠습니다.", reply: "그래! 역시 말이 통하네. 바로 작업 시작해.", mood: "happy" },
-                { label: "우려", text: "대표님, 무조건적인 속도 경쟁은 품질 저하가 우려됩니다.", reply: "지금 품질 따질 때야? 투자 못 받으면 다 끝이라고! 시키는 대로 해!", mood: "angry" }
+                { label: "순응", text: "알겠습니다. 효율성 극대화 모델로 설계하겠습니다.", reply: "그래! 역시 말이 통하네. 바로 작업해.", type: "E" },
+                { label: "우려", text: "속도 경쟁은 품질 저하가 우려됩니다.", reply: "지금 품질 따질 때야? 투자 못 받으면 다 끝이야!", type: "H" }
             ],
             ide: {
-                title: "Mission 1: 초기 아키텍처 설계",
+                title: "Quest 1: 초기 아키텍처 설계",
                 desc: "CEO 지시: 처리 속도(AHT)를 최우선으로 하는 설정을 입력하십시오.",
-                q1: { l: "AI 역할 정의", chips: [ {l:"Gatekeeper", c:"role: AI_First (Goal: [90%])"}, {l:"Router", c:"role: Hybrid (Split: [50:50])"} ] },
-                q2: { l: "대기 시간", chips: [ {l:"Zero Gap", c:"gap: [0초] (Immediate)"}, {l:"Fixed", c:"gap: [10초] (Fixed)"} ] }
+                q1: { l: "AI 역할 정의", chips: [ {l:"Gatekeeper (효율)", c:"role: AI_First (Goal: [90%])"}, {l:"Router (균형)", c:"role: Hybrid (Split: [50:50])"} ] },
+                q2: { l: "대기 시간", chips: [ {l:"Zero Gap (속도)", c:"gap: [0초]"}, {l:"Fixed (여유)", c:"gap: [10초]"} ] }
             }
         },
-        // STAGE 1: PM
         {
             role: "pm",
-            init: ["수석님, V1 배포하고 난리 났습니다. 속도는 빠른데... **'말귀를 못 알아듣는다'**는 민원이 폭주 중이에요.", "재문의율이 40% 늘었어요. 정확도 좀 높여주세요."],
+            init: ["수석님, V1 배포하고 난리 났습니다. 속도는 빠른데... **'말귀를 못 알아듣는다'**는 민원이 폭주 중이에요.", "정확도 좀 높여주세요."],
             branches: [
-                { label: "수용", text: "문제가 심각하군요. 문맥 분석 기능을 강화하겠습니다.", reply: "네, 부탁드립니다. 이번엔 제발 실수 없게 해주세요.", mood: "neutral" },
-                { label: "방어", text: "CEO 지시대로 속도만 맞춘 건데요. 데이터가 더 필요합니다.", reply: "하... 핑계 대지 마시고요. 당장 고객 다 떠나가게 생겼다고요!", mood: "angry" }
+                { label: "수용", text: "문맥 분석 기능을 강화하겠습니다.", reply: "네, 부탁드립니다. 이번엔 실수 없게 해주세요.", type: "B" },
+                { label: "방어", text: "CEO 지시대로 속도만 맞춘 건데요.", reply: "하... 핑계 대지 마시고요. 당장 해결해주세요!", type: "E" }
             ],
             ide: {
-                title: "Mission 2: 로직 고도화",
+                title: "Quest 2: 로직 고도화",
                 desc: "PM 요청: 오분류를 줄이고 정확도를 높이십시오.",
                 q1: { l: "분석 모델", chips: [ {l:"Deep Context", c:"model: Context (Depth: [Deep])"}, {l:"Keyword", c:"model: Simple (Speed: [Fast])"} ] },
                 q2: { l: "실패 처리", chips: [ {l:"Handover", c:"fallback: [상담원 연결]"}, {l:"Retry", c:"fallback: [재질문]"} ] }
             }
         },
-        // STAGE 2: AGENT
         {
             role: "agent",
             interview: true,
-            init: ["(인터뷰룸) 안녕하세요 엔지니어님. 현장 매니저 이지은입니다.", "솔직히 말씀드릴게요. 지금 시스템... 저희한텐 지옥이에요. 쉴 틈도 없고, 화난 고객만 넘어오고...", "제발 **사람**을 고려해서 설계해주세요."],
+            init: ["(인터뷰룸) 안녕하세요 엔지니어님. 현장 매니저 이지은입니다.", "솔직히... 지금 시스템은 저희한텐 지옥이에요. 쉴 틈도 없고, 화난 고객만 넘어오고...", "제발 **사람**을 고려해서 설계해주세요."],
             branches: [
-                { label: "공감/해결", text: "그런 고충이 있는 줄 몰랐습니다. 상담원 보호 기능을 최우선으로 넣겠습니다.", reply: "정말요...? 감사합니다. 엔지니어님만 믿겠습니다.", mood: "touched" },
-                { label: "현실적 거절", text: "안타깝지만 효율성 지표가 떨어지면 경영진 승인이 어렵습니다.", reply: "결국 숫자가 사람보다 중요하단 거네요... 실망입니다.", mood: "sad" }
+                { label: "공감/해결", text: "그런 고충이 있는 줄 몰랐습니다. 보호 기능을 최우선으로 넣겠습니다.", reply: "정말요...? 감사합니다. 믿겠습니다.", type: "H" },
+                { label: "현실적 거절", text: "안타깝지만 효율성 지표가 우선입니다.", reply: "결국 숫자가 사람보다 중요하단 거네요...", type: "E" }
             ],
             ide: {
-                title: "Mission 3: 지속 가능성 (Human-Centric)",
+                title: "Quest 3: 지속 가능성 (Human-Centric)",
                 desc: "현장 피드백: 상담원 보호 및 휴식권 보장 로직을 구현하십시오.",
                 q1: { l: "욕설 방어", chips: [ {l:"Shield On", c:"protection: Active (Action: [차단])"}, {l:"Ignore", c:"protection: None (Log: [기록만])"} ] },
                 q2: { l: "휴식 배정", chips: [ {l:"Dynamic", c:"break: Smart (Trigger: [스트레스 지수])"}, {l:"Manual", c:"break: Manual (Request: [승인제])"} ] }
@@ -262,7 +284,7 @@ html_code = """
         }
     ];
 
-    // --- ENGINE ---
+    // --- GAME LOGIC ---
     function startGame() {
         document.getElementById('start-screen').style.display = 'none';
         document.getElementById('main-ui').style.opacity = '1';
@@ -282,15 +304,11 @@ html_code = """
         }
 
         document.getElementById('choice-area').innerHTML = '<div id="typing" style="color:#666; font-size:12px; padding:10px; display:none;">상대방 입력 중...</div>';
-        
         botTyping(s.role, s.init, () => showChoices(s.branches));
     }
 
     function botTyping(role, msgs, onComplete, idx=0) {
-        if(idx >= msgs.length) {
-            onComplete();
-            return;
-        }
+        if(idx >= msgs.length) { onComplete(); return; }
         document.getElementById('typing').style.display = 'block';
         setTimeout(() => {
             addMsg(role, msgs[idx]);
@@ -301,7 +319,7 @@ html_code = """
     function addMsg(role, text) {
         const body = document.getElementById('chat-body');
         const isMe = role === 'me';
-        const sender = isMe ? avatars.me : (avatars[role] || avatars.system); // Safe fallback
+        const sender = isMe ? avatars.me : (avatars[role] || avatars.system);
         
         const row = document.createElement('div');
         row.className = `msg-row ${isMe ? 'me' : ''}`;
@@ -327,7 +345,7 @@ html_code = """
             btn.onclick = () => {
                 area.innerHTML = '';
                 addMsg('me', b.text);
-                userChoices.push({ stage: currentStage, choice: b.label });
+                userChoices.push(b.type); // Track User Choice Type
                 
                 setTimeout(() => {
                     addMsg(story[currentStage].role, b.reply);
@@ -377,7 +395,6 @@ html_code = """
         const i2 = document.getElementById('q2-input');
         let valid = true;
 
-        // Validation: Check for brackets [ ] or empty string
         [i1, i2].forEach((inp, idx) => {
             const wrapper = inp.parentElement;
             const errId = idx === 0 ? 'q1-error' : 'q2-error';
@@ -394,42 +411,106 @@ html_code = """
 
         if (!valid) return;
 
-        // Deploy Process
         document.getElementById('ide-content').classList.add('hidden');
         document.getElementById('ide-overlay').style.display = 'flex';
-        document.getElementById('ide-overlay').innerHTML = `<h2 style="color:#4ec9b0">🚀 배포 중...</h2><p>변경 사항 적용</p>`;
+        document.getElementById('ide-overlay').innerHTML = `<h2 style="color:#4ec9b0">🚀 배포 중...</h2>`;
         
         setTimeout(() => {
             document.getElementById('ide-overlay').innerHTML = `<div style="font-size:40px; margin-bottom:15px; opacity:0.5;">🔒</div><div style="color:#888;">메신저를 확인하세요.</div>`;
             
-            // [BUG FIX] Use 'system' role and correct index logic
             if (currentStage < 2) {
-                addMsg('system', `✅ Ver.${currentStage+1}.0 업데이트 완료.`);
+                addMsg('system', `✅ Ver.${currentStage+1}.0 Update Complete.`);
                 setTimeout(() => playStage(currentStage + 1), 1500);
             } else {
-                showReport();
+                generateReport();
             }
         }, 2000);
     }
 
-    function showReport() {
+    // --- REPORT LOGIC (WORKER EVOLUTION) ---
+    function generateReport() {
         document.getElementById('report-screen').style.display = 'block';
-        const content = document.getElementById('report-content');
+        const timeline = document.getElementById('timeline');
         
-        const pathHTML = userChoices.map((c, i) => `
-            <div class="stat-card" style="border-left: 5px solid ${i==2 ? '#9cdcfe' : '#ce9178'}">
-                <h3>Stage ${i+1}: ${['CEO', 'PM', 'Agent'][i]}</h3>
-                <p>당신의 태도: <strong style="color:white">${c.choice}</strong></p>
-                <p style="color:#aaa; font-size:13px;">→ 그에 따른 시스템 설계 반영됨</p>
-            </div>
-        `).join('');
+        // Initial Stats
+        let stats = { mental: 80, physical: 80, skill: 50 };
         
-        content.innerHTML = pathHTML + `
-            <div style="margin-top:30px; text-align:center; color:#ccc; line-height:1.6;">
-                "효율(Efficiency)과 인간(Humanity) 사이에서,<br>
-                엔지니어는 매 순간 선택을 강요받습니다."
-            </div>
-        `;
+        const stages = ["Stage 1: Launch", "Stage 2: Feedback", "Stage 3: Result"];
+        const quotes = [
+            ["(기대) 새로운 시스템이라니.. 일이 좀 편해질까?", "(걱정) AI가 들어오면 우린 어떻게 되는 거지?"],
+            ["(고통) 말귀 못 알아듣는 AI 때문에 내가 욕을 두 배로 먹어...", "(안도) 오, AI가 제법 똑똑하게 도와주네?"],
+            ["(절망) 기계 부품이 된 기분이야. 더는 못 하겠어. (퇴사 결심)", "(성장) 이제야 진짜 '상담'을 하는 기분이야. 전문가가 된 느낌!"]
+        ];
+
+        let html = "";
+
+        userChoices.forEach((choice, i) => {
+            // Logic: E(Efficiency) -> Stats Down, H(Human) -> Stats Up
+            let mood = "😐";
+            let quote = "";
+            let change = { m:0, p:0, s:0 };
+
+            if (choice === 'E') { 
+                stats.mental -= 30; stats.physical -= 30; stats.skill += 5; 
+                mood = "😫"; 
+                quote = (i === 2) ? quotes[2][0] : quotes[i][0];
+                change = { m:-30, p:-30, s:5 };
+            } else if (choice === 'B') {
+                stats.mental -= 10; stats.physical -= 10; stats.skill += 20;
+                mood = "😐";
+                quote = "조금 복잡하긴 한데, 적응하면 괜찮을지도...";
+                change = { m:-10, p:-10, s:20 };
+            } else { // H
+                stats.mental += 10; stats.physical += 10; stats.skill += 30;
+                mood = "😊";
+                quote = (i === 2) ? quotes[2][1] : quotes[i][1];
+                change = { m:10, p:10, s:30 };
+            }
+
+            // Cap stats
+            stats.mental = Math.max(0, Math.min(100, stats.mental));
+            
+            // Render Card
+            html += `
+                <div class="persona-card">
+                    <div class="stage-badge">${stages[i]}</div>
+                    <div class="persona-avatar">${mood}</div>
+                    <div class="persona-quote">"${quote}"</div>
+                    
+                    <div class="stat-group">
+                        <div class="stat-label">
+                            <span>❤️ 심리적 안정</span>
+                            <span class="change-indicator ${change.m >= 0 ? 'plus' : 'minus'}">
+                                ${stats.mental}% (${change.m>=0?'+':''}${change.m})
+                            </span>
+                        </div>
+                        <div class="stat-track"><div class="stat-fill" style="width:${stats.mental}%; background:${change.m<0 ? '#f48771':'#4ec9b0'}"></div></div>
+                    </div>
+
+                    <div class="stat-group">
+                        <div class="stat-label">
+                            <span>⚡️ 육체적 여유</span>
+                            <span class="change-indicator ${change.p >= 0 ? 'plus' : 'minus'}">
+                                ${stats.physical}% (${change.p>=0?'+':''}${change.p})
+                            </span>
+                        </div>
+                        <div class="stat-track"><div class="stat-fill" style="width:${stats.physical}%; background:${change.p<0 ? '#f48771':'#4ec9b0'}"></div></div>
+                    </div>
+
+                    <div class="stat-group">
+                        <div class="stat-label">
+                            <span>📘 직무 전문성</span>
+                            <span class="change-indicator plus">
+                                ${stats.skill}% (+${change.s})
+                            </span>
+                        </div>
+                        <div class="stat-track"><div class="stat-fill" style="width:${stats.skill}%; background:#3794ff"></div></div>
+                    </div>
+                </div>
+            `;
+        });
+
+        timeline.innerHTML = html;
     }
 
 </script>
@@ -437,5 +518,4 @@ html_code = """
 </html>
 """
 
-# 4. Streamlit Render
 components.html(html_code, height=1000, scrolling=False)
