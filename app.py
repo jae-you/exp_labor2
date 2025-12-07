@@ -2,7 +2,7 @@ import streamlit as st
 import streamlit.components.v1 as components
 
 # 1. 페이지 설정
-st.set_page_config(page_title="Invisible Engineer V7.4", layout="wide")
+st.set_page_config(page_title="Invisible Engineer V7.5", layout="wide")
 
 # 2. 스타일 설정
 st.markdown("""
@@ -51,7 +51,7 @@ html_code = """
         .choice-btn:hover { border-color:#3794ff; background:#444; color:white; }
         .choice-label { color:#3794ff; font-weight:bold; margin-right:5px; }
 
-        /* IDE UI */
+        /* --- IDE UI (Cursor Style) --- */
         .ide-header { height:45px; background:#1e1e1e; border-bottom:1px solid #333; display:flex; align-items:center; padding:0 20px; color:#858585; font-size:13px; font-family:'Consolas', monospace; }
         .ide-body { flex:1; padding:40px; overflow-y:auto; position:relative; background:#1e1e1e; }
 
@@ -59,27 +59,31 @@ html_code = """
         .mission-title { font-size:16px; font-weight:bold; color:white; margin-bottom:8px; }
         .mission-desc { color:#ccc; font-size:14px; line-height:1.5; }
 
+        /* CODE INPUT AREA */
         .input-group { margin-bottom:30px; }
         .input-label { color:#d4d4d4; font-size:13px; margin-bottom:8px; display:flex; justify-content:space-between; }
         
         .chips-area { display:flex; gap:8px; margin-bottom:10px; }
         .chip { 
             background:#2d2d2d; padding:6px 12px; border-radius:4px; font-size:12px; 
-            cursor:pointer; border:1px solid #444; color:#ccc; font-family:'Consolas', monospace; 
+            cursor:pointer; border:1px solid #444; color:#ccc; font-family:'Pretendard', sans-serif; 
         }
         .chip:hover { border-color:#3794ff; color:white; }
 
+        /* Real Editor Style Input */
         .editor-wrapper {
             background:#111; border:1px solid #333; border-radius:4px; padding:15px; position:relative;
-            font-family:'Consolas', 'Monaco', monospace; font-size:14px; line-height:1.6; display:flex;
+            font-family:'Pretendard', sans-serif; font-size:14px; line-height:1.6; display:flex;
         }
         .editor-wrapper:focus-within { border-color:#3794ff; }
-        .line-num { color:#555; display:inline-block; width:20px; user-select:none; margin-right:15px; border-right:1px solid #333; height:100%; text-align:right; padding-right:10px;}
+        .line-num { color:#555; display:inline-block; width:20px; user-select:none; margin-right:15px; border-right:1px solid #333; height:100%; text-align:right; padding-right:10px; font-family:'Consolas', monospace;}
         .code-input {
             background:transparent; border:none; color:#d4d4d4; font-family:inherit; font-size:inherit;
-            flex:1; outline:none;
+            flex:1; outline:none; width: 100%;
         }
         .code-input::placeholder { color:#444; font-style:italic; }
+
+        /* Error Shake */
         .editor-wrapper.error { border-color:#f48771; animation:shake 0.3s; }
         .error-msg { color:#f48771; font-size:12px; margin-top:5px; display:none; padding-left:5px; }
 
@@ -136,8 +140,8 @@ html_code = """
             <div style="font-size:60px; margin-bottom:20px;">⚙️</div>
             <h1 style="color:white; margin:0 0 10px 0;">The Invisible Engineer</h1>
             <p style="color:#aaa; line-height:1.6; margin-bottom:30px;">
-                당신의 선택과 코드가 <strong>'한 사람의 인생'</strong>을 결정합니다.<br>
-                대화하고, 수정하고, 결과를 목격하세요.
+                당신은 콜센터 상담원의 업무를 보조하는 AI 솔루션을 설계하게 됩니다.<br>
+                대화를 통해 요구사항을 파악하고, <strong>자연어 프롬프트</strong>를 작성하여 시스템을 구축하세요.
             </p>
             <button class="deploy-btn" style="float:none; padding:15px 40px; font-size:16px;" onclick="startGame()">시뮬레이션 시작</button>
         </div>
@@ -157,8 +161,8 @@ html_code = """
 
         <div class="right-panel">
             <div class="ide-header">
-                <span style="margin-right:20px;">📄 config.yaml</span>
-                <span>python 3.9</span>
+                <span style="margin-right:20px;">📄 system_prompt.txt</span>
+                <span>Plain Text</span>
             </div>
             <div class="ide-body">
                 <div id="ide-overlay" class="overlay">
@@ -173,34 +177,34 @@ html_code = """
                     </div>
                     
                     <div style="background:#252526; padding:10px; font-size:12px; color:#dcdcaa; margin-bottom:20px; border-radius:4px; border:1px solid #444;">
-                        💡 <strong>Tip:</strong> <code>[값 입력]</code> 부분을 지우고 원하는 숫자를 입력하세요.
+                        💡 <strong>Tip:</strong> <code>[값 입력]</code> 대괄호를 포함한 부분을 모두 지우고, 원하는 지시 사항(자연어/숫자)을 입력하세요.
                     </div>
 
                     <div class="input-group">
                         <div class="input-label">
-                            <span id="q1-label">Parameter 1</span>
+                            <span id="q1-label">Instruction 1</span>
                         </div>
                         <div class="chips-area" id="q1-chips"></div>
                         <div class="editor-wrapper" id="wrap-q1">
                             <span class="line-num">1</span>
                             <input type="text" class="code-input" id="q1-input" placeholder="Chip을 클릭하세요" autocomplete="off">
                         </div>
-                        <div class="error-msg" id="q1-error">⚠️ 대괄호 [...]를 지우고 값을 입력해주세요.</div>
+                        <div class="error-msg" id="q1-error">⚠️ 대괄호 [...]를 지우고 구체적인 내용을 입력해야 합니다.</div>
                     </div>
 
                     <div class="input-group">
                         <div class="input-label">
-                            <span id="q2-label">Parameter 2</span>
+                            <span id="q2-label">Instruction 2</span>
                         </div>
                         <div class="chips-area" id="q2-chips"></div>
                         <div class="editor-wrapper" id="wrap-q2">
                             <span class="line-num">2</span>
                             <input type="text" class="code-input" id="q2-input" placeholder="Chip을 클릭하세요" autocomplete="off">
                         </div>
-                        <div class="error-msg" id="q2-error">⚠️ 대괄호 [...]를 지우고 값을 입력해주세요.</div>
+                        <div class="error-msg" id="q2-error">⚠️ 대괄호 [...]를 지우고 구체적인 내용을 입력해야 합니다.</div>
                     </div>
 
-                    <button class="deploy-btn" onclick="validateAndDeploy()">🚀 Deploy to Prod</button>
+                    <button class="deploy-btn" onclick="validateAndDeploy()">🚀 Deploy Prompt</button>
                 </div>
             </div>
         </div>
@@ -214,7 +218,7 @@ html_code = """
                 </div>
 
             <div style="text-align:center; margin-top:40px;">
-                <p style="color:#888;">"당신의 기술적 결정이 한 사람의 일상을 이렇게 변화시켰습니다."</p>
+                <p style="color:#888;">실험이 종료되었습니다.</p>
                 <button class="deploy-btn" style="float:none;" onclick="location.reload()">Restart Experiment</button>
             </div>
         </div>
@@ -235,51 +239,69 @@ html_code = """
     };
 
     let currentStage = 0; 
-    let userChoices = []; // Stores choice type: 'E'(Efficiency), 'B'(Balance), 'H'(Human)
+    let userChoices = []; // 'E'(Efficiency), 'B'(Balance), 'H'(Human)
 
-    // SCENARIO DATA
+    // SCENARIO DATA (Natural Language Prompts)
     const story = [
         {
             role: "ceo",
-            init: ["김 수석, 경쟁사가 치고 올라오네.", "우린 무조건 **'속도'**가 최우선이야. 알겠지?"],
+            init: ["김 수석, 경쟁사가 치고 올라오네.", "우린 무조건 '속도'가 최우선이야. 알겠지?"],
             branches: [
                 { label: "순응", text: "알겠습니다. 효율성 극대화 모델로 설계하겠습니다.", reply: "그래! 역시 말이 통하네. 바로 작업해.", type: "E" },
                 { label: "우려", text: "속도 경쟁은 품질 저하가 우려됩니다.", reply: "지금 품질 따질 때야? 투자 못 받으면 다 끝이야!", type: "H" }
             ],
             ide: {
                 title: "Quest 1: 초기 아키텍처 설계",
-                desc: "CEO 지시: 처리 속도(AHT)를 최우선으로 하는 설정을 입력하십시오.",
-                q1: { l: "AI 역할 정의", chips: [ {l:"Gatekeeper (효율)", c:"role: AI_First (Goal: [90%])"}, {l:"Router (균형)", c:"role: Hybrid (Split: [50:50])"} ] },
-                q2: { l: "대기 시간", chips: [ {l:"Zero Gap (속도)", c:"gap: [0초]"}, {l:"Fixed (여유)", c:"gap: [10초]"} ] }
+                desc: "CEO 지시: AI의 역할을 정의하는 시스템 프롬프트를 작성하십시오.",
+                q1: { l: "1. AI 역할 및 행동 지침", chips: [ 
+                    {l:"Gatekeeper (효율)", c:"당신은 AI 상담원입니다. 고객 전화를 먼저 받아 [단순 문의]는 스스로 처리하고, 해결이 안 되는 경우만 상담원에게 넘기세요."}, 
+                    {l:"Router (균형)", c:"당신은 분류 AI입니다. 고객의 의도를 파악하여 [단순 건]은 챗봇으로, [복잡 건]은 전문 상담원에게 연결하세요."} 
+                ] },
+                q2: { l: "2. 대기 시간 및 연결 속도", chips: [ 
+                    {l:"Zero Gap (속도)", c:"상담 종료 후 [0초] 이내에 즉시 다음 고객을 연결하세요."}, 
+                    {l:"Fixed (여유)", c:"상담원에게 [10초]의 정리 시간을 부여한 후 연결하세요."} 
+                ] }
             }
         },
         {
             role: "pm",
-            init: ["수석님, V1 배포하고 난리 났습니다. 속도는 빠른데... **'말귀를 못 알아듣는다'**는 민원이 폭주 중이에요.", "정확도 좀 높여주세요."],
+            init: ["수석님, V1 배포하고 난리 났습니다. 속도는 빠른데... '말귀를 못 알아듣는다'는 민원이 폭주 중이에요.", "정확도 좀 높여주세요."],
             branches: [
                 { label: "수용", text: "문맥 분석 기능을 강화하겠습니다.", reply: "네, 부탁드립니다. 이번엔 실수 없게 해주세요.", type: "B" },
                 { label: "방어", text: "CEO 지시대로 속도만 맞춘 건데요.", reply: "하... 핑계 대지 마시고요. 당장 해결해주세요!", type: "E" }
             ],
             ide: {
                 title: "Quest 2: 로직 고도화",
-                desc: "PM 요청: 오분류를 줄이고 정확도를 높이십시오.",
-                q1: { l: "분석 모델", chips: [ {l:"Deep Context", c:"model: Context (Depth: [Deep])"}, {l:"Keyword", c:"model: Simple (Speed: [Fast])"} ] },
-                q2: { l: "실패 처리", chips: [ {l:"Handover", c:"fallback: [상담원 연결]"}, {l:"Retry", c:"fallback: [재질문]"} ] }
+                desc: "PM 요청: 정확도를 높이기 위한 분석 지침을 작성하십시오.",
+                q1: { l: "1. 발화 분석 깊이", chips: [ 
+                    {l:"Deep Context", c:"고객의 [이전 상담 이력]과 [전체 대화 맥락]을 깊이 있게 분석하세요."}, 
+                    {l:"Keyword", c:"처리 속도를 위해 [핵심 키워드] 위주로 빠르게 의도를 파악하세요."} 
+                ] },
+                q2: { l: "2. 불확실성 처리", chips: [ 
+                    {l:"Handover", c:"의도가 불확실하면 즉시 [상담원]에게 연결하세요."}, 
+                    {l:"Retry", c:"이해가 안 되면 고객에게 [재질문]을 하여 의도를 명확히 하세요."} 
+                ] }
             }
         },
         {
             role: "agent",
             interview: true,
-            init: ["(인터뷰룸) 안녕하세요 엔지니어님. 현장 매니저 이지은입니다.", "솔직히... 지금 시스템은 저희한텐 지옥이에요. 쉴 틈도 없고, 화난 고객만 넘어오고...", "제발 **사람**을 고려해서 설계해주세요."],
+            init: ["(인터뷰룸) 안녕하세요 엔지니어님. 현장 매니저 이지은입니다.", "솔직히... 지금 시스템은 저희한텐 지옥이에요. 쉴 틈도 없고, 화난 고객만 넘어오고...", "제발 사람을 고려해서 설계해주세요."],
             branches: [
                 { label: "공감/해결", text: "그런 고충이 있는 줄 몰랐습니다. 보호 기능을 최우선으로 넣겠습니다.", reply: "정말요...? 감사합니다. 믿겠습니다.", type: "H" },
                 { label: "현실적 거절", text: "안타깝지만 효율성 지표가 우선입니다.", reply: "결국 숫자가 사람보다 중요하단 거네요...", type: "E" }
             ],
             ide: {
                 title: "Quest 3: 지속 가능성 (Human-Centric)",
-                desc: "현장 피드백: 상담원 보호 및 휴식권 보장 로직을 구현하십시오.",
-                q1: { l: "욕설 방어", chips: [ {l:"Shield On", c:"protection: Active (Action: [차단])"}, {l:"Ignore", c:"protection: None (Log: [기록만])"} ] },
-                q2: { l: "휴식 배정", chips: [ {l:"Dynamic", c:"break: Smart (Trigger: [스트레스 지수])"}, {l:"Manual", c:"break: Manual (Request: [승인제])"} ] }
+                desc: "현장 피드백: 상담원 보호 및 휴식권 보장을 위한 프롬프트를 작성하십시오.",
+                q1: { l: "1. 악성 민원 대응", chips: [ 
+                    {l:"Shield On", c:"고객의 [욕설/폭언]이 감지되면 즉시 경고 후 통화를 차단하세요."}, 
+                    {l:"Ignore", c:"욕설이 감지되더라도 대응하지 말고 [기록]만 남기세요."} 
+                ] },
+                q2: { l: "2. 휴식 및 페이스 조절", chips: [ 
+                    {l:"Dynamic", c:"통화 내용을 분석해 상담원의 스트레스가 높으면 [3분 휴식]을 제안하세요."}, 
+                    {l:"Manual", c:"휴식은 상담원이 [직접 요청]할 때만 승인하세요."} 
+                ] }
             }
         }
     ];
@@ -399,6 +421,7 @@ html_code = """
             const wrapper = inp.parentElement;
             const errId = idx === 0 ? 'q1-error' : 'q2-error';
             
+            // Check for square brackets [ ]
             if (inp.value.includes('[') || inp.value.trim() === "") {
                 wrapper.classList.add('error');
                 document.getElementById(errId).style.display = 'block';
@@ -419,7 +442,7 @@ html_code = """
             document.getElementById('ide-overlay').innerHTML = `<div style="font-size:40px; margin-bottom:15px; opacity:0.5;">🔒</div><div style="color:#888;">메신저를 확인하세요.</div>`;
             
             if (currentStage < 2) {
-                addMsg('system', `✅ Ver.${currentStage+1}.0 Update Complete.`);
+                addMsg('system', `✅ Ver.${currentStage+1}.0 업데이트 완료.`);
                 setTimeout(() => playStage(currentStage + 1), 1500);
             } else {
                 generateReport();
@@ -427,7 +450,7 @@ html_code = """
         }, 2000);
     }
 
-    // --- REPORT LOGIC (WORKER EVOLUTION) ---
+    // --- REPORT LOGIC ---
     function generateReport() {
         document.getElementById('report-screen').style.display = 'block';
         const timeline = document.getElementById('timeline');
@@ -439,13 +462,12 @@ html_code = """
         const quotes = [
             ["(기대) 새로운 시스템이라니.. 일이 좀 편해질까?", "(걱정) AI가 들어오면 우린 어떻게 되는 거지?"],
             ["(고통) 말귀 못 알아듣는 AI 때문에 내가 욕을 두 배로 먹어...", "(안도) 오, AI가 제법 똑똑하게 도와주네?"],
-            ["(절망) 기계 부품이 된 기분이야. 더는 못 하겠어. (퇴사 결심)", "(성장) 이제야 진짜 '상담'을 하는 기분이야. 전문가가 된 느낌!"]
+            ["(절망) 기계 부품이 된 기분이야. 더는 못 하겠어. (퇴사 결심)", "(성장) 이제야 진짜 상담을 하는 기분이야. 전문가가 된 느낌!"]
         ];
 
         let html = "";
 
         userChoices.forEach((choice, i) => {
-            // Logic: E(Efficiency) -> Stats Down, H(Human) -> Stats Up
             let mood = "😐";
             let quote = "";
             let change = { m:0, p:0, s:0 };
@@ -467,10 +489,8 @@ html_code = """
                 change = { m:10, p:10, s:30 };
             }
 
-            // Cap stats
             stats.mental = Math.max(0, Math.min(100, stats.mental));
             
-            // Render Card
             html += `
                 <div class="persona-card">
                     <div class="stage-badge">${stages[i]}</div>
