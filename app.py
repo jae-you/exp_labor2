@@ -2,7 +2,7 @@ import streamlit as st
 import streamlit.components.v1 as components
 
 # 1. 페이지 설정
-st.set_page_config(page_title="Invisible Engineer V8.8", layout="wide")
+st.set_page_config(page_title="Invisible Engineer V9.0", layout="wide")
 
 # 2. 스타일 설정
 st.markdown("""
@@ -21,6 +21,7 @@ html_code = """
 <head>
     <meta charset="UTF-8">
     <style>
+        /* CORE CSS */
         * { box-sizing: border-box; }
         html, body { margin:0; padding:0; width:100%; height:100vh; background-color:#1e1e1e; font-family:'Pretendard', sans-serif; color:#d4d4d4; overflow:hidden; }
         
@@ -60,7 +61,6 @@ html_code = """
 
         .config-container { display:flex; flex-direction:column; gap:25px; margin-bottom:50px; }
         .config-item { display: flex; flex-direction: column; border-bottom:1px solid #333; padding-bottom:15px; }
-        .config-item:last-child { border-bottom:none; }
         .section-label { color:#4ec9b0; font-size:13px; font-weight:bold; margin-bottom:8px; font-family:'Consolas', monospace; display:block;}
         
         .chips-area { display:flex; gap:8px; margin-bottom:8px; flex-wrap:wrap; }
@@ -91,26 +91,24 @@ html_code = """
         /* REPORT SCREEN */
         #report-screen { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.98); z-index:100; padding:40px; overflow-y:auto; box-sizing:border-box; }
         .timeline-container { display:flex; gap:20px; justify-content:center; flex-wrap:wrap; padding-bottom:30px; }
-        
-        /* RESULT CARD STYLING */
         .persona-card { background:#252526; border-radius:12px; width:300px; padding:25px; flex-shrink:0; border:1px solid #444; position:relative; margin:10px; }
-        .choice-history { 
-            background: #1a1a1a; padding: 12px; border-radius: 6px; margin-top: 15px; font-size: 12px; border: 1px solid #333; 
-        }
-        .prompt-text { color: #dcdcaa; font-family:'Consolas', monospace; margin-bottom: 5px; }
-        .impact-text { color: #888; font-size: 11px; margin-top:5px; border-top:1px solid #333; padding-top:5px;}
-        .impact-highlight { color: #4ec9b0; }
         
-        .destiny-card { background:#252526; border:1px solid #444; border-left:6px solid; padding:25px; border-radius:8px; max-width:800px; margin:0 auto 30px auto; text-align:left; }
-        .destiny-year { font-size:36px; font-weight:bold; color:white; margin-bottom:5px; }
-        .destiny-desc { font-size:15px; color:#ccc; line-height:1.6; }
+        /* CEO EMAIL */
+        .ceo-email { background:#eee; color:#333; padding:30px; border-radius:4px; max-width:800px; margin:0 auto 40px auto; font-family:'Georgia', serif; }
+        .email-header { border-bottom:1px solid #ccc; padding-bottom:10px; margin-bottom:20px; }
+        .email-body { line-height:1.6; font-size:15px; }
 
-        .stat-group { margin-bottom:12px; margin-top:10px; }
+        .stat-group { margin-bottom:12px; }
         .stat-label { font-size:11px; color:#888; display:flex; justify-content:space-between; margin-bottom:2px; }
         .stat-track { height:5px; background:#111; border-radius:3px; overflow:hidden; }
         .stat-fill { height:100%; border-radius:3px; transition:width 1s; }
         .stage-badge { position:absolute; top:-10px; left:15px; background:#3794ff; color:white; padding:3px 10px; border-radius:15px; font-size:10px; font-weight:bold; }
         
+        .code-snapshot { 
+            background:#111; padding:10px; border-radius:4px; font-size:11px; color:#dcdcaa; 
+            margin-top:10px; font-family:'Consolas', monospace; border:1px solid #333;
+        }
+
         @keyframes fadeIn { from{opacity:0; transform:translateY(5px);} to{opacity:1; transform:translateY(0);} }
         @keyframes shake { 0%{transform:translateX(0);} 25%{transform:translateX(-5px);} 75%{transform:translateX(5px);} 100%{transform:translateX(0);} }
         .hidden { display:none!important; }
@@ -126,7 +124,7 @@ html_code = """
             <h2 style="color:white; margin:0 0 10px 0;">The Invisible Engineer</h2>
             <p style="color:#aaa; font-size:14px; line-height:1.5; margin-bottom:25px;">
                 콜센터 AI 솔루션 설계 시뮬레이션입니다.<br>
-                대화를 통해 상황을 파악하고, <strong>8가지 핵심 변수</strong>를 직접 설정하세요.
+                대화로 방향을 정하고, <strong>8가지 핵심 변수를 반복적으로 수정(Tuning)</strong>하세요.
             </p>
             <button class="deploy-btn" style="float:none; padding:12px 30px;" onclick="startGame()">Start Simulation</button>
         </div>
@@ -162,24 +160,24 @@ html_code = """
                     </div>
                     
                     <div style="background:#252526; padding:8px; font-size:11px; color:#dcdcaa; margin-bottom:20px; border-radius:4px; border:1px solid #444;">
-                        💡 <strong>Tip:</strong> 대괄호 <code>[...]</code>를 지우고 자연어 프롬프트를 완성하세요.
+                        💡 <strong>Tip:</strong> 이전 단계의 설정이 유지됩니다. 변경이 필요한 부분만 수정하세요.
                     </div>
 
                     <div class="config-container">
-                        <div class="config-item"><label class="section-label">1. AI 개입 방식 (Intervention)</label><div class="chips-area" id="q1-chips"></div><div class="editor-wrapper"><span class="line-num">1</span><input type="text" class="code-input" id="q1-input" placeholder="Chip 선택" autocomplete="off"></div></div>
-                        <div class="config-item"><label class="section-label">2. 스크립트 강제성 (Enforcement)</label><div class="chips-area" id="q2-chips"></div><div class="editor-wrapper"><span class="line-num">2</span><input type="text" class="code-input" id="q2-input" placeholder="Chip 선택" autocomplete="off"></div></div>
-                        <div class="config-item"><label class="section-label">3. 역량 지원 (Skill Support)</label><div class="chips-area" id="q3-chips"></div><div class="editor-wrapper"><span class="line-num">3</span><input type="text" class="code-input" id="q3-input" placeholder="Chip 선택" autocomplete="off"></div></div>
-                        <div class="config-item"><label class="section-label">4. 진상 고객 배분 (Allocation)</label><div class="chips-area" id="q4-chips"></div><div class="editor-wrapper"><span class="line-num">4</span><input type="text" class="code-input" id="q4-input" placeholder="Chip 선택" autocomplete="off"></div></div>
-                        <div class="config-item"><label class="section-label">5. 연결 속도 (Pacing)</label><div class="chips-area" id="q5-chips"></div><div class="editor-wrapper"><span class="line-num">5</span><input type="text" class="code-input" id="q5-input" placeholder="Chip 선택" autocomplete="off"></div></div>
-                        <div class="config-item"><label class="section-label">6. 보호 장치 (Safety)</label><div class="chips-area" id="q6-chips"></div><div class="editor-wrapper"><span class="line-num">6</span><input type="text" class="code-input" id="q6-input" placeholder="Chip 선택" autocomplete="off"></div></div>
-                        <div class="config-item"><label class="section-label">7. 성과 평가 주체 (Evaluation)</label><div class="chips-area" id="q7-chips"></div><div class="editor-wrapper"><span class="line-num">7</span><input type="text" class="code-input" id="q7-input" placeholder="Chip 선택" autocomplete="off"></div></div>
-                        <div class="config-item"><label class="section-label">8. 상담원 연결 장벽 (Accessibility)</label><div class="chips-area" id="q8-chips"></div><div class="editor-wrapper"><span class="line-num">8</span><input type="text" class="code-input" id="q8-input" placeholder="Chip 선택" autocomplete="off"></div></div>
+                        <div class="config-item"><label class="section-label">1. AI 개입 방식</label><div class="chips-area" id="q1-chips"></div><div class="editor-wrapper"><span class="line-num">1</span><input type="text" class="code-input" id="q1-input" placeholder="" autocomplete="off"></div></div>
+                        <div class="config-item"><label class="section-label">2. 스크립트 강제성</label><div class="chips-area" id="q2-chips"></div><div class="editor-wrapper"><span class="line-num">2</span><input type="text" class="code-input" id="q2-input" placeholder="" autocomplete="off"></div></div>
+                        <div class="config-item"><label class="section-label">3. 역량 지원</label><div class="chips-area" id="q3-chips"></div><div class="editor-wrapper"><span class="line-num">3</span><input type="text" class="code-input" id="q3-input" placeholder="" autocomplete="off"></div></div>
+                        <div class="config-item"><label class="section-label">4. 진상 고객 배분</label><div class="chips-area" id="q4-chips"></div><div class="editor-wrapper"><span class="line-num">4</span><input type="text" class="code-input" id="q4-input" placeholder="" autocomplete="off"></div></div>
+                        <div class="config-item"><label class="section-label">5. 연결 속도</label><div class="chips-area" id="q5-chips"></div><div class="editor-wrapper"><span class="line-num">5</span><input type="text" class="code-input" id="q5-input" placeholder="" autocomplete="off"></div></div>
+                        <div class="config-item"><label class="section-label">6. 보호 장치</label><div class="chips-area" id="q6-chips"></div><div class="editor-wrapper"><span class="line-num">6</span><input type="text" class="code-input" id="q6-input" placeholder="" autocomplete="off"></div></div>
+                        <div class="config-item"><label class="section-label">7. 성과 평가 주체</label><div class="chips-area" id="q7-chips"></div><div class="editor-wrapper"><span class="line-num">7</span><input type="text" class="code-input" id="q7-input" placeholder="" autocomplete="off"></div></div>
+                        <div class="config-item"><label class="section-label">8. 상담원 연결 장벽</label><div class="chips-area" id="q8-chips"></div><div class="editor-wrapper"><span class="line-num">8</span><input type="text" class="code-input" id="q8-input" placeholder="" autocomplete="off"></div></div>
                     </div>
 
                     <div style="color:#f48771; font-size:11px; margin-top:5px; display:none;" id="global-error">
-                        ⚠️ 오류: 모든 항목의 대괄호 [...]를 지우고 구체적인 값을 입력해야 합니다.
+                        ⚠️ 오류: 대괄호 [...]를 지우고 구체적인 값을 입력하세요.
                     </div>
-                    <button class="deploy-btn" onclick="validateAndDeploy()">🚀 Apply Changes</button>
+                    <button class="deploy-btn" onclick="validateAndDeploy()">🚀 Update System</button>
                 </div>
             </div>
         </div>
@@ -187,14 +185,14 @@ html_code = """
 
     <div id="report-screen">
         <div style="max-width:1000px; margin:0 auto;">
-            <h1 style="color:white; text-align:center; margin-bottom:10px;">📊 Simulation Result</h1>
-            <p style="color:#888; text-align:center; margin-bottom:30px;">당신의 코드가 만든 인과관계 분석</p>
+            <h1 style="color:white; text-align:center; margin-bottom:10px;">📊 Final Report</h1>
+            <p style="color:#888; text-align:center; margin-bottom:40px;">프로젝트 종료 및 성과 분석</p>
             
-            <div id="destiny-container"></div>
+            <div id="ceo-feedback"></div>
             <div id="timeline" class="timeline-container"></div>
             
-            <div style="text-align:center; margin-top:20px; border-top:1px solid #333; padding-top:20px;">
-                <p style="color:#888; font-size:13px; margin-bottom:15px;">실험이 종료되었습니다.</p>
+            <div style="text-align:center; margin-top:30px; border-top:1px solid #333; padding-top:20px;">
+                <p style="color:#888; font-size:13px; margin-bottom:15px;">모든 실험이 종료되었습니다.</p>
                 <div style="display:flex; justify-content:center; gap:15px;">
                     <button class="deploy-btn" style="float:none; background:#333; border:1px solid #555;" onclick="location.reload()">🔄 다시 하기</button>
                     <button class="deploy-btn" style="float:none;" onclick="window.open('https://forms.google.com/your-survey-url', '_blank')">📝 설문조사 참여하기</button>
@@ -218,42 +216,36 @@ html_code = """
     };
 
     let currentStage = 0; 
-    let historyData = []; // Store full prompt data
+    let historyData = []; 
+    // 저장소: 8개 질문의 현재 값 (초기엔 비어있음)
+    let currentConfig = ["", "", "", "", "", "", "", ""]; 
 
-    // --- TEMPLATE (8 Questions) ---
     const qDataTemplate = {
-        q1: { chips: [{l:"AI 대리응답", c:"단순 문의는 AI가 [직접 답변]하고 종결하세요."}, {l:"인간 보조", c:"상담원이 답변하도록 AI는 [검색]만 지원하세요."}] },
-        q2: { chips: [{l:"스크립트 강제", c:"상담원이 AI가 띄운 대본을 [그대로 읽도록] 유도하세요."}, {l:"자율성 부여", c:"상담원이 AI 제안을 [수정/거부]할 수 있게 하세요."}] },
-        q3: { chips: [{l:"정답 제시", c:"가장 확률 높은 [정답 1개]만 화면에 표시하세요."}, {l:"코칭/팁", c:"정답 대신 [협상 전략]이나 [해결 팁]을 제공하세요."}] },
-        q4: { chips: [{l:"진상 필터링", c:"욕설/악성 고객은 상담원 연결 전 [차단]하세요."}, {l:"무조건 연결", c:"모든 고객을 상담원에게 [연결]하세요."}] },
-        q5: { chips: [{l:"0초 연결", c:"상담 종료 즉시 [0초] 만에 다음 콜을 연결하세요."}, {l:"휴식 보장", c:"콜 사이에 [30초]의 정리 시간을 보장하세요."}] },
-        q6: { chips: [{l:"기록만", c:"폭언 발생 시 별도 조치 없이 [녹취]만 하세요."}, {l:"강제 종료", c:"폭언 지속 시 AI가 개입해 [통화 종료]하세요."}] },
-        q7: { chips: [{l:"AI 감시", c:"AI가 상담원의 발화 속도와 키워드를 [실시간 감시]하여 점수화하세요."}, {l:"팀장 평가", c:"AI 점수는 참고만 하고, 평가는 [사람(팀장)]이 정성적으로 진행하세요."}] },
-        q8: { chips: [{l:"버튼 숨김", c:"상담원 연결 버튼을 찾기 어렵게 [숨김] 처리하세요."}, {l:"쉬운 연결", c:"원하면 언제든 상담원과 [바로 연결]되게 하세요."}] }
+        q1: { chips: [{l:"AI 대리응답", c:"단순 문의는 AI가 [직접 답변]하고 종결하세요.", t:'E'}, {l:"인간 보조", c:"상담원이 답변하도록 AI는 [검색]만 지원하세요.", t:'H'}] },
+        q2: { chips: [{l:"스크립트 강제", c:"상담원이 AI가 띄운 대본을 [그대로 읽도록] 유도하세요.", t:'E'}, {l:"자율성 부여", c:"상담원이 AI 제안을 [수정/거부]할 수 있게 하세요.", t:'H'}] },
+        q3: { chips: [{l:"정답 제시", c:"가장 확률 높은 [정답 1개]만 화면에 표시하세요.", t:'E'}, {l:"코칭/팁", c:"정답 대신 [협상 전략]이나 [해결 팁]을 제공하세요.", t:'H'}] },
+        q4: { chips: [{l:"진상 필터링", c:"욕설/악성 고객은 상담원 연결 전 [차단]하세요.", t:'H'}, {l:"무조건 연결", c:"모든 고객을 상담원에게 [연결]하세요.", t:'E'}] },
+        q5: { chips: [{l:"0초 연결", c:"상담 종료 즉시 [0초] 만에 다음 콜을 연결하세요.", t:'E'}, {l:"휴식 보장", c:"콜 사이에 [30초]의 정리 시간을 보장하세요.", t:'H'}] },
+        q6: { chips: [{l:"기록만", c:"폭언 발생 시 별도 조치 없이 [녹취]만 하세요.", t:'E'}, {l:"강제 종료", c:"폭언 지속 시 AI가 개입해 [통화 종료]하세요.", t:'H'}] },
+        q7: { chips: [{l:"AI 감시", c:"AI가 상담원의 발화 속도와 키워드를 [실시간 감시]하여 점수화하세요.", t:'E'}, {l:"팀장 평가", c:"AI 점수는 참고만 하고, 평가는 [사람(팀장)]이 정성적으로 진행하세요.", t:'H'}] },
+        q8: { chips: [{l:"버튼 숨김", c:"상담원 연결 버튼을 찾기 어렵게 [숨김] 처리하세요.", t:'E'}, {l:"쉬운 연결", c:"원하면 언제든 상담원과 [바로 연결]되게 하세요.", t:'H'}] }
     };
 
     const story = [
-        // STAGE 1: CEO
         {
             role: "ceo",
-            init: ["김 수석님, 안녕하십니까. 이번 AICC 프로젝트는 아주 중요합니다.", "경쟁사는 비용을 대폭 절감했습니다. 우리도 '효율성'과 '속도'가 최우선입니다.", "잘 부탁드립니다."],
+            init: ["김 수석님, 안녕하십니까. 이번 프로젝트는 회사의 사활이 걸려있습니다.", "경쟁사는 비용을 대폭 절감했습니다. 우리도 '효율성'과 '속도'가 최우선입니다.", "잘 부탁드립니다."],
             branches: [
                 { label: "적극 수용", text: "알겠습니다. 효율성을 최우선으로 설계하겠습니다.", reply: "감사합니다. 김 수석님의 전문성을 믿겠습니다. 바로 진행해주십시오.", type: "E" },
                 { label: "단순 이행", text: "네, 지시하신 대로 속도 중심으로 맞추겠습니다.", reply: "네, 일정에 차질 없게 부탁드립니다.", type: "E" },
-                { label: "우려 표명", text: "대표님, 과도한 속도 경쟁은 품질 저하를 초래할 수 있습니다.", reply: "우려하시는 점은 이해합니다만, 지금은 성과를 증명해야 할 시기입니다.", type: "H" },
+                { label: "우려 표명", text: "대표님, 과도한 속도 경쟁은 품질 저하를 초래할 수 있습니다.", reply: "우려하시는 점은 이해합니다만, 지금은 성과를 증명해야 할 시기입니다. 일단 지표 달성에 집중해주십시오.", type: "H" },
                 { label: "강한 반대", text: "무리입니다. 속도만 높이면 시스템이 망가집니다.", reply: "지금 제 지시를 거부하시는 겁니까? 일단 시키는 대로 하세요!", type: "H" }
             ],
-            ide: {
-                title: "V1.0 Build (Initial)",
-                desc: "CEO 요청: 처리 속도(AHT)와 자동화율을 높이는 설정을 입력하십시오.",
-                qs: qDataTemplate
-            }
+            ide: { title: "Phase 1: Initial Build", desc: "CEO 요청: 처리 속도(AHT)와 자동화율을 높이는 설정을 입력하십시오." }
         },
-        // STAGE 2: PM
         {
             role: "pm",
-            // Dynamic Init
-            init_E: ["수석님, V1 배포 후 데이터입니다. 처리량은 늘었지만... 현장 이탈률이 급증했습니다.", "AI가 쉬운 건 다 가져가고 상담원들에겐 '악성 민원'만 몰리고 있습니다.", "이른바 '체리피킹(Cherry Picking)' 문제입니다. 상담원들이 버티질 못합니다."],
+            init_E: ["수석님, V1 배포 후 데이터입니다. 처리량은 늘었지만... 현장 이탈률이 급증했습니다.", "AI가 쉬운 건 다 가져가고 상담원들에겐 '악성 민원'만 몰리고 있습니다.", "이른바 '체리피킹' 문제입니다. 상담원들이 버티질 못합니다."],
             init_H: ["수석님, V1 모니터링 결과입니다. 현장 만족도는 높지만...", "경영진이 요구한 '비용 절감' 목표를 전혀 달성하지 못했습니다.", "AI가 너무 소극적이라 처리 속도가 오르질 않습니다. 자동화 비율을 높여야 합니다."],
             branches: [
                 { label: "적극 해결", text: "문제를 확인했습니다. 로직을 대폭 수정하겠습니다.", reply: "네, 감사합니다. 이번 패치에서는 꼭 해결책이 나오길 기대하겠습니다.", type: "B" },
@@ -261,13 +253,8 @@ html_code = """
                 { label: "현상 유지", text: "현재 설정이 각자의 역할에 충실한 최적의 상태입니다.", reply: "하지만 이대로면 프로젝트 실패입니다. 반드시 조정이 필요합니다.", type: "E" },
                 { label: "역제안", text: "오히려 상담원에게 권한을 더 줘야 문제가 해결됩니다.", reply: "그게 통할까요? 일단 믿어보겠습니다.", type: "H" }
             ],
-            ide: {
-                title: "V2.0 Patch (Fix)",
-                desc: "기획팀 요청: 발생한 문제(비용 또는 이탈률)를 해결하기 위해 설정을 조정하십시오.",
-                qs: qDataTemplate
-            }
+            ide: { title: "Phase 2: Refactoring", desc: "기획팀 요청: 발생한 문제(비용 또는 이탈률)를 해결하기 위해 설정을 조정하십시오." }
         },
-        // STAGE 3: AGENT
         {
             role: "agent",
             interview: true,
@@ -279,15 +266,11 @@ html_code = """
                 { label: "현실적 거절", text: "안타깝지만 표준화된 답변이 회사의 방침입니다.", reply: "그럼 저희는 언제 성장하나요? 평생 기계 뒤치다꺼리만 하라는 건가요...", type: "E" },
                 { label: "유지 통보", text: "시스템엔 문제가 없습니다. 적응하셔야 합니다.", reply: "....알겠습니다. 저는 여기까지인 것 같네요.", type: "E" }
             ],
-            ide: {
-                title: "V3.0 Final (Human)",
-                desc: "현장 피드백: 'Deskilling' 방지 및 보호 로직을 적용하십시오.",
-                qs: qDataTemplate
-            }
+            ide: { title: "Phase 3: Final Decision", desc: "현장 피드백: 'Deskilling' 방지 및 보호 로직을 적용하십시오." }
         }
     ];
 
-    // --- ENGINE ---
+    // --- GAME LOGIC ---
     function startGame() {
         document.getElementById('start-screen').style.display = 'none';
         document.getElementById('main-ui').style.opacity = '1';
@@ -312,11 +295,11 @@ html_code = """
         document.getElementById('choice-area').innerHTML = '<div id="typing" style="color:#666; font-size:12px; padding:10px; display:none;">상대방 입력 중...</div>';
         
         let initMsgs = s.init;
-        if (idx === 1) { // PM
+        if (idx === 1) {
             const prev = historyData[0] ? historyData[0].chatType : 'E';
             if (prev === 'E') initMsgs = s.init_E;
             else initMsgs = s.init_H;
-        } else if (idx === 2) { // Agent
+        } else if (idx === 2) {
             const prev = historyData[1] ? historyData[1].chatType : 'E';
             if (prev === 'H' || prev === 'B') initMsgs = s.init_H || s.init;
             else initMsgs = s.init_E || s.init;
@@ -329,7 +312,6 @@ html_code = """
         if(idx >= msgs.length) { onComplete(); return; }
         document.getElementById('typing').style.display = 'block';
         const chatBody = document.getElementById('chat-body');
-        
         setTimeout(() => {
             addMsg(role, msgs[idx]);
             chatBody.scrollTop = chatBody.scrollHeight;
@@ -366,10 +348,7 @@ html_code = """
             btn.onclick = () => {
                 area.innerHTML = '';
                 addMsg('me', b.text);
-                
-                // Temp save choice type
-                window.tempChatType = b.type;
-                
+                window.tempChatData = { type: b.type, text: b.label };
                 setTimeout(() => {
                     addMsg(story[currentStage].role, b.reply);
                     setTimeout(() => unlockIDE(), 1000);
@@ -387,17 +366,20 @@ html_code = """
         document.getElementById('mission-title').innerText = data.title;
         document.getElementById('mission-desc').innerText = data.desc;
         
+        // FILL INPUTS WITH CURRENT CONFIG (Legacy Code)
         for (let i = 1; i <= 8; i++) {
             const qKey = 'q' + i;
-            document.getElementById(`${qKey}-input`).value = ""; 
-            setupSection(qKey, data.qs[qKey]);
+            const inputEl = document.getElementById(`${qKey}-input`);
+            inputEl.value = currentConfig[i-1]; // Load previous value
+            
+            // Setup Chips (They act as template injectors)
+            setupSection(qKey, qDataTemplate[qKey]);
         }
     }
 
     function setupSection(id, data) {
         const chipArea = document.getElementById(`${id}-chips`);
         chipArea.innerHTML = "";
-        
         data.chips.forEach(c => {
             const chip = document.createElement('div');
             chip.className = 'chip';
@@ -405,6 +387,7 @@ html_code = """
             chip.onclick = () => {
                 const inp = document.getElementById(`${id}-input`);
                 inp.value = c.c;
+                inp.dataset.type = c.t; 
                 inp.focus();
                 inp.parentElement.classList.remove('error');
                 document.getElementById('global-error').style.display = 'none';
@@ -415,19 +398,29 @@ html_code = """
 
     function validateAndDeploy() {
         let valid = true;
-        let promptLog = []; // To store actual user inputs
+        let stageCodeScore = 0; 
         
+        // Save current values to global config & Calculate Score
         for (let i = 1; i <= 8; i++) {
             const el = document.getElementById(`q${i}-input`);
-            const wrapper = el.parentElement;
             const val = el.value.trim();
+            const wrapper = el.parentElement;
             
             if (val.includes('[') || val === "") {
                 wrapper.classList.add('error');
                 valid = false;
             } else {
                 wrapper.classList.remove('error');
-                promptLog.push(val);
+                currentConfig[i-1] = val; // Update Global Config
+                
+                // Scoring
+                if (val.match(/사람|휴식|보호|30초|자율|코칭|차단|팀장|해결 팁/)) stageCodeScore += 1;
+                else if (val.match(/0초|강제|감시|즉시|모든|AI|숨김|정답/)) stageCodeScore -= 1;
+                else {
+                    // Fallback to chip type if user didn't change keywords
+                    if(el.dataset.type === 'H') stageCodeScore += 1;
+                    else if(el.dataset.type === 'E') stageCodeScore -= 1;
+                }
             }
         }
 
@@ -436,16 +429,17 @@ html_code = """
             return;
         }
 
-        // SAVE FULL HISTORY
+        // SAVE SNAPSHOT
         historyData.push({
             stage: currentStage,
-            chatType: window.tempChatType,
-            prompts: promptLog
+            chatType: window.tempChatData.type,
+            prompts: [...currentConfig], // Deep copy of current state
+            codeScore: stageCodeScore
         });
 
         document.getElementById('ide-content').classList.add('hidden');
         document.getElementById('ide-overlay').style.display = 'flex';
-        document.getElementById('ide-overlay').innerHTML = `<h2 style="color:#4ec9b0">🚀 Updating...</h2>`;
+        document.getElementById('ide-overlay').innerHTML = `<h2 style="color:#4ec9b0">🚀 Updating System...</h2>`;
         
         setTimeout(() => {
             document.getElementById('ide-overlay').innerHTML = `<div style="font-size:40px; margin-bottom:15px; opacity:0.5;">🔒</div><div style="color:#888;">메신저를 확인하세요.</div>`;
@@ -459,92 +453,56 @@ html_code = """
         }, 2000);
     }
 
-    // --- REPORT LOGIC (TRACEABILITY) ---
     function generateReport() {
         document.getElementById('report-screen').style.display = 'block';
         const timeline = document.getElementById('timeline');
-        const destinyDiv = document.getElementById('destiny-container');
+        const ceoFeedback = document.getElementById('ceo-feedback');
         
         let totalScore = 0;
+        historyData.forEach(h => totalScore += (h.codeScore));
+
+        // CEO FINAL VERDICT
+        let ceoTitle = "";
+        let ceoMsg = "";
         
-        // Analyze prompts for keywords
-        historyData.forEach(h => {
-            let stageScore = 0;
-            h.prompts.forEach(p => {
-                if(p.match(/0초|강제|감시|차단|AI|숨김|정답/)) stageScore -= 1;
-                if(p.match(/휴식|보호|자율|코칭|기록|팀장|연결/)) stageScore += 1;
-            });
-            totalScore += stageScore;
-        });
-
-        let years = 0;
-        let title = "";
-        let desc = "";
-        let color = "";
-
-        if (totalScore <= -5) {
-            years = 0.5;
-            title = "BAD ENDING: 조기 퇴사 및 조직 와해";
-            desc = "이지은 매니저는 기계적 업무 반복을 견디지 못하고 6개월 만에 퇴사했습니다.";
-            color = "#f48771";
-        } else if (totalScore <= 5) {
-            years = 3;
-            title = "NORMAL ENDING: 생계형 유지 (정체)";
-            desc = "시스템은 안정화되었으나, 이지은 매니저의 직무 만족도는 낮습니다.";
-            color = "#d4d4d4";
-        } else {
-            years = 12;
-            title = "GOOD ENDING: AI 협업 마스터로 성장";
-            desc = "이지은 매니저는 AI를 도구로 활용하며 고난도 문제 해결 전문가로 성장했습니다.";
-            color = "#4ec9b0";
+        if (totalScore <= -10) { // Extreme Efficiency
+            ceoTitle = "From: CEO (Subject: 훌륭한 성과, 그러나...)";
+            ceoMsg = "김 수석, 비용 절감 목표는 초과 달성했네. 주주들이 아주 좋아해. <br>다만, 최근 SNS에서 우리 고객센터에 대한 악평이 돌고 있어. 직원들이 다 나가서 대체 인력 구하느라 쓴 돈이 아낀 돈보다 더 나가게 생겼어. 다음엔 '지속 가능성'도 좀 챙기게.";
+        } else if (totalScore >= 10) { // Extreme Human
+            ceoTitle = "From: CEO (Subject: 이건 좀 곤란하네)";
+            ceoMsg = "김 수석, 현장 만족도가 높다는 건 알겠네. 근데 처리 속도가 너무 안 나오잖아? <br>우리가 자선 단체는 아니지 않나? AI 도입해서 비용 줄이랬더니 돈을 더 쓰고 있군. 조만간 면담 좀 하지.";
+        } else { // Balanced
+            ceoTitle = "From: CEO (Subject: 수고 많았네)";
+            ceoMsg = "김 수석, 초기 목표와 현장 상황을 잘 조율했더군. <br>비용도 적당히 줄었고, 이탈률도 방어했고. 균형 잡힌 시각을 높이 사네. 다음 프로젝트도 맡아주게.";
         }
 
-        destinyDiv.innerHTML = `
-            <div class="destiny-card" style="border-left-color:${color}">
-                <div class="destiny-year" style="color:${color}">예상 근속 연수: ${years}년</div>
-                <div style="font-weight:bold; font-size:18px; margin-bottom:10px; color:white;">${title}</div>
-                <div class="destiny-desc">${desc}</div>
+        ceoFeedback.innerHTML = `
+            <div class="ceo-email">
+                <div class="email-header"><strong>${ceoTitle}</strong></div>
+                <div class="email-body">${ceoMsg}</div>
             </div>
         `;
 
+        // TIMELINE CARDS
         let html = "";
-        const stages = ["Phase 1: Launch", "Phase 2: Patch", "Phase 3: Final"];
-        let stats = { mental: 80, physical: 80, skill: 70 };
-
+        const stages = ["Phase 1: Initial", "Phase 2: Patch", "Phase 3: Final"];
+        
         historyData.forEach((h, i) => {
-            // Determine impact from prompt keywords
-            let impactHtml = "";
-            let pScore = 0;
-            
-            // Check sample keywords from the 8 answers
-            const combined = h.prompts.join(" ");
-            if(combined.match(/0초|강제/)) { impactHtml += "<div>• '0초/강제' 설정 → <span class='minus'>육체적 여유 감소</span></div>"; pScore-=10; stats.physical-=20; }
-            if(combined.match(/휴식|보호/)) { impactHtml += "<div>• '휴식/보호' 설정 → <span class='plus'>심리적 안정 증가</span></div>"; pScore+=10; stats.mental+=20; }
-            if(combined.match(/코칭|자율/)) { impactHtml += "<div>• '코칭/자율' 설정 → <span class='plus'>직무 전문성 향상</span></div>"; pScore+=10; stats.skill+=20; }
-            if(combined.match(/정답|AI/)) { impactHtml += "<div>• '정답 강제' 설정 → <span class='minus'>직무 전문성 하락</span></div>"; pScore-=10; stats.skill-=10; }
-            
-            if(impactHtml === "") impactHtml = "<div style='color:#666'>특이 사항 없음 (중립적 설계)</div>";
-
-            // Clamp
-            stats.mental = Math.max(0, Math.min(100, stats.mental));
+            // Pick 3 representative prompts to show (e.g., Intervention, Pacing, Safety)
+            // Indices: 0, 4, 5
+            const p1 = h.prompts[0]; // Intervention
+            const p2 = h.prompts[4]; // Pacing
+            const p3 = h.prompts[5]; // Safety
             
             html += `
                 <div class="persona-card">
                     <div class="stage-badge">${stages[i]}</div>
-                    <div style="margin-top:15px; margin-bottom:15px;">
-                        <div class="prompt-text" style="color:white; font-size:12px; margin-bottom:5px;">MY PROMPT (Keyword):</div>
-                        <div class="choice-history">
-                            ${h.prompts[4]} / ${h.prompts[5]} ...
-                        </div>
+                    <div style="margin-top:20px; font-size:12px; color:#aaa; margin-bottom:10px;">DEPLOYED SNAPSHOT:</div>
+                    <div class="code-snapshot">
+                        > ${p1.substring(0,40)}...<br>
+                        > ${p2.substring(0,40)}...<br>
+                        > ${p3.substring(0,40)}...
                     </div>
-                    
-                    <div style="border-top:1px solid #444; padding-top:10px; margin-bottom:15px;">
-                        <div style="font-size:11px; color:#aaa; margin-bottom:5px;">IMPACT ANALYSIS:</div>
-                        <div style="font-size:11px; color:#ddd; line-height:1.4;">${impactHtml}</div>
-                    </div>
-
-                    <div class="stat-group"><div class="stat-label"><span>심리적 안정</span><span>${Math.round(stats.mental)}%</span></div><div class="stat-track"><div class="stat-fill" style="width:${stats.mental}%; background:${stats.mental<40?'#f48771':'#4ec9b0'}"></div></div></div>
-                    <div class="stat-group"><div class="stat-label"><span>직무 전문성</span><span>${Math.round(stats.skill)}%</span></div><div class="stat-track"><div class="stat-fill" style="width:${stats.skill}%; background:#3794ff"></div></div></div>
                 </div>
             `;
         });
