@@ -283,6 +283,7 @@ html_code = f"""
         const container = document.getElementById('task-container');
         container.classList.remove('hidden');
         
+        // 주의: Python f-string 내부의 JS 변수(idx, i 등)는 중괄호 두 개(${{...}})로 감싸야 함
         container.innerHTML = `
             <div class="task-card">
                 <div class="task-title">${{task.title}}</div>
@@ -293,7 +294,7 @@ html_code = f"""
                 </div>
                 <div class="choice-grid">
                     ${{task.options.map((opt, i) => `
-                        <div class="choice-btn" onclick="selectOption(${idx}, ${i})">
+                        <div class="choice-btn" onclick="selectOption(${{idx}}, ${{i}})">
                             <div class="choice-header">
                                 <span class="choice-label">${{opt.label}}</span>
                                 <span class="choice-type">Type ${{opt.type}}</span>
@@ -343,8 +344,6 @@ html_code = f"""
         document.getElementById('report-screen').style.display = 'flex';
         
         // Calculate Metrics (Normalized 0-100)
-        // Max Eff per task approx 90 * 4 = 360
-        // Max Human per task approx 90 * 4 = 360
         const finalEff = Math.min(100, Math.round((stats.eff / 360) * 100));
         const finalHuman = Math.min(100, Math.round((stats.human / 360) * 100));
         
@@ -434,4 +433,4 @@ html_code = f"""
 </html>
 """
 
-components.html(html_code, height=900, scrolling=False)
+components.html(html_code, height=950, scrolling=False)
