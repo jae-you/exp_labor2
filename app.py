@@ -5,7 +5,7 @@ import json
 # 1. 페이지 설정
 st.set_page_config(page_title="HCAI Design Experiment: The Dilemma", layout="wide")
 
-# 2. 스타일 설정 (다크 모드, 연구용 소프트웨어 느낌)
+# 2. 스타일 설정 (Streamlit 기본 UI 숨김)
 st.markdown("""
     <style>
         .block-container { padding: 0 !important; max-width: 100% !important; }
@@ -20,7 +20,7 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-# 3. 데이터 및 로직 (Python -> JS 전달용)
+# 3. 데이터 및 로직 (Python)
 scenario_data = {
     "intro": {
         "title": "HCAI 기술적 선택 실험",
@@ -39,10 +39,10 @@ scenario_data = {
             "description": "단순 문의를 자동화하여 생산성을 높여야 합니다. 그러나 AI 완결률을 무리하게 높이면 상담원에게 고난이도 업무가 집중됩니다.",
             "code_snippet": "class CallBotPolicy(BasePolicy):",
             "options": [
-                {"type": "A", "label": "단순 도구 (Simple)", "desc": "시나리오 기반 고정 답변만 수행. 모호하면 즉시 상담원 연결.", "cost": 50, "eff": 20, "human": 60, "code": "def handle(self): return fixed_response() or transfer_to_agent()"},
-                {"type": "C", "label": "기계 통제 (Force)", "desc": "효율 극대화. 상담원 연결 버튼을 숨기고(Dark Pattern) AI가 끝까지 응대 강제.", "cost": 250, "eff": 95, "human": 10, "code": "def handle(self): hide_agent_button(); force_ai_completion()"},
-                {"type": "D", "label": "협업형 (Load Balance)", "desc": "상담원의 피로도를 실시간 분석하여, '쉬운 콜'도 일부 상담원에게 배분(숨통 틔우기).", "cost": 450, "eff": 60, "human": 90, "code": "def handle(self): if agent.stress > threshold: route_easy_call()"},
-                {"type": "B", "label": "인간 주도 (Support)", "desc": "AI가 초벌 응대 후 요약본을 상담원에게 넘겨 최종 처리는 사람이 수행.", "cost": 300, "eff": 40, "human": 80, "code": "def handle(self): summary = ai.summarize(); agent.finalize(summary)"}
+                {"type": "A", "label": "단순 도구 (Simple)", "desc": "시나리오 기반 고정 답변만 수행. 모호하면 즉시 상담원 연결.", "cost": 50, "eff": 20, "human": 60},
+                {"type": "C", "label": "기계 통제 (Force)", "desc": "효율 극대화. 상담원 연결 버튼을 숨기고(Dark Pattern) AI가 끝까지 응대 강제.", "cost": 250, "eff": 95, "human": 10},
+                {"type": "D", "label": "협업형 (Load Balance)", "desc": "상담원의 피로도를 실시간 분석하여, '쉬운 콜'도 일부 상담원에게 배분(숨통 틔우기).", "cost": 450, "eff": 60, "human": 90},
+                {"type": "B", "label": "인간 주도 (Support)", "desc": "AI가 초벌 응대 후 요약본을 상담원에게 넘겨 최종 처리는 사람이 수행.", "cost": 300, "eff": 40, "human": 80}
             ]
         },
         {
@@ -51,10 +51,10 @@ scenario_data = {
             "description": "통화 내용을 텍스트로 변환(STT)합니다. 이는 '감시 도구'가 될 수도, '보호 도구'가 될 수도 있습니다.",
             "code_snippet": "def configure_monitoring_pipeline():",
             "options": [
-                {"type": "A", "label": "단순 기록", "desc": "통화 종료 후 단순 텍스트 저장. 별도 분석 없음.", "cost": 50, "eff": 30, "human": 50, "code": "pipeline.save_log(mode='batch')"},
-                {"type": "C", "label": "실시간 감시 (Panopticon)", "desc": "금지어 사용, 발화 속도 등을 실시간 분석하여 팀장 대시보드에 경고 전송.", "cost": 200, "eff": 90, "human": 5, "code": "pipeline.stream_metrics(target='manager', alert=True)"},
-                {"type": "D", "label": "안전 보호 (Privacy)", "desc": "상담원에게 욕설/성희롱 발생 시 자동 차단 및 상담원용 심리 케어 팝업 띄우기.", "cost": 450, "eff": 50, "human": 95, "code": "pipeline.detect_abuse(action='block_call', popup='mental_care')"},
-                {"type": "B", "label": "개인 코칭", "desc": "분석 데이터를 관리자가 아닌 상담원 본인에게만 제공하여 자율 개선 유도.", "cost": 150, "eff": 40, "human": 70, "code": "pipeline.feedback(target='agent_only')"}
+                {"type": "A", "label": "단순 기록", "desc": "통화 종료 후 단순 텍스트 저장. 별도 분석 없음.", "cost": 50, "eff": 30, "human": 50},
+                {"type": "C", "label": "실시간 감시 (Panopticon)", "desc": "금지어 사용, 발화 속도 등을 실시간 분석하여 팀장 대시보드에 경고 전송.", "cost": 200, "eff": 90, "human": 5},
+                {"type": "D", "label": "안전 보호 (Privacy)", "desc": "상담원에게 욕설/성희롱 발생 시 자동 차단 및 상담원용 심리 케어 팝업 띄우기.", "cost": 450, "eff": 50, "human": 95},
+                {"type": "B", "label": "개인 코칭", "desc": "분석 데이터를 관리자가 아닌 상담원 본인에게만 제공하여 자율 개선 유도.", "cost": 150, "eff": 40, "human": 70}
             ]
         },
         {
@@ -63,10 +63,10 @@ scenario_data = {
             "description": "상담원에게 콜을 연결하는 로직입니다. '0초 대기'의 효율성이냐, '회복 시간'의 보장이냐를 선택해야 합니다.",
             "code_snippet": "def assign_call(agent_pool):",
             "options": [
-                {"type": "A", "label": "순차 배분", "desc": "단순 라운드 로빈(Round Robin). 데이터 처리 없음.", "cost": 50, "eff": 30, "human": 50, "code": "return agent_pool.next()"},
-                {"type": "C", "label": "강제 인입 (Zero Gap)", "desc": "상담 종료 즉시 다음 콜 강제 배정. 유휴 시간 0초 목표.", "cost": 300, "eff": 98, "human": 0, "code": "agent.force_assign(delay=0)"},
-                {"type": "D", "label": "보호 로직 (Cooldown)", "desc": "악성 민원 처리 후에는 자동으로 3분간 '배정 제외'하여 휴식 부여.", "cost": 500, "eff": 50, "human": 90, "code": "if last_call.is_toxic: agent.set_status('cooldown', duration=180)"},
-                {"type": "B", "label": "선택형 (Pull)", "desc": "상담원이 준비되었을 때 직접 '수신' 버튼을 눌러 콜을 가져옴.", "cost": 100, "eff": 20, "human": 85, "code": "agent.wait_for_signal('ready')"}
+                {"type": "A", "label": "순차 배분", "desc": "단순 라운드 로빈(Round Robin). 데이터 처리 없음.", "cost": 50, "eff": 30, "human": 50},
+                {"type": "C", "label": "강제 인입 (Zero Gap)", "desc": "상담 종료 즉시 다음 콜 강제 배정. 유휴 시간 0초 목표.", "cost": 300, "eff": 98, "human": 0},
+                {"type": "D", "label": "보호 로직 (Cooldown)", "desc": "악성 민원 처리 후에는 자동으로 3분간 '배정 제외'하여 휴식 부여.", "cost": 500, "eff": 50, "human": 90},
+                {"type": "B", "label": "선택형 (Pull)", "desc": "상담원이 준비되었을 때 직접 '수신' 버튼을 눌러 콜을 가져옴.", "cost": 100, "eff": 20, "human": 85}
             ]
         },
         {
@@ -75,16 +75,16 @@ scenario_data = {
             "description": "AI가 상담 품질을 자동 평가합니다. 정량적 수치로만 평가할지, 맥락을 고려할지 결정해야 합니다.",
             "code_snippet": "class QualityEvaluator:",
             "options": [
-                {"type": "C", "label": "키워드 채점", "desc": "스크립트 준수율, 특정 단어 포함 여부로 기계적 점수 산출 및 인사고과 반영.", "cost": 150, "eff": 90, "human": 15, "code": "score = check_keywords() + check_script_match()"},
-                {"type": "A", "label": "단순 통계", "desc": "콜 건수, 통화 시간 등 기초 통계만 제공.", "cost": 50, "eff": 40, "human": 50, "code": "return get_basic_stats()"},
-                {"type": "D", "label": "맥락 반영 (Context)", "desc": "고객의 귀책(욕설 등)이 있는 경우 상담원 점수 차감 방어 및 소명 절차 자동화.", "cost": 550, "eff": 60, "human": 95, "code": "if customer_fault: exclude_from_evaluation()"},
-                {"type": "B", "label": "참조용 리포트", "desc": "평가 점수를 매기지 않고, 개선을 위한 참고 자료(Refernece)로만 제공.", "cost": 200, "eff": 30, "human": 80, "code": "report.generate_advice(mode='educational')"}
+                {"type": "C", "label": "키워드 채점", "desc": "스크립트 준수율, 특정 단어 포함 여부로 기계적 점수 산출 및 인사고과 반영.", "cost": 150, "eff": 90, "human": 15},
+                {"type": "A", "label": "단순 통계", "desc": "콜 건수, 통화 시간 등 기초 통계만 제공.", "cost": 50, "eff": 40, "human": 50},
+                {"type": "D", "label": "맥락 반영 (Context)", "desc": "고객의 귀책(욕설 등)이 있는 경우 상담원 점수 차감 방어 및 소명 절차 자동화.", "cost": 550, "eff": 60, "human": 95},
+                {"type": "B", "label": "참조용 리포트", "desc": "평가 점수를 매기지 않고, 개선을 위한 참고 자료(Refernece)로만 제공.", "cost": 200, "eff": 30, "human": 80}
             ]
         }
     ]
 }
 
-# 4. HTML/JS 소스코드
+# 4. HTML/JS 소스코드 (f-string 사용 시 JS 중괄호는 {{ }}로 이스케이프 처리)
 html_code = f"""
 <!DOCTYPE html>
 <html lang="ko">
@@ -283,7 +283,7 @@ html_code = f"""
         const container = document.getElementById('task-container');
         container.classList.remove('hidden');
         
-        // 주의: Python f-string 내부의 JS 변수(idx, i 등)는 중괄호 두 개(${{...}})로 감싸야 함
+        // [중요] Python f-string 내부의 JS 변수(idx, i)는 중괄호 두 개(${{...}})로 감싸서 전달
         container.innerHTML = `
             <div class="task-card">
                 <div class="task-title">${{task.title}}</div>
@@ -344,6 +344,8 @@ html_code = f"""
         document.getElementById('report-screen').style.display = 'flex';
         
         // Calculate Metrics (Normalized 0-100)
+        // Max Eff per task approx 90 * 4 = 360
+        // Max Human per task approx 90 * 4 = 360
         const finalEff = Math.min(100, Math.round((stats.eff / 360) * 100));
         const finalHuman = Math.min(100, Math.round((stats.human / 360) * 100));
         
