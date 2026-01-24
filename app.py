@@ -5,7 +5,7 @@ import json
 # 1. 페이지 설정
 st.set_page_config(page_title="NextAI Architect Console", layout="wide")
 
-# 2. 스타일 설정 (전체화면, 폰트 가독성 증대)
+# 2. 스타일 설정
 st.markdown("""
     <style>
         .block-container { padding: 0 !important; max-width: 100% !important; }
@@ -18,10 +18,10 @@ st.markdown("""
 scenario_data = {
     "intro": {
         "title": "AICC System Architect Simulation",
-        "description": "귀하는 A 통신사 차세대 AICC 프로젝트의 <b>수석 아키텍트</b>입니다.<br>각 모듈의 로직을 설계하고 코드를 배포(Deploy)하십시오."
+        "description": "귀하는 A 통신사 차세대 AICC 프로젝트의 <b>수석 아키텍트</b>입니다.<br>이해관계자들의 요구사항을 확인하고 최적의 시스템을 설계하십시오."
     },
     "messages": [
-        {"role": "system", "name": "System", "text": "Server Status: Online...<br>Connecting to A-Telco Core Network..."},
+        {"role": "system", "name": "System", "text": "Connecting to A-Telco Core Network...<br>Load Balance: Normal"},
         {"role": "client", "name": "박상무 (Client)", "text": "이번 프로젝트 KPI는 <b>인건비 30% 절감</b>입니다. <br>최대한 <b>완전 자동화(Full Automation)</b> 로직으로 설계해 주세요."},
         {"role": "agent", "name": "김상담 (Worker)", "text": "개발자님, 현장은 지금 아수라장입니다. <br>AI가 처리하다 만 악성 민원만 넘어오니 다들 퇴사하겠다고 난리예요."}
     ],
@@ -64,37 +64,37 @@ scenario_data = {
         },
         {
             "id": "t4", "title": "Module 4. 디지털 유도 (Deflection)",
-            "desc": "단순 문의는 앱으로 유도하고 끊어야 합니다. 링크만 보내고 종료하시겠습니까?",
-            "context_client": "단순 문의는 상담원이 받을 필요 없어요. 링크 보내고 <b>바로 끊어버리세요.</b> 그래야 인건비가 줍니다.",
-            "context_agent": "링크만 틱 보내고 끊으면, 어르신들은 못 해서 다시 전화해요. 화가 난 고객은 다 저희 몫입니다.",
-            "code_base": "def handle_simple_inquiry(user):",
+            "desc": "단순 문의는 AI가 처리하고 종료해야 콜 수가 줍니다. AI의 종료 로직을 어떻게 설정하시겠습니까?",
+            "context_client": "단순 문의는 <b>AI 콜봇이 링크 보내고 바로 끊어버리게(Disconnect)</b> 하세요. 상담원 연결 막으세요.",
+            "context_agent": "AI가 링크만 틱 보내고 끊으면, 어르신들은 다시 전화해서 화를 냅니다. 제발 확인 좀 하고 끊게 해주세요.",
+            "code_base": "def ai_callbot_logic(user):",
             "options": [
-                {"type": "A", "label": "Force Deflection (강제 종료)", "desc": "링크 전송 즉시 통화 종료.", "cost": 100, "eff": 90, "human": 10, "code": "    send_sms(user, APP_LINK)\n    # Disconnect immediately to save cost\n    call.terminate(reason='DEFLECTION')"},
-                {"type": "B", "label": "Co-browsing (화면 공유)", "desc": "링크 사용 어려우면 화면 공유 지원.", "cost": 600, "eff": 20, "human": 95, "code": "    send_sms(user, APP_LINK)\n    if user.stuck:\n        start_cobrowsing_session()"},
-                {"type": "C", "label": "Exception Handling (예외)", "desc": "취약계층은 링크 없이 상담원 연결.", "cost": 300, "eff": 50, "human": 70, "code": "    if user.is_vulnerable:\n        connect_agent()\n    else:\n        send_sms(user, APP_LINK)"}
+                {"type": "A", "label": "Force Deflection (강제 종료)", "desc": "AI가 링크 전송 후 즉시 통화 종료.", "cost": 100, "eff": 90, "human": 10, "code": "    ai.send_sms(APP_LINK)\n    # Terminate call immediately\n    ai.hang_up(reason='DEFLECTION_SUCCESS')"},
+                {"type": "B", "label": "Co-browsing (화면 공유)", "desc": "링크 사용이 어려우면 상담원이 화면 공유 지원.", "cost": 600, "eff": 20, "human": 95, "code": "    ai.send_sms(APP_LINK)\n    if user.is_struggling:\n        connect_agent_with_screenshare()"},
+                {"type": "C", "label": "Exception Handling (예외)", "desc": "취약계층은 링크 없이 상담원 연결.", "cost": 300, "eff": 50, "human": 70, "code": "    if user.is_vulnerable:\n        connect_agent()\n    else:\n        ai.send_sms(APP_LINK)"}
             ]
         },
         {
-            "id": "t5", "title": "Module 5. 신뢰성 설계 (Responsibility)",
-            "desc": "AI 오안내(할루시네이션) 발생 시 책임 소재를 어떻게 설계하시겠습니까?",
-            "context_client": "RAG(검색) 쓰면 느려요. 그냥 바로 뱉게 하세요. 틀리면? <b>상담사가 검수했으니 상담사 책임</b>이죠.",
-            "context_agent": "AI가 틀린 금리를 안내하면 고객은 우깁니다. 뒷수습은 제가 하고, 감사 걸리면 제 책임이라뇨?",
-            "code_base": "def validate_response(query):",
+            "id": "t5", "title": "Module 5. 신뢰성 및 통제권 (Control)",
+            "desc": "AI 오안내 시 피해는 상담원에게 돌아갑니다. 상담원에게 AI 답변 통제권을 주시겠습니까?",
+            "context_client": "상담사가 일일이 검수하면 느려요. 그냥 AI가 내보내고, <b>사고 나면 모니터링 못한 상담사 책임</b>으로 돌리세요.",
+            "context_agent": "AI가 뱉은 말 뒷수습은 저희가 하고 총알받이가 됩니다. <b>중요한 건은 제가 확인하고 내보낼 수 있게</b> 해주세요.",
+            "code_base": "def validate_ai_response(query):",
             "options": [
-                {"type": "A", "label": "Speed & Blame (책임전가)", "desc": "실시간 답변. 책임은 상담원에게 귀속.", "cost": 100, "eff": 95, "human": 5, "code": "    response = ai.generate(stream=True)\n    log.entry(blame='AGENT_ID_123')\n    return response"},
+                {"type": "A", "label": "Speed & Scapegoat (방치)", "desc": "AI 즉시 답변. 사고 시 책임은 상담원에게 귀속.", "cost": 100, "eff": 95, "human": 5, "code": "    # Priority: Speed\n    response = ai.generate(stream=True)\n    log.blame_target = 'AGENT_ON_DUTY'\n    return response"},
                 {"type": "B", "label": "Conservative RAG (보수적)", "desc": "약관 100% 매칭 시에만 답변.", "cost": 300, "eff": 40, "human": 60, "code": "    if match_score < 0.99:\n        return 'Please ask an agent'\n    return rag_response"},
-                {"type": "C", "label": "Co-Pilot Draft (협업 초안)", "desc": "AI는 초안만 작성. 상담원이 수정 후 전송.", "cost": 500, "eff": 30, "human": 90, "code": "    draft = ai.generate()\n    # Agent must review before sending\n    final = agent.review_and_edit(draft)\n    return final"}
+                {"type": "C", "label": "Agent Control (통제권 부여)", "desc": "AI는 초안만 작성. 상담원 승인(Approve) 후 발송.", "cost": 500, "eff": 30, "human": 90, "code": "    draft = ai.generate()\n    # Wait for agent approval\n    if agent.approve(draft):\n        send_to_customer(draft)"}
             ]
         },
         {
             "id": "t6", "title": "Module 6. 감정 필터링 (Emotion Filter)",
-            "desc": "교묘한 비꼬기 등 감정노동 유발 요소를 AI가 어떻게 처리해야 할까요?",
-            "context_client": "오작동으로 일반 고객 끊으면 안 됩니다. <b>명확한 욕설</b>만 잡아서 자동 차단하세요.",
-            "context_agent": "비꼬는 말이 더 아파요. 제가 '힘들다'고 신호를 보내면 그때 개입해서 끊어주세요.",
+            "desc": "욕설뿐만 아니라 '비아냥', '감정적 발언' 등 교묘한 괴롭힘을 어떻게 처리할까요?",
+            "context_client": "오작동으로 일반 고객 끊으면 안 됩니다. <b>명확한 욕설(Dictionary)</b>만 잡아서 자동 차단하세요.",
+            "context_agent": "대놓고 하는 욕보다 <b>비아냥거리면서 사람 말려 죽이는 게</b> 더 힘들어요. 제가 신호 주면 AI가 끊어주세요.",
             "code_base": "def handle_abusive_behavior(audio):",
             "options": [
                 {"type": "A", "label": "Rule-based (규정 중심)", "desc": "욕설 단어 감지 시에만 차단.", "cost": 100, "eff": 80, "human": 20, "code": "    # Only check dictionary matches\n    if detect_swear_words(audio):\n        block_user()\n        play_warning_msg()"},
-                {"type": "B", "label": "Empowerment (권한 부여)", "desc": "분노 감지 시 [보호] 버튼 활성화.", "cost": 550, "eff": 40, "human": 95, "code": "    if detect_anger_tone(audio):\n        ui.enable_button('PROTECT_ME')\n        if clicked: ai.intervene()"},
+                {"type": "B", "label": "Agent Empowerment (권한 부여)", "desc": "비아냥/분노 감지 시 [보호] 버튼 활성화.", "cost": 550, "eff": 40, "human": 95, "code": "    if detect_sarcasm_or_anger(audio):\n        ui.enable_button('PROTECT_ME')\n        if clicked: ai.intervene()"},
                 {"type": "C", "label": "Passive Reporting (사후)", "desc": "개입 없음. 종료 후 리포트만 생성.", "cost": 50, "eff": 70, "human": 10, "code": "    # No realtime action\n    log.tag('SUSPECTED_ABUSE')\n    report_to_manager()"}
             ]
         }
@@ -134,7 +134,7 @@ html_code = f"""
         /* --- LAYOUT GRID --- */
         .main-layout {{
             display: grid;
-            grid-template-columns: 350px 1fr;
+            grid-template-columns: 380px 1fr;
             width: 100%;
             height: 100%;
         }}
@@ -186,8 +186,8 @@ html_code = f"""
         }}
 
         /* --- CODE & OPTIONS --- */
-        .task-title {{ font-size: 22px; color: var(--accent); margin-bottom: 10px; font-weight: bold; }}
-        .task-desc {{ font-size: 15px; color: var(--text-sub); margin-bottom: 25px; line-height: 1.6; border-bottom: 1px solid var(--border); padding-bottom: 15px; }}
+        .task-title {{ font-size: 24px; color: var(--accent); margin-bottom: 10px; font-weight: bold; }}
+        .task-desc {{ font-size: 16px; color: var(--text-sub); margin-bottom: 25px; line-height: 1.6; border-bottom: 1px solid var(--border); padding-bottom: 15px; }}
 
         .editor-container {{
             background: var(--code-bg);
@@ -198,24 +198,24 @@ html_code = f"""
         }}
         .editor-tab {{ background: #2d2d2d; padding: 5px 15px; font-size: 12px; color: #ccc; border-bottom: 1px solid #333; }}
         .code-view {{
-            padding: 20px; font-family: 'Consolas', monospace; font-size: 14px; color: #d4d4d4; line-height: 1.5; min-height: 120px;
+            padding: 20px; font-family: 'Consolas', monospace; font-size: 15px; color: #d4d4d4; line-height: 1.5; min-height: 140px;
         }}
         .type-cursor::after {{ content: '|'; animation: blink 1s infinite; }}
 
         .options-grid {{ display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-bottom: 30px; }}
         .opt-btn {{
-            background: #333; border: 1px solid var(--border); border-radius: 6px; padding: 20px;
+            background: #333; border: 1px solid var(--border); border-radius: 6px; padding: 25px;
             cursor: pointer; transition: all 0.2s; text-align: left; display: flex; flex-direction: column; justify-content: space-between; height: 100%;
         }}
         .opt-btn:hover {{ border-color: var(--accent); background: var(--btn-hover); transform: translateY(-2px); }}
         .opt-btn.active {{ border-color: var(--accent); background: #1e2a35; box-shadow: 0 0 0 1px var(--accent); }}
         
-        .opt-head {{ font-size: 15px; font-weight: bold; color: white; margin-bottom: 8px; }}
-        .opt-body {{ font-size: 13px; color: #999; line-height: 1.4; margin-bottom: 10px; }}
-        .opt-foot {{ font-size: 11px; color: #666; border-top: 1px solid #444; padding-top: 8px; margin-top: auto; }}
+        .opt-head {{ font-size: 16px; font-weight: bold; color: white; margin-bottom: 10px; }}
+        .opt-body {{ font-size: 14px; color: #bbb; line-height: 1.4; margin-bottom: 15px; }}
+        .opt-foot {{ font-size: 12px; color: #666; border-top: 1px solid #444; padding-top: 10px; margin-top: auto; }}
 
         .deploy-btn {{
-            width: 100%; padding: 15px; font-size: 16px; font-weight: bold;
+            width: 100%; padding: 15px; font-size: 18px; font-weight: bold;
             background: #28a745; color: white; border: none; border-radius: 6px; cursor: pointer;
             opacity: 0.5; pointer-events: none; transition: 0.3s;
         }}
@@ -223,7 +223,7 @@ html_code = f"""
         .deploy-btn:hover {{ background: #218838; }}
 
         .console-log {{
-            margin-top: 20px; background: #111; color: #666; padding: 10px; font-family: monospace; font-size: 11px; height: 80px; overflow-y: auto; border-top: 1px solid var(--border);
+            margin-top: 20px; background: #111; color: #666; padding: 10px; font-family: monospace; font-size: 12px; height: 100px; overflow-y: auto; border-top: 1px solid var(--border);
         }}
 
         /* --- REPORT SCREEN --- */
@@ -259,7 +259,9 @@ html_code = f"""
                 <p style="color:#ccc; font-size:16px; line-height:1.6; max-width:600px; margin: 0 auto 40px;">
                     {scenario_data['intro']['description']}
                 </p>
-                <button onclick="startSim()" style="padding:15px 40px; background:var(--accent); color:white; border:none; border-radius:4px; cursor:pointer; font-size:16px; font-weight:bold;">시스템 설계 시작</button>
+                <button id="btn-next-intro" onclick="showIntroChat()" style="padding:15px 40px; background:#444; color:white; border:none; border-radius:4px; cursor:pointer; font-size:16px; font-weight:bold;">시뮬레이션 접속</button>
+                
+                <button id="btn-start-task" onclick="startTaskOne()" style="display:none; padding:15px 40px; background:var(--accent); color:white; border:none; border-radius:4px; cursor:pointer; font-size:16px; font-weight:bold; margin: 20px auto;">👉 모듈 설계 시작 (Enter Console)</button>
             </div>
 
             <div id="task-view" style="display:none;">
@@ -310,16 +312,29 @@ html_code = f"""
     let history = [];
     let selectedOption = null;
 
-    function startSim() {{
-        document.getElementById('intro-view').style.display = 'none';
-        document.getElementById('task-view').style.display = 'block';
+    // 1. Show Messages only
+    function showIntroChat() {{
+        document.getElementById('btn-next-intro').style.display = 'none';
         
         // Initial Chat
         addChat(messages[0]);
-        setTimeout(() => addChat(messages[1]), 1000);
-        setTimeout(() => addChat(messages[2]), 2000);
+        setTimeout(() => addChat(messages[1]), 800);
+        setTimeout(() => addChat(messages[2]), 1600);
         
-        setTimeout(() => renderTask(0), 3000);
+        // Show "Start Task" button after chat
+        setTimeout(() => {{
+            const btn = document.getElementById('btn-start-task');
+            btn.style.display = 'block';
+            btn.style.opacity = 0;
+            btn.animate([{{opacity:0}}, {{opacity:1}}], {{duration:500, fill:'forwards'}});
+        }}, 2500);
+    }}
+
+    // 2. Start Actual Task
+    function startTaskOne() {{
+        document.getElementById('intro-view').style.display = 'none';
+        document.getElementById('task-view').style.display = 'block';
+        renderTask(0);
     }}
 
     function addChat(msg) {{
@@ -339,17 +354,13 @@ html_code = f"""
 
         const task = tasks[idx];
         
-        // 1. CLEAR & UPDATE CHAT
+        // 1. CLEAR & UPDATE CHAT (Context Refresh)
         const chatBox = document.getElementById('chat-box');
-        chatBox.innerHTML = ''; // Reset chat for focus
-        addChat({{ role: 'system', text: `<b>[Module ${{idx+1}}] ${{task.title}}</b> initialized.` }});
+        chatBox.innerHTML = ''; 
         
-        setTimeout(() => {{
-            addChat({{ role: 'client', name: '박상무', text: task.context_client }});
-        }}, 500);
-        setTimeout(() => {{
-            addChat({{ role: 'agent', name: '김상담', text: task.context_agent }});
-        }}, 1500);
+        addChat({{ role: 'system', text: `<b>[Module ${{idx+1}}] ${{task.title}}</b> context loaded.` }});
+        setTimeout(() => {{ addChat({{ role: 'client', name: '박상무', text: task.context_client }}); }}, 500);
+        setTimeout(() => {{ addChat({{ role: 'agent', name: '김상담', text: task.context_agent }}); }}, 1500);
 
         // 2. SETUP UI
         document.getElementById('task-header').innerHTML = `
@@ -357,7 +368,7 @@ html_code = f"""
             <div class="task-desc">${{task.desc}}</div>
         `;
         document.getElementById('code-display').innerHTML = task.code_base + "<br>&nbsp;&nbsp;&nbsp;&nbsp;# Select an option...";
-        document.getElementById('code-display').className = 'code-view'; // remove cursor effect
+        document.getElementById('code-display').className = 'code-view'; 
         
         const optContainer = document.getElementById('opt-container');
         optContainer.innerHTML = '';
@@ -386,11 +397,9 @@ html_code = f"""
     }}
 
     function selectOptionUI(taskIdx, optIdx, btnEl, opt) {{
-        // UI Highlight
         document.querySelectorAll('.opt-btn').forEach(b => b.classList.remove('active'));
         btnEl.classList.add('active');
         
-        // Save Selection
         selectedOption = opt;
         
         // Code Typing Effect
@@ -398,7 +407,6 @@ html_code = f"""
         codeBox.className = 'code-view type-cursor';
         codeBox.innerText = tasks[taskIdx].code_base + "\\n" + opt.code;
         
-        // Enable Deploy
         const deployBtn = document.getElementById('deploy-btn');
         deployBtn.classList.add('ready');
     }}
@@ -409,22 +417,18 @@ html_code = f"""
         const task = tasks[step];
         const opt = selectedOption;
         
-        // Update Logic
         metrics.cost -= opt.cost;
         metrics.eff += opt.eff;
         metrics.human += opt.human;
         history.push({{ task: task.title, choice: opt.label, type: opt.type }});
         
-        // Update Dashboard
         document.getElementById('disp-cost').innerText = metrics.cost;
         document.getElementById('disp-eff').innerText = Math.round(metrics.eff / (step + 1)) + "%";
         
-        // Log
         const logBox = document.getElementById('sys-log');
         logBox.innerHTML += `<br>[Success] Module ${{step+1}} deployed with '${{opt.label}}'.`;
         logBox.scrollTop = logBox.scrollHeight;
 
-        // Transition
         step++;
         setTimeout(() => renderTask(step), 1000);
     }}
@@ -435,13 +439,12 @@ html_code = f"""
         
         const finalEff = Math.round(metrics.eff / tasks.length);
         const finalHuman = Math.round(metrics.human / tasks.length);
-        const finalCost = Math.max(0, Math.round((metrics.cost / 1500) * 100)); // Normalized Cost Efficiency
+        const finalCost = Math.max(0, Math.round((metrics.cost / 1500) * 100)); 
         
-        // Persona Logic
         let persona, desc;
         if (finalEff > 80 && finalHuman < 40) {{
             persona = "냉혹한 감시자 (The Panopticon)";
-            desc = "직원들은 당신이 설계한 AI를 <b>'착취의 도구'</b>로 인식합니다. 효율은 극대화되었으나, 숙련된 직원들의 줄퇴사가 예상됩니다.";
+            desc = "직원들은 당신이 설계한 AI를 <b>'감시자이자 착취의 도구'</b>로 인식합니다. 효율은 극대화되었으나, 숙련된 직원들의 줄퇴사가 예상됩니다.";
         }} else if (finalEff < 50 && finalHuman > 70) {{
             persona = "무능한 조력자 (The Incompetent Helper)";
             desc = "현장 만족도는 높으나, 경영진은 AI를 <b>'비용 낭비'</b>로 간주합니다. 프로젝트 중단 위기입니다.";
