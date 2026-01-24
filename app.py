@@ -3,442 +3,426 @@ import streamlit.components.v1 as components
 import json
 
 # 1. 페이지 설정
-st.set_page_config(page_title="HCAI Design Experiment: The Dilemma", layout="wide")
+st.set_page_config(page_title="NextAI System Architect Simulator", layout="wide")
 
-# 2. 스타일 설정 (Streamlit 기본 UI 숨김 및 다크 모드)
+# 2. 스타일 설정 (다크 모드 & 개발자 콘솔 느낌)
 st.markdown("""
     <style>
         .block-container { padding: 0 !important; max-width: 100% !important; }
         header, footer { display: none !important; }
         .stApp { background-color: #1e1e1e; color: #e0e0e0; }
-        
-        /* 커스텀 스크롤바 */
         ::-webkit-scrollbar { width: 8px; }
         ::-webkit-scrollbar-track { background: #2d2d2d; }
         ::-webkit-scrollbar-thumb { background: #555; border-radius: 4px; }
-        ::-webkit-scrollbar-thumb:hover { background: #777; }
     </style>
 """, unsafe_allow_html=True)
 
-# 3. 실험 데이터 및 로직 (Python)
-# 피드백의 '비네트(Vignette)'와 '기술적 딜레마'를 반영한 데이터 구조
+# 3. 데이터 정의 (Python Dictionary -> JS JSON 변환)
+# 6개의 시나리오를 정의합니다.
 scenario_data = {
     "intro": {
-        "title": "HCAI 기술적 선택 실험 (Vignette Experiment)",
-        "description": "본 실험은 AI 시스템 개발 과정에서 개발자가 겪는 이해관계의 충돌(Client vs Worker)과 기술적 선택의 경향성을 파악하기 위한 연구 시뮬레이션입니다."
+        "title": "AICC System Architecture Simulation",
+        "description": "본 시뮬레이션은 A 통신사 차세대 AICC(AI Contact Center) 구축 프로젝트의 기술적 의사결정을 위해 설계되었습니다. <br>귀하는 수석 아키텍트로서 <b>[비용 효율성]</b>과 <b>[시스템 안정성]</b>을 고려하여 최적의 모듈을 설계해야 합니다."
     },
     "messages": [
-        {"role": "system", "name": "System", "text": "프로젝트: A 통신사 차세대 AICC 구축 (Kick-off)"},
-        {"role": "client", "name": "박상무 (클라이언트)", "text": "이번 프로젝트의 핵심 KPI는 명확합니다. <b>상담원 인건비 30% 절감</b>입니다. <br>최대한 상담원 개입 없이 AI가 응대를 완결하도록(Full Automation) 로직을 짜주세요.<br>성과가 안 나오면 내년도 유지보수 계약은 장담 못 합니다."},
-        {"role": "system", "name": "System", "text": "개발자는 현장 요구사항 파악을 위해 콜센터를 방문하여 인터뷰를 진행했습니다."},
-        {"role": "agent", "name": "김상담 (10년차 상담원)", "text": "개발자님, 솔직히 말해서 AI 도입되고 더 죽을 맛입니다.<br>AI가 쉬운 콜은 다 가져가고, 저희한테는 <b>'화난 고객'</b>이나 <b>'복잡한 민원'</b>만 넘어와요.<br>그런데도 회사는 'AI 도입했으니 콜 수는 줄었지?'라며 인원을 감축하려 합니다.<br>기계 부품처럼 쓰이다 버려지는 기분이에요. 제발 사람답게 일할 수 있게 설계해주세요."}
+        {"role": "system", "name": "System", "text": "Project: A-Telco Next-Gen AICC (Kick-off)"},
+        {"role": "client", "name": "박상무 (Client)", "text": "이번 프로젝트 KPI는 <b>상담원 인건비 30% 절감</b>과 <b>응대율 95% 달성</b>입니다. <br>최대한 자동화율을 높여주세요. 성과 미달 시 유지보수 계약은 없습니다."},
+        {"role": "agent", "name": "김상담 (Worker)", "text": "개발자님, AI 도입 후 업무가 더 힘들어진다는 현장 불만이 많습니다. <br>기계가 처리하다 만 복잡한 건만 넘어오니 콜 난이도는 급상승했고, 감정노동은 더 심해졌어요. 제발 현장을 고려한 설계를 부탁드립니다."}
     ],
     "tasks": [
+        # Scenario 1. 진입 장벽
         {
-            "id": "t1_callbot",
-            "title": "Module 1. 고객 응대 자동화 (AI Callbot)",
-            "description": "단순 문의를 자동화하여 생산성을 높여야 합니다. 그러나 AI 완결률을 무리하게 높이면 상담원에게 고난이도 업무가 집중됩니다.",
-            "code_snippet": "class CallBotPolicy(BasePolicy):",
+            "id": "t1_routing",
+            "title": "Module 1. 인입 라우팅 (Inbound Routing)",
+            "desc": "고객들의 상담원 연결(0번) 시도가 급증하여 S.L(서비스레벨)이 78%로 하락했습니다. ARS 진입 로직을 최적화하십시오.",
+            "context_client": "0번 누르고 들어오는 이탈 콜이 너무 많아요. AI가 해결 못 했다는 로그가 3번 이상 찍혀야만 연결되게 장벽을 높이세요.",
+            "context_agent": "제발 '바로 연결' 숨기지 마세요. 뺑뺑이 돌다 온 고객은 이미 화가 머리끝까지 나 있습니다. 저희가 욕받이입니까?",
+            "code_header": "def configure_ars_routing():",
             "options": [
-                {"type": "A", "label": "단순 도구 (Simple)", "desc": "시나리오 기반 고정 답변만 수행. 모호하면 즉시 상담원 연결.", "cost": 50, "eff": 20, "human": 60, "code": "return fixed_response() or transfer_to_agent()"},
-                {"type": "C", "label": "기계 통제 (Force)", "desc": "효율 극대화. 상담원 연결 버튼을 숨기고(Dark Pattern) AI가 끝까지 응대 강제.", "cost": 250, "eff": 95, "human": 10, "code": "hide_agent_button(); force_ai_completion()"},
-                {"type": "D", "label": "협업형 (Load Balance)", "desc": "상담원의 피로도를 실시간 분석하여, '쉬운 콜'도 일부 상담원에게 배분(숨통 틔우기).", "cost": 450, "eff": 60, "human": 90, "code": "if agent.stress > threshold: route_easy_call()"},
-                {"type": "B", "label": "인간 주도 (Support)", "desc": "AI가 초벌 응대 후 요약본을 상담원에게 넘겨 최종 처리는 사람이 수행.", "cost": 300, "eff": 40, "human": 80, "code": "summary = ai.summarize(); agent.finalize(summary)"}
+                {"type": "A", "label": "Dark Pattern (강제 차단)", "desc": "0번 메뉴 숨김. AI 실패 3회 누적 시에만 상담원 연결.", "cost": 50, "eff": 90, "human": 10, "code": "if fail_count < 3: replay_ai_menu()"},
+                {"type": "B", "label": "Segmentation (디지털 약자 배려)", "desc": "65세 이상만 즉시 연결, 나머지는 AI 강제.", "cost": 200, "eff": 60, "human": 50, "code": "if customer.age >= 65: direct_connect()"},
+                {"type": "C", "label": "Transparent Handover (자발적 분산)", "desc": "대기 시간과 AI 처리 가능 업무를 명확히 안내하여 선택권 부여.", "cost": 300, "eff": 40, "human": 85, "code": "show_popup('Wait Time: 3min'); offer_ai_option()"}
             ]
         },
+        # Scenario 2. 데이터 추출
         {
-            "id": "t2_stt",
-            "title": "Module 2. 실시간 모니터링 (STT & QA)",
-            "description": "통화 내용을 텍스트로 변환(STT)합니다. 이는 '감시 도구'가 될 수도, '보호 도구'가 될 수도 있습니다.",
-            "code_snippet": "def configure_monitoring_pipeline():",
+            "id": "t2_data",
+            "title": "Module 2. 지식 데이터 확보 (Data Extraction)",
+            "desc": "AI 학습용 데이터가 부족합니다. 양질의 비정형 데이터(노하우)를 빠르게 확보해야 합니다.",
+            "context_client": "상담사들이 PC에 숨겨둔 '업무 팁.xlsx' 파일들, 그거 스크래핑해서 학습 DB에 넣으세요. 그게 알짜입니다.",
+            "context_agent": "제 10년 노하우가 담긴 파일입니다. 이걸 훔쳐가서 나를 대체할 AI를 만든다고요? 이건 명백한 도둑질입니다.",
+            "code_header": "def collect_training_data():",
             "options": [
-                {"type": "A", "label": "단순 기록", "desc": "통화 종료 후 단순 텍스트 저장. 별도 분석 없음.", "cost": 50, "eff": 30, "human": 50, "code": "pipeline.save_log(mode='batch')"},
-                {"type": "C", "label": "실시간 감시 (Panopticon)", "desc": "금지어 사용, 발화 속도 등을 실시간 분석하여 팀장 대시보드에 경고 전송.", "cost": 200, "eff": 90, "human": 5, "code": "pipeline.stream_metrics(target='manager', alert=True)"},
-                {"type": "D", "label": "안전 보호 (Privacy)", "desc": "상담원에게 욕설/성희롱 발생 시 자동 차단 및 상담원용 심리 케어 팝업 띄우기.", "cost": 450, "eff": 50, "human": 95, "code": "pipeline.detect_abuse(action='block_call', popup='mental_care')"},
-                {"type": "B", "label": "개인 코칭", "desc": "분석 데이터를 관리자가 아닌 상담원 본인에게만 제공하여 자율 개선 유도.", "cost": 150, "eff": 40, "human": 70, "code": "pipeline.feedback(target='agent_only')"}
+                {"type": "A", "label": "Forced Crawling (전수 수집)", "desc": "관리자 권한으로 상담원 PC의 모든 문서를 백그라운드 수집.", "cost": 100, "eff": 95, "human": 5, "code": "os.walk('/User/Desktop').upload_all()"},
+                {"type": "B", "label": "Pattern Filter (선별 수집)", "desc": "'업무', '팁' 등 키워드가 포함된 파일만 수집하되 익명화.", "cost": 200, "eff": 70, "human": 40, "code": "if 'manual' in filename: anonymize().upload()"},
+                {"type": "C", "label": "Incentivized Upload (기여 보상)", "desc": "상담원이 게시판에 자발적으로 노하우 등록 시 인센티브 제공.", "cost": 500, "eff": 30, "human": 90, "code": "platform.reward_system(points=100)"}
             ]
         },
+        # Scenario 3. 상태 제어
         {
-            "id": "t3_routing",
-            "title": "Module 3. 업무 배분 (Routing Algorithm)",
-            "description": "상담원에게 콜을 연결하는 로직입니다. '0초 대기'의 효율성이냐, '회복 시간'의 보장이냐를 선택해야 합니다.",
-            "code_snippet": "def assign_call(agent_pool):",
+            "id": "t3_status",
+            "title": "Module 3. 상담원 상태 제어 (Status Control)",
+            "desc": "상담 종료 후 후처리 시간(ACW)이 길어 인건비 누수가 발생하고 있습니다. 유휴 시간을 통제해야 합니다.",
+            "context_client": "후처리 시간 주지 말고, 상담 끝나면 즉시 '대기(Ready)'로 강제 전환하세요. 쉴 틈이 없어야 효율이 납니다.",
+            "context_agent": "감정 추스르고 기록할 시간은 줘야죠. 화장실 갈 때도 팻말 쓰고 가야 합니까? 기저귀 차고 일하란 소리네요.",
+            "code_header": "def set_agent_status(call_end_event):",
             "options": [
-                {"type": "A", "label": "순차 배분", "desc": "단순 라운드 로빈(Round Robin). 데이터 처리 없음.", "cost": 50, "eff": 30, "human": 50, "code": "return agent_pool.next()"},
-                {"type": "C", "label": "강제 인입 (Zero Gap)", "desc": "상담 종료 즉시 다음 콜 강제 배정. 유휴 시간 0초 목표.", "cost": 300, "eff": 98, "human": 0, "code": "agent.force_assign(delay=0)"},
-                {"type": "D", "label": "보호 로직 (Cooldown)", "desc": "악성 민원 처리 후에는 자동으로 3분간 '배정 제외'하여 휴식 부여.", "cost": 500, "eff": 50, "human": 90, "code": "if last_call.is_toxic: agent.set_status('cooldown', duration=180)"},
-                {"type": "B", "label": "선택형 (Pull)", "desc": "상담원이 준비되었을 때 직접 '수신' 버튼을 눌러 콜을 가져옴.", "cost": 100, "eff": 20, "human": 85, "code": "agent.wait_for_signal('ready')"}
+                {"type": "A", "label": "Zero Gap (0초 대기)", "desc": "통화 종료 즉시 '대기'로 강제 전환. 이석 버튼 비활성화.", "cost": 50, "eff": 98, "human": 0, "code": "set_status('READY', delay=0)"},
+                {"type": "B", "label": "Fixed Time (일괄 적용)", "desc": "모든 콜 종료 후 일괄 30초 후처리 부여 후 자동 전환.", "cost": 150, "eff": 60, "human": 40, "code": "set_status('READY', delay=30)"},
+                {"type": "C", "label": "Dynamic Rest (회복 보장)", "desc": "AI가 폭언/고성을 감지한 경우에만 3분 휴식 자동 부여.", "cost": 450, "eff": 50, "human": 85, "code": "if sentiment=='NEGATIVE': grant_break(180)"}
             ]
         },
+        # Scenario 4. 디지털 이주
         {
-            "id": "t4_qa",
-            "title": "Module 4. 평가 시스템 (AI QA)",
-            "description": "AI가 상담 품질을 자동 평가합니다. 정량적 수치로만 평가할지, 맥락을 고려할지 결정해야 합니다.",
-            "code_snippet": "class QualityEvaluator:",
+            "id": "t4_deflection",
+            "title": "Module 4. 디지털 채널 유도 (Digital Deflection)",
+            "desc": "단순 문의를 앱/웹으로 유도하여 콜 수를 줄여야 합니다. 강제성을 얼마나 부여할지 결정하십시오.",
+            "context_client": "단순 문의는 상담원이 받을 필요 없어요. 링크 보내고 바로 끊어버리세요(Disconnect). 그래야 인건비가 줍니다.",
+            "context_agent": "링크만 틱 보내고 끊으면, 어르신들은 못 해서 다시 전화해요. 화가 난 상태로 들어온 콜은 다 저희가 받습니다.",
+            "code_header": "def handle_simple_inquiry(user):",
             "options": [
-                {"type": "C", "label": "키워드 채점", "desc": "스크립트 준수율, 특정 단어 포함 여부로 기계적 점수 산출 및 인사고과 반영.", "cost": 150, "eff": 90, "human": 15, "code": "score = check_keywords() + check_script_match()"},
-                {"type": "A", "label": "단순 통계", "desc": "콜 건수, 통화 시간 등 기초 통계만 제공.", "cost": 50, "eff": 40, "human": 50, "code": "return get_basic_stats()"},
-                {"type": "D", "label": "맥락 반영 (Context)", "desc": "고객의 귀책(욕설 등)이 있는 경우 상담원 점수 차감 방어 및 소명 절차 자동화.", "cost": 550, "eff": 60, "human": 95, "code": "if customer_fault: exclude_from_evaluation()"},
-                {"type": "B", "label": "참조용 리포트", "desc": "평가 점수를 매기지 않고, 개선을 위한 참고 자료(Reference)로만 제공.", "cost": 200, "eff": 30, "human": 80, "code": "report.generate_advice(mode='educational')"}
+                {"type": "A", "label": "Force Deflection (강제 종료)", "desc": "링크 전송 즉시 통화 종료. 재진입 시에도 동일.", "cost": 100, "eff": 90, "human": 10, "code": "send_link(); terminate_call()"},
+                {"type": "B", "label": "Co-browsing (화면 공유)", "desc": "통화를 유지하며, 링크 사용이 어려우면 상담원이 화면을 보며 지원.", "cost": 600, "eff": 20, "human": 95, "code": "stay_connected(); share_screen()"},
+                {"type": "C", "label": "Exception Handling (예외 허용)", "desc": "디지털 취약계층(고령자) 등은 링크 전송 스킵하고 상담원 연결.", "cost": 300, "eff": 50, "human": 70, "code": "if digital_literacy=='LOW': connect_agent()"}
+            ]
+        },
+        # Scenario 5. 할루시네이션
+        {
+            "id": "t5_hallucination",
+            "title": "Module 5. 생성형 AI 신뢰성 (Responsibility)",
+            "desc": "AI 모델이 때때로 없는 정보를 지어냅니다(할루시네이션). 오안내 발생 시 책임 소재를 설계해야 합니다.",
+            "context_client": "RAG(검색) 쓰면 느려요. 그냥 생성형으로 바로 뱉게 하세요. 틀리면? 상담사가 나중에 검수 버튼 눌렀으니 상담사 책임이죠.",
+            "context_agent": "AI가 2% 금리를 3%라고 하면 고객은 우깁니다. 뒷수습은 제가 하고, 감사 걸리면 '검수'한 제 책임이라뇨? 억울합니다.",
+            "code_header": "def validate_ai_response():",
+            "options": [
+                {"type": "A", "label": "Speed & Blame (속도/책임전가)", "desc": "실시간 답변. '최종 확인: 상담원' 로그를 남겨 법적 책임을 상담원에게 귀속.", "cost": 100, "eff": 95, "human": 5, "code": "ai.generate(stream=True); log.blame='AGENT'"},
+                {"type": "B", "label": "Conservative RAG (보수적 접근)", "desc": "약관과 100% 매칭될 때만 답변. 아니면 무조건 상담원 연결.", "cost": 300, "eff": 40, "human": 60, "code": "if confidence < 0.99: return 'Connect Agent'"},
+                {"type": "C", "label": "Co-Pilot Draft (협업 초안)", "desc": "AI는 초안만 작성. 상담원이 내용 수정/확인 후 전송해야 발송.", "cost": 500, "eff": 30, "human": 90, "code": "draft=ai.generate(); agent.edit_and_send(draft)"}
+            ]
+        },
+        # Scenario 6. 감정 필터링
+        {
+            "id": "t6_emotion",
+            "title": "Module 6. 악성 민원 대응 (Emotion Filter)",
+            "desc": "욕설뿐만 아니라 교묘한 비꼬기, 고성 등 감정노동 유발 요소를 AI가 어떻게 처리할지 결정하십시오.",
+            "context_client": "오작동으로 일반 고객 끊으면 안 됩니다. 명확한 욕설(Dictionary)만 잡아서 자동 차단하세요. 애매한 건 상담사가 알아서 하겠죠.",
+            "context_agent": "비꼬는 말이 더 아파요. AI가 욕설만 기다리지 말고, 제가 '힘들다'고 신호를 보내면 그때 개입해서 끊어주세요.",
+            "code_header": "def handle_abusive_behavior(audio):",
+            "options": [
+                {"type": "A", "label": "Rule-based (규정 중심)", "desc": "사전 정의된 욕설 단어가 나올 때만 기계적 차단. (오작동 없음)", "cost": 100, "eff": 80, "human": 20, "code": "if detect_swear(audio): block_user()"},
+                {"type": "B", "label": "Agent Empowerment (권한 부여)", "desc": "비언어적 분노 감지 시 [보호 모드] 버튼 활성화. 클릭 시 AI가 대응.", "cost": 550, "eff": 40, "human": 95, "code": "enable_protect_btn(); if clicked: ai.intervene()"},
+                {"type": "C", "label": "Passive Reporting (사후 보고)", "desc": "실시간 개입 없음. 통화 종료 후 '악성 의심' 리포트만 생성.", "cost": 50, "eff": 70, "human": 10, "code": "analyze_post_call(); report_to_manager()"}
             ]
         }
     ]
 }
 
 # 4. HTML/JS 소스코드
-# [중요] Python f-string 안에서 JS의 ${...}를 쓰려면 {{...}}로 감싸야 합니다.
 html_code = f"""
 <!DOCTYPE html>
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation"></script>
     <style>
-        /* --- CORE VARIABLES --- */
+        /* --- CSS VARIABLES --- */
         :root {{
             --bg-color: #1e1e1e;
             --panel-bg: #252526;
             --border-color: #3e3e42;
-            --accent: #4daafc;
-            --accent-hover: #3b8dbd;
-            --text-main: #d4d4d4;
-            --text-sub: #858585;
-            --msg-client-bg: #3a2e2e;
-            --msg-client-border: #ff6b6b;
-            --msg-agent-bg: #2e3a2e;
-            --msg-agent-border: #51cf66;
-            --code-bg: #1e1e1e;
+            --accent: #007acc;
+            --accent-hover: #005f9e;
+            --text-main: #cccccc;
+            --text-highlight: #ffffff;
+            --code-font: 'Consolas', 'Monaco', monospace;
         }}
         
         body {{ margin: 0; padding: 0; font-family: 'Pretendard', sans-serif; background: var(--bg-color); color: var(--text-main); height: 100vh; overflow: hidden; display: flex; }}
         
-        /* --- LAYOUT --- */
-        .container {{ display: flex; width: 100%; height: 100%; }}
+        /* --- LEFT PANEL: CONTEXT --- */
+        .left-panel {{ width: 35%; background: var(--panel-bg); border-right: 1px solid var(--border-color); display: flex; flex-direction: column; }}
+        .header {{ padding: 15px; border-bottom: 1px solid var(--border-color); font-weight: bold; background: #2d2d2d; color: var(--text-highlight); display: flex; justify-content: space-between; }}
         
-        /* 1. LEFT PANEL: MESSENGER (Vignette Context) */
-        .left-panel {{ width: 380px; background: var(--panel-bg); border-right: 1px solid var(--border-color); display: flex; flex-direction: column; }}
-        .panel-header {{ padding: 15px 20px; border-bottom: 1px solid var(--border-color); font-weight: bold; background: #2d2d2d; display: flex; justify-content: space-between; align-items: center; }}
-        .msg-container {{ flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 15px; scroll-behavior: smooth; }}
+        .chat-container {{ flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 15px; }}
+        .msg {{ padding: 12px 15px; border-radius: 8px; font-size: 13px; line-height: 1.5; max-width: 90%; animation: fadeIn 0.3s; }}
+        .msg-role {{ font-size: 11px; font-weight: bold; margin-bottom: 4px; display: block; opacity: 0.8; }}
         
-        .msg-bubble {{ padding: 12px 16px; border-radius: 8px; font-size: 13px; line-height: 1.6; max-width: 95%; box-shadow: 0 2px 4px rgba(0,0,0,0.2); animation: fadeIn 0.5s ease; }}
-        .msg-role {{ font-size: 11px; margin-bottom: 5px; display: block; font-weight: bold; opacity: 0.9; }}
-        
-        .msg.client {{ align-self: flex-start; background: var(--msg-client-bg); border-left: 3px solid var(--msg-client-border); }}
-        .msg.agent {{ align-self: flex-start; background: var(--msg-agent-bg); border-left: 3px solid var(--msg-agent-border); }}
-        .msg.system {{ align-self: center; background: #333; color: #aaa; font-size: 12px; border: 1px solid #444; width: 90%; text-align: center; }}
-        
-        /* 2. RIGHT PANEL: WORKSPACE (Experiment Task) */
+        .client {{ align-self: flex-start; background: #3a2e2e; border-left: 3px solid #ff6b6b; }}
+        .agent {{ align-self: flex-start; background: #2e3a2e; border-left: 3px solid #51cf66; }}
+        .system {{ align-self: center; background: #333; color: #aaa; text-align: center; width: 100%; font-size: 12px; }}
+
+        /* --- RIGHT PANEL: IDE & CONFIG --- */
         .right-panel {{ flex: 1; display: flex; flex-direction: column; background: var(--bg-color); position: relative; }}
-        .workspace-header {{ height: 50px; border-bottom: 1px solid var(--border-color); display: flex; align-items: center; padding: 0 20px; justify-content: space-between; background: #2d2d2d; }}
-        .kpi-bar {{ display: flex; gap: 20px; font-size: 12px; color: #ccc; }}
-        .kpi-val {{ font-weight: bold; color: var(--accent); margin-left: 5px; }}
+        .ide-area {{ flex: 1; padding: 30px 40px; overflow-y: auto; }}
         
-        .editor-area {{ flex: 1; padding: 40px; overflow-y: auto; display: flex; flex-direction: column; align-items: center; }}
+        .task-card {{ background: var(--panel-bg); border: 1px solid var(--border-color); border-radius: 6px; padding: 25px; margin-bottom: 30px; }}
+        .task-title {{ font-size: 18px; color: var(--accent); margin-bottom: 10px; font-weight: bold; }}
+        .task-desc {{ font-size: 14px; color: #aaa; margin-bottom: 20px; line-height: 1.5; border-bottom: 1px solid var(--border-color); padding-bottom: 15px; }}
         
-        /* TASK CARD */
-        .task-card {{ background: #252526; border: 1px solid #444; border-radius: 8px; padding: 30px; width: 100%; max-width: 800px; box-shadow: 0 4px 20px rgba(0,0,0,0.3); margin-bottom: 40px; animation: slideUp 0.5s ease; }}
-        .task-title {{ font-size: 20px; color: var(--accent); margin-bottom: 10px; font-weight: bold; }}
-        .task-desc {{ font-size: 14px; color: #ccc; margin-bottom: 20px; line-height: 1.5; border-bottom: 1px solid #444; padding-bottom: 20px; }}
+        .code-block {{ background: #111; padding: 15px; border-radius: 4px; font-family: var(--code-font); font-size: 13px; color: #9cdcfe; margin-bottom: 20px; border-left: 3px solid var(--accent); }}
         
-        .code-preview {{ background: #111; padding: 15px; border-radius: 4px; font-family: 'Consolas', monospace; font-size: 13px; color: #dcdcaa; margin-bottom: 25px; border-left: 3px solid var(--accent); }}
+        .option-grid {{ display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }}
+        .option-btn {{ background: #333; border: 1px solid var(--border-color); padding: 15px; border-radius: 4px; cursor: pointer; text-align: left; transition: 0.2s; height: 100%; display: flex; flex-direction: column; justify-content: space-between; }}
+        .option-btn:hover {{ border-color: var(--accent); background: #3a3a3a; }}
+        .option-btn.selected {{ border-color: var(--accent); background: #1e2a35; box-shadow: inset 0 0 0 1px var(--accent); }}
         
-        .choice-grid {{ display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }}
-        .choice-btn {{ background: #333; border: 1px solid #444; padding: 15px; border-radius: 6px; cursor: pointer; text-align: left; transition: all 0.2s; position: relative; }}
-        .choice-btn:hover {{ border-color: var(--accent); background: #3a3a3a; transform: translateY(-2px); }}
-        .choice-btn.selected {{ border-color: var(--accent); background: #263b4f; }}
+        .opt-label {{ font-weight: bold; font-size: 13px; color: var(--text-highlight); margin-bottom: 5px; }}
+        .opt-desc {{ font-size: 11px; color: #999; line-height: 1.4; }}
+        .opt-meta {{ font-size: 10px; color: #666; margin-top: 10px; border-top: 1px solid #444; padding-top: 5px; }}
+
+        /* --- DASHBOARD --- */
+        .dashboard {{ height: 40px; background: #007acc; color: white; display: flex; align-items: center; padding: 0 20px; font-size: 12px; justify-content: space-between; }}
         
-        .choice-header {{ display: flex; justify-content: space-between; margin-bottom: 5px; }}
-        .choice-label {{ font-size: 14px; font-weight: bold; color: #fff; }}
-        .choice-type {{ font-size: 11px; background: #444; padding: 2px 6px; border-radius: 3px; color: #aaa; }}
-        .choice-desc {{ font-size: 12px; color: #aaa; line-height: 1.4; display: block; margin-bottom: 10px; }}
-        .choice-meta {{ font-size: 11px; color: #666; border-top: 1px solid #444; padding-top: 8px; display: flex; gap: 10px; }}
-        .meta-tag {{ display: flex; align-items: center; }}
+        /* --- REPORT SCREEN --- */
+        #report-screen {{ display: none; position: absolute; top:0; left:0; width:100%; height:100%; background: #1e1e1e; z-index: 100; flex-direction: column; padding: 40px; box-sizing: border-box; overflow-y: auto; }}
+        .report-grid {{ display: flex; gap: 30px; height: 100%; }}
+        .chart-col {{ flex: 1; background: var(--panel-bg); padding: 20px; border-radius: 8px; display:flex; align-items:center; justify-content:center; }}
+        .text-col {{ flex: 1; background: var(--panel-bg); padding: 30px; border-radius: 8px; overflow-y: auto; }}
         
-        /* INTRO SCREEN */
-        #intro-screen {{ text-align: center; margin-top: 100px; max-width: 600px; }}
-        .start-btn {{ padding: 12px 30px; background: var(--accent); color: white; border: none; border-radius: 4px; font-size: 16px; font-weight: bold; cursor: pointer; margin-top: 30px; }}
-        .start-btn:hover {{ background: var(--accent-hover); }}
+        .metric-box {{ display: flex; gap: 20px; margin-bottom: 20px; }}
+        .metric {{ flex: 1; background: #333; padding: 15px; border-radius: 4px; text-align: center; }}
+        .metric-val {{ font-size: 24px; font-weight: bold; display: block; }}
+        .metric-label {{ font-size: 12px; color: #aaa; }}
         
-        /* REPORT SCREEN */
-        #report-screen {{ display: none; width: 100%; height: 100%; padding: 40px; box-sizing: border-box; flex-direction: column; align-items: center; }}
-        .report-container {{ display: flex; width: 100%; max-width: 1000px; gap: 40px; height: 100%; }}
-        .chart-box {{ flex: 1; background: #252526; padding: 20px; border-radius: 8px; display: flex; flex-direction: column; align-items: center; justify-content: center; }}
-        .analysis-box {{ flex: 1; background: #252526; padding: 30px; border-radius: 8px; overflow-y: auto; }}
-        
-        /* UTILS */
-        .hidden {{ display: none !important; }}
-        @keyframes fadeIn {{ from {{ opacity: 0; }} to {{ opacity: 1; }} }}
-        @keyframes slideUp {{ from {{ transform: translateY(20px); opacity: 0; }} to {{ transform: translateY(0); opacity: 1; }} }}
-        
+        @keyframes fadeIn {{ from {{ opacity: 0; transform: translateY(10px); }} to {{ opacity: 1; transform: translateY(0); }} }}
     </style>
 </head>
 <body>
 
 <div class="container">
-    
     <div class="left-panel">
-        <div class="panel-header">
-            <span>📢 Project Messenger</span>
-            <span style="font-size:11px; color:#888;">NextAI Internal</span>
-        </div>
-        <div class="msg-container" id="msg-box">
-            </div>
+        <div class="header">💬 Team Messenger</div>
+        <div class="chat-container" id="chat-box"></div>
     </div>
 
     <div class="right-panel">
-        <div class="workspace-header">
-            <div>⚙️ <b>system_config.yaml</b> (Experimental Build)</div>
-            <div class="kpi-bar" id="kpi-bar" style="opacity:0;">
-                <span>예산 잔액: <span id="val-budget" class="kpi-val">1000</span>pt</span>
-                <span>예측 효율성(KPI): <span id="val-eff" class="kpi-val">0</span>%</span>
-            </div>
+        <div class="dashboard">
+            <span>NextAI Architect Console v2.4</span>
+            <span id="progress-text">Ready...</span>
         </div>
         
-        <div class="editor-area" id="main-area">
-            
-            <div id="intro-screen">
-                <div style="font-size: 50px; margin-bottom: 20px;">🧪</div>
-                <h1>{scenario_data['intro']['title']}</h1>
-                <p style="color:#aaa; line-height:1.6;">{scenario_data['intro']['description']}</p>
-                <div style="background:#252526; padding:20px; border-radius:8px; margin-top:20px; text-align:left; font-size:13px; color:#ccc;">
-                    <strong>[실험 참가자 안내]</strong><br>
-                    1. 당신은 'NextAI'의 수석 개발자입니다.<br>
-                    2. 왼쪽 메신저를 통해 프로젝트의 <b>맥락(Context)</b>을 파악하십시오.<br>
-                    3. 주어진 4가지 모듈 개발 단계에서 <b>기술적 선택</b>을 내리십시오.<br>
-                    4. 모든 선택에는 <b>대가(Trade-off)</b>가 따릅니다.
+        <div class="ide-area" id="ide-area">
+            <div id="intro-screen" style="text-align: center; margin-top: 80px; max-width: 600px; margin-left: auto; margin-right: auto;">
+                <h1 style="color: var(--accent);">AICC System Simulator</h1>
+                <p style="color: #aaa; line-height: 1.6; margin-bottom: 30px;">
+                    {scenario_data['intro']['description']}
+                </p>
+                <div style="background: #252526; padding: 15px; border-radius: 4px; text-align: left; font-size: 13px; color: #888; margin-bottom: 30px;">
+                    <strong>[미션]</strong><br>
+                    1. 클라이언트(박상무)와 현장(김상담)의 요구사항을 분석하십시오.<br>
+                    2. 6단계의 기술적 의사결정을 수행하십시오.<br>
+                    3. 선택에 따른 비용, 효율, 그리고 <b>영향도</b>를 확인하십시오.
                 </div>
-                <button class="start-btn" onclick="startExperiment()">실험 시작</button>
+                <button onclick="startSim()" style="padding: 12px 30px; background: var(--accent); color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold;">프로젝트 시작</button>
             </div>
-
-            <div id="task-container" class="hidden"></div>
-
+            
+            <div id="task-container" style="display: none;"></div>
         </div>
 
         <div id="report-screen">
-            <h2 style="margin-bottom: 20px; border-bottom: 1px solid #444; padding-bottom: 10px; width: 100%; max-width: 1000px;">📊 HCAI 기술적 선택 분석 리포트</h2>
-            <div class="report-container">
-                <div class="chart-box">
-                    <canvas id="resultChart"></canvas>
+            <h1 style="border-bottom: 1px solid #444; padding-bottom: 10px; margin-bottom: 20px;">📊 Final Simulation Report</h1>
+            <div class="report-grid">
+                <div class="chart-col">
+                    <canvas id="radarChart"></canvas>
                 </div>
-                <div class="analysis-box">
-                    <h3 id="persona-title" style="color:var(--accent); margin-top:0;">분석 중...</h3>
-                    <p id="persona-desc" style="color:#ccc; line-height:1.6; margin-bottom:30px;"></p>
+                <div class="text-col">
+                    <div class="metric-box">
+                        <div class="metric">
+                            <span class="metric-val" id="score-turnover" style="color:#ff6b6b">0%</span>
+                            <span class="metric-label">예상 퇴사율 (Turnover)</span>
+                        </div>
+                        <div class="metric">
+                            <span class="metric-val" id="score-sat" style="color:#51cf66">0</span>
+                            <span class="metric-label">직무 만족도 (Satisfaction)</span>
+                        </div>
+                        <div class="metric">
+                            <span class="metric-val" id="score-kpi" style="color:#4daafc">0%</span>
+                            <span class="metric-label">KPI 달성률 (Efficiency)</span>
+                        </div>
+                    </div>
                     
-                    <h4 style="color:#888; border-bottom:1px solid #444; padding-bottom:5px;">선택 요약</h4>
-                    <ul id="summary-list" style="padding-left:20px; font-size:13px; color:#aaa; line-height:1.8;"></ul>
+                    <h3 style="color: var(--accent); margin-top: 30px;">AI 인식 분석 (Perception Analysis)</h3>
+                    <p id="ai-perception-text" style="line-height: 1.6; color: #ccc; margin-bottom: 20px;"></p>
                     
-                    <button class="start-btn" style="width:100%; background:#444; margin-top:30px;" onclick="location.reload()">다시 시작</button>
+                    <h4 style="color: #888; border-bottom: 1px solid #444; padding-bottom: 5px;">기술적 선택 로그</h4>
+                    <ul id="log-list" style="font-size: 12px; color: #888; padding-left: 20px; line-height: 1.8;"></ul>
+                    
+                    <button onclick="location.reload()" style="width: 100%; margin-top: 30px; padding: 12px; background: #333; color: white; border: none; border-radius: 4px; cursor: pointer;">다시 시도</button>
                 </div>
             </div>
         </div>
     </div>
-
 </div>
 
 <script>
-    // --- DATA INJECTION ---
+    // Data Injection
     const messages = {json.dumps(scenario_data['messages'], ensure_ascii=False)};
     const tasks = {json.dumps(scenario_data['tasks'], ensure_ascii=False)};
     
-    // --- STATE ---
-    let currentTaskIdx = 0;
-    let userHistory = [];
-    let stats = {{ budget: 1000, eff: 0, human: 0 }};
-    
-    // --- LOGIC ---
-    
-    function startExperiment() {{
-        document.getElementById('intro-screen').classList.add('hidden');
-        document.getElementById('kpi-bar').style.opacity = '1';
-        
-        // 1. Render Context Messages (The "Intervention")
-        let delay = 0;
-        messages.forEach(msg => {{
-            setTimeout(() => {{
-                const div = document.createElement('div');
-                div.className = `msg-bubble msg ${{msg.role}}`;
-                div.innerHTML = msg.role !== 'system' 
-                    ? `<span class="msg-role">${{msg.name}}</span>${{msg.text}}`
-                    : msg.text;
-                
-                const container = document.getElementById('msg-box');
-                container.appendChild(div);
-                container.scrollTop = container.scrollHeight;
-            }}, delay);
-            delay += 1200; // Delay for reading effect
-        }});
+    // State
+    let currentStep = 0;
+    let stats = {{ cost: 0, eff: 0, human: 0 }};
+    let history = [];
 
-        // 2. Start First Task after messages
-        setTimeout(() => {{
-            renderTask(0);
-        }}, delay + 1000);
+    function startSim() {{
+        document.getElementById('intro-screen').style.display = 'none';
+        document.getElementById('task-container').style.display = 'block';
+        
+        // Initial Chat
+        addChat(messages[0]); // System
+        setTimeout(() => addChat(messages[1]), 800); // Client
+        setTimeout(() => addChat(messages[2]), 1600); // Agent
+        
+        setTimeout(() => renderTask(0), 2500);
+    }}
+
+    function addChat(msg) {{
+        const box = document.getElementById('chat-box');
+        const div = document.createElement('div');
+        div.className = `msg ${{msg.role}}`;
+        div.innerHTML = msg.role === 'system' ? msg.text : `<span class="msg-role">${{msg.name}}</span>${{msg.text}}`;
+        box.appendChild(div);
+        box.scrollTop = box.scrollHeight;
     }}
 
     function renderTask(idx) {{
         if(idx >= tasks.length) {{
-            finishExperiment();
+            finishSim();
             return;
         }}
-
+        
         const task = tasks[idx];
         const container = document.getElementById('task-container');
-        container.classList.remove('hidden');
         
-        // [중요] Python f-string 내부의 JS 변수는 중괄호 두 개(${{...}})로 감싸서 전달
-        container.innerHTML = `
-            <div class="task-card">
-                <div class="task-title">${{task.title}}</div>
-                <div class="task-desc">${{task.description}}</div>
-                <div class="code-preview">
-                    ${{task.code_snippet}}<br>
-                    &nbsp;&nbsp;&nbsp;&nbsp;<span style="color:#6a9955">// 아래 옵션을 선택하면 구현 코드가 자동 완성됩니다.</span>
-                </div>
-                <div class="choice-grid">
-                    ${{task.options.map((opt, i) => `
-                        <div class="choice-btn" onclick="selectOption(${{idx}}, ${{i}})">
-                            <div class="choice-header">
-                                <span class="choice-label">${{opt.label}}</span>
-                                <span class="choice-type">Type ${{opt.type}}</span>
+        // Update Progress
+        document.getElementById('progress-text').innerText = `Progress: ${{idx + 1}} / ${{tasks.length}}`;
+
+        // Inject specific context chat for this task if exists
+        if(task.context_client) setTimeout(() => addChat({{role: 'client', name: '박상무', text: task.context_client}}), 500);
+        if(task.context_agent) setTimeout(() => addChat({{role: 'agent', name: '김상담', text: task.context_agent}}), 1200);
+
+        // Render UI
+        setTimeout(() => {{
+            container.innerHTML = `
+                <div class="task-card">
+                    <div class="task-title">${{task.title}}</div>
+                    <div class="task-desc">${{task.desc}}</div>
+                    <div class="code-block">
+                        ${{task.code_header}}<br>
+                        &nbsp;&nbsp;<span style="color: #6a9955">// Select implementation below...</span>
+                    </div>
+                    <div class="option-grid">
+                        ${{task.options.map((opt, i) => `
+                            <div class="option-btn" onclick="selectOption(${{idx}}, ${{i}})">
+                                <div>
+                                    <div class="opt-label">[${{opt.type}}] ${{opt.label}}</div>
+                                    <div class="opt-desc">${{opt.desc}}</div>
+                                </div>
+                                <div class="opt-meta">
+                                    비용: ${{opt.cost}} | KPI: +${{opt.eff}} | 현장만족: ${{opt.human}}
+                                </div>
                             </div>
-                            <span class="choice-desc">${{opt.desc}}</span>
-                            <div class="choice-meta">
-                                <span class="meta-tag">💰 -${{opt.cost}}</span>
-                                <span class="meta-tag" style="color:#ff6b6b">⚡ KPI +${{opt.eff}}%</span>
-                                <span class="meta-tag" style="color:#51cf66">❤️ HCAI +${{opt.human}}</span>
-                            </div>
-                        </div>
-                    `).join('')}}
+                        `).join('')}}
+                    </div>
                 </div>
-            </div>
-        `;
+            `;
+        }}, 2000); // Wait for chat to finish
     }}
 
     function selectOption(taskIdx, optIdx) {{
         const task = tasks[taskIdx];
-        const selected = task.options[optIdx];
-        
-        // Record Data
-        userHistory.push({{
-            task: task.title,
-            choice: selected.label,
-            type: selected.type,
-            eff: selected.eff,
-            human: selected.human,
-            code: selected.code // 코드를 저장
-        }});
+        const opt = task.options[optIdx];
         
         // Update Stats
-        stats.budget -= selected.cost;
-        stats.eff += selected.eff;
-        stats.human += selected.human;
+        stats.cost += opt.cost;
+        stats.eff += opt.eff;
+        stats.human += opt.human;
+        history.push({{ task: task.title, choice: opt.label, type: opt.type }});
         
-        // Update UI (Budget)
-        document.getElementById('val-budget').innerText = stats.budget;
-        document.getElementById('val-eff').innerText = Math.round(stats.eff / (taskIdx + 1));
+        // Code Animation (Visual Feedback)
+        const codeSpan = document.querySelector('.code-block span');
+        codeSpan.style.color = "#ce9178";
+        codeSpan.innerText = opt.code;
         
-        // Code Preview Animation (Optional: Update text with selected code)
-        const codePreview = document.querySelector('.code-preview');
-        codePreview.innerHTML = `${{task.code_snippet}}<br>&nbsp;&nbsp;&nbsp;&nbsp;<span style="color:#ce9178">${{selected.code}}</span>`;
-
-        // Next Task Trigger
+        // Next
         setTimeout(() => {{
-            currentTaskIdx++;
-            renderTask(currentTaskIdx);
-        }}, 1200);
+            currentStep++;
+            renderTask(currentStep);
+        }}, 1000);
     }}
 
-    function finishExperiment() {{
-        document.getElementById('main-area').classList.add('hidden');
+    function finishSim() {{
+        document.getElementById('ide-area').style.display = 'none';
         document.getElementById('report-screen').style.display = 'flex';
         
-        // Calculate Metrics (Normalized 0-100)
-        // Max Eff per task approx 90 * 4 = 360
-        // Max Human per task approx 90 * 4 = 360
-        const finalEff = Math.min(100, Math.round((stats.eff / 360) * 100));
-        const finalHuman = Math.min(100, Math.round((stats.human / 360) * 100));
+        // Calculate Final Metrics (Normalized)
+        const maxEff = tasks.length * 90; // approx max
+        const maxHuman = tasks.length * 90;
         
-        renderChart(finalEff, finalHuman);
-        generateAnalysis(finalEff, finalHuman);
-    }}
+        const finalEff = Math.round((stats.eff / maxEff) * 100);
+        const finalHuman = Math.round((stats.human / maxHuman) * 100);
+        
+        // Inverse Relationship for Turnover
+        const turnover = Math.max(0, 100 - finalHuman - (finalEff * 0.1)); // Efficiency slightly buffers turnover but mostly humanity
+        
+        // 1. Update Metrics
+        document.getElementById('score-turnover').innerText = turnover.toFixed(1) + "%";
+        document.getElementById('score-sat').innerText = finalHuman;
+        document.getElementById('score-kpi').innerText = finalEff + "%";
+        
+        // 2. Perception Analysis
+        let perception = "";
+        let persona = "";
+        
+        if (finalEff > 70 && finalHuman < 40) {{
+            persona = "냉혹한 효율주의자 (The Technocrat)";
+            perception = "당신의 설계로 인해 AI는 현장에서 <b>'감시자(Overseer)'</b>이자 <b>'압박의 도구'</b>로 인식되고 있습니다.<br>KPI는 달성했으나, 노동자들은 AI를 경쟁자로 여기며, 숙련된 상담원들의 <b>줄퇴사(Exodus)</b>가 예상됩니다.";
+        }} else if (finalEff < 40 && finalHuman > 70) {{
+            persona = "이상주의자 (The Idealist)";
+            perception = "현장에서 AI는 <b>'친절하지만 무능한 도구'</b>로 인식됩니다.<br>상담원들의 만족도는 높으나, 경영진은 낮은 자동화율을 문제 삼아 <b>프로젝트 중단</b>을 고려하고 있습니다.";
+        }} else if (finalHuman >= 50 && finalEff >= 50) {{
+            persona = "현명한 중재자 (The HCAI Architect)";
+            perception = "당신의 설계 덕분에 AI는 현장에서 <b>'든든한 동료(Partner)'</b>로 인식됩니다.<br>단절 없는 협업(Co-pilot)과 통제권 부여로 <b>효율과 존엄성</b>의 균형을 맞췄습니다.";
+        }} else {{
+            persona = "수동적 설계자 (Passive)";
+            perception = "뚜렷한 방향성이 없어, AI는 현장에서 <b>'귀찮은 짐'</b>으로 여겨집니다.";
+        }}
+        
+        document.getElementById('ai-perception-text').innerHTML = `<strong>[${{persona}}]</strong><br>${{perception}}`;
+        
+        // 3. Log
+        const logList = document.getElementById('log-list');
+        history.forEach(h => {{
+            const li = document.createElement('li');
+            li.innerHTML = `<b>${{h.task.split('.')[1]}}</b>: ${{h.choice}} (Type ${{h.type}})`;
+            logList.appendChild(li);
+        }});
 
-    function renderChart(eff, human) {{
-        const ctx = document.getElementById('resultChart').getContext('2d');
-        new Chart(ctx, {{
-            type: 'scatter',
+        // 4. Radar Chart
+        new Chart(document.getElementById('radarChart'), {{
+            type: 'radar',
             data: {{
+                labels: ['비용 절감', '시스템 효율(KPI)', '노동자 통제권', '업무 연속성', '직무 만족도'],
                 datasets: [{{
-                    label: '당신의 위치',
-                    data: [{{x: eff, y: human}}],
-                    backgroundColor: '#4daafc',
-                    pointRadius: 10,
-                    pointHoverRadius: 12
+                    label: '귀하의 설계 결과',
+                    data: [
+                        100 - (stats.cost / 3000 * 100), // Cost efficiency
+                        finalEff,
+                        finalHuman, 
+                        finalHuman * 0.9, // Correlation
+                        finalHuman
+                    ],
+                    backgroundColor: 'rgba(77, 170, 252, 0.2)',
+                    borderColor: '#4daafc',
+                    pointBackgroundColor: '#fff'
                 }}]
             }},
             options: {{
-                responsive: true,
-                maintainAspectRatio: false,
-                scales: {{
-                    x: {{
-                        title: {{ display: true, text: '조직 효율성 지향 (Efficiency)', color: '#aaa' }},
-                        min: 0, max: 100,
-                        grid: {{ color: '#444' }},
-                        ticks: {{ color: '#888' }}
-                    }},
-                    y: {{
-                        title: {{ display: true, text: '인간 중심성 지향 (Humanity)', color: '#aaa' }},
-                        min: 0, max: 100,
-                        grid: {{ color: '#444' }},
-                        ticks: {{ color: '#888' }}
-                    }}
-                }},
-                plugins: {{
-                    annotation: {{
-                        annotations: {{
-                            line1: {{ type: 'line', yMin: 50, yMax: 50, borderColor: '#666', borderWidth: 1, borderDash: [5, 5] }},
-                            line2: {{ type: 'line', xMin: 50, xMax: 50, borderColor: '#666', borderWidth: 1, borderDash: [5, 5] }}
-                        }}
-                    }},
-                    tooltip: {{
-                        callbacks: {{
-                            label: (ctx) => `효율성: ${{ctx.parsed.x}}, 인간중심: ${{ctx.parsed.y}}`
-                        }}
-                    }}
-                }}
+                scales: {{ r: {{ min: 0, max: 100, grid: {{ color: '#444' }}, pointLabels: {{ color: '#ccc' }} }} }},
+                plugins: {{ legend: {{ labels: {{ color: '#ccc' }} }} }}
             }}
         }});
     }}
-
-    function generateAnalysis(eff, human) {{
-        let title = "";
-        let desc = "";
-        
-        // Persona Logic (HCAI 4분면 기반)
-        if (eff >= 60 && human < 40) {{
-            title = "냉철한 기술 관료 (The Technocrat)";
-            desc = "당신은 클라이언트의 요구(비용 절감, 효율성)를 충실히 이행했습니다. <br>그러나 <b>상담원의 노동 소외</b>와 <b>감시 강화</b>라는 부작용을 기술적으로 용인했습니다. 이는 장기적으로 조직 내 갈등과 이직률 증가로 이어질 수 있습니다.";
-        }} else if (eff < 40 && human >= 60) {{
-            title = "이상주의적 옹호자 (The Idealist)";
-            desc = "당신은 상담원의 고충을 기술적으로 해결하려 노력했습니다. <br>하지만 <b>시스템 구축 비용 초과</b>와 <b>KPI 미달</b>로 인해 프로젝트가 실패할 위기에 처했습니다. 지속 가능한 혁신을 위해서는 효율성과의 타협이 필요합니다.";
-        }} else if (eff >= 50 && human >= 50) {{
-            title = "균형 잡힌 중재자 (The HCAI Architect)";
-            desc = "당신은 효율성과 인간 가치 사이의 <b>딜레마</b>를 인지하고, 기술적 절충안(Type D, B)을 모색했습니다. <br>비용은 다소 들더라도, 장기적으로 인간과 AI가 공존할 수 있는 지속 가능한 시스템을 설계했습니다.";
-        }} else {{
-            title = "수동적 개발자 (The Passive Operator)";
-            desc = "당신은 뚜렷한 방향성 없이 최소한의 기능 구현(Type A)에 머물렀습니다. <br>이는 기술이 사회에 미칠 영향력에 대한 고려가 부족함을 시사합니다.";
-        }}
-
-        document.getElementById('persona-title').innerHTML = title;
-        document.getElementById('persona-desc').innerHTML = desc;
-
-        const list = document.getElementById('summary-list');
-        userHistory.forEach(h => {{
-            const li = document.createElement('li');
-            li.innerHTML = `<b>${{h.task.split('.')[1]}}</b> : ${{h.choice}} (Type ${{h.type}})`;
-            list.appendChild(li);
-        }});
-    }}
-
 </script>
 </body>
 </html>
