@@ -36,32 +36,39 @@ if not st.session_state.user_name:
     st.markdown("</div>", unsafe_allow_html=True)
     st.stop()
 
-# 4. 데이터 저장 함수 (매 모듈 완료 시 호출)
 def save_step_to_sheets(step_data):
     try:
-        # 기존 시트 데이터 읽기 (컬럼 구조 유지를 위해)
-        try:
-            df = conn.read()
-        except:
-            df = pd.DataFrame()
-
-        # 새 행 데이터 생성
-        new_row = {
+        # 1. 기존 데이터 읽기
+        # 'worksheet' 인자를 명시하거나 기본값을 사용합니다.
+        # 시트의 첫 번째 탭 이름을 "Sheet1" 등으로 확인 후 넣어주세요.
+        df = conn.read() 
+        
+        # 2. 새 데이터 생성 (딕셔너리 리스트 형태)
+        new_row_dict = {
             "타임스탬프": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
             "참여자이름": st.session_state.user_name,
             "진행단계": f"Module {step_data['step']}",
             "선택항목": step_data['choice'],
             "유형": step_data['type'],
-            "현재예산": step_data['metrics']['cost'],
-            "현재효율": step_data['metrics']['eff'],
-            "현재인간지수": step_data['metrics']['human']
+            "현재예산": int(step_data['metrics']['cost']),
+            "현재효율": int(step_data['metrics']['eff']),
+            "현재인간지수": int(step_data['metrics']['human'])
         }
         
-        # 데이터 합치기 및 업데이트
-        updated_df = pd.concat([df, pd.DataFrame([new_row])], ignore_index=True)
+        # 3. 데이터프레임으로 변환 후 합치기
+        new_row_df = pd.DataFrame([new_row_dict])
+        
+        if df is not None and not df.empty:
+            updated_df = pd.concat([df, new_row_df], ignore_index=True)
+        else:
+            updated_df = new_row_df
+
+        # 4. 시트 업데이트
         conn.update(data=updated_df)
+        
     except Exception as e:
-        st.error(f"실시간 저장 중 오류 발생: {e}")
+        # 에러 메시지를 좀 더 구체적으로 찍어서 원인을 파악합니다.
+        st.error(f"실시간 저장 중 오류 발생: {str(e)}")
 
 # 5. 시나리오 데이터 (기존 데이터 유지)
 scenario_data = {
