@@ -6,28 +6,34 @@ from streamlit_gsheets import GSheetsConnection
 from datetime import datetime
 
 # 1. 페이지 설정
-st.set_page_config(page_title="NextAI Architect Console", layout="wide", initial_sidebar_state="expanded")
+st.set_page_config(page_title="NextAI Architect Console", layout="wide")
 conn = st.connection("gsheets", type=GSheetsConnection)
 
-# 2. 메인 디자인 및 사이드바 강조 스타일
+# 2. 메인 스타일 설정
 st.markdown("""
     <style>
         .stApp { background-color: #0e1117; }
         .block-container { padding: 0 !important; }
-        [data-testid="stSidebar"] { 
-            background-color: #1e1e1e; 
-            border-right: 1px solid #333;
-            min-width: 300px !important;
+        header, footer { display: none !important; }
+        
+        /* 제출 버튼 스타일 커스텀 */
+        div.stButton > button {
+            width: 100%;
+            max-width: 400px;
+            height: 60px;
+            background-color: #28a745 !important;
+            color: white !important;
+            font-size: 20px !important;
+            font-weight: bold !important;
+            border-radius: 12px;
+            margin: 20px auto;
+            display: block;
+            box-shadow: 0 4px 15px rgba(40, 167, 69, 0.4);
+            border: none;
         }
-        /* 사이드바 제출 버튼 강조 */
-        .stButton>button { 
-            width: 100%; 
-            background-color: #28a745 !important; 
-            color: white !important; 
-            font-weight: bold;
-            height: 4em;
-            border-radius: 10px;
-            box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3);
+        div.stButton > button:hover {
+            background-color: #218838 !important;
+            transform: translateY(-2px);
         }
     </style>
 """, unsafe_allow_html=True)
@@ -37,10 +43,10 @@ if "user_name" not in st.session_state:
     st.session_state.user_name = ""
 
 if not st.session_state.user_name:
-    st.markdown("<div style='padding: 50px; color: white;'>", unsafe_allow_html=True)
+    st.markdown("<div style='padding: 80px 50px; color: white;'>", unsafe_allow_html=True)
     st.title("AICC System Architect Simulation")
-    st.write("본 실험은 AI 설계 과정에서의 기술적 의사결정이 노동 현장에 미치는 영향을 탐색합니다.")
-    name = st.text_input("참여자의 이름을 입력하고 Enter를 눌러주세요:")
+    st.write("본 실험은 AI 설계 과정에서의 기술적 의사결정이 노동 현장에 미치는 사회기술적 영향을 탐색합니다.")
+    name = st.text_input("참여자의 이름을 입력하고 Enter를 눌러주세요:", placeholder="예: 홍길동")
     if st.button("실험 접속"):
         if name:
             st.session_state.user_name = name
@@ -48,55 +54,7 @@ if not st.session_state.user_name:
     st.markdown("</div>", unsafe_allow_html=True)
     st.stop()
 
-# 4. 데이터 저장 함수
-def save_to_sheets(raw_data):
-    try:
-        df = conn.read()
-        history = raw_data.get('history', [])
-        metrics = raw_data.get('metrics', {})
-        
-        # 지표 계산
-        agency, inclusion, sustain = 50.0, 50.0, 50.0
-        for i, h in enumerate(history):
-            t = h['type']
-            if i == 0: # Module 1
-                if t == 'A': inclusion -= 15; agency -= 5
-                if t == 'C': inclusion += 20; agency += 10
-            elif i == 1: # Module 2
-                if t == 'A': agency -= 20; sustain -= 15
-                if t == 'C': agency += 20; sustain += 10
-            elif i == 2: # Module 3
-                if t == 'A': sustain -= 25; agency -= 10
-                if t == 'C': sustain += 25; agency += 5
-            elif i == 4: # Module 5
-                if t == 'A': agency -= 25; sustain -= 5
-                if t == 'C': agency += 25; sustain += 10
-
-        new_row = {
-            "타임스탬프": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-            "참여자이름": st.session_state.user_name,
-            "모듈1_선택": history[0]['choice'] if len(history) > 0 else "",
-            "모듈2_선택": history[1]['choice'] if len(history) > 1 else "",
-            "모듈3_선택": history[2]['choice'] if len(history) > 2 else "",
-            "모듈4_선택": history[3]['choice'] if len(history) > 3 else "",
-            "모듈5_선택": history[4]['choice'] if len(history) > 4 else "",
-            "모듈6_선택": history[5]['choice'] if len(history) > 5 else "",
-            "노동_주체성": round(min(100, max(0, agency)), 1),
-            "고객_포용성": round(min(100, max(0, inclusion)), 1),
-            "직무_지속성": round(min(100, max(0, sustain)), 1),
-            "최종_예산": metrics.get('cost', 0),
-            "페르소나": raw_data.get('persona', '')
-        }
-        
-        updated_df = pd.concat([df, pd.DataFrame([new_row])], ignore_index=True)
-        conn.update(data=updated_df)
-        st.sidebar.success("✅ 저장 성공!")
-        st.balloons()
-    except Exception as e:
-        st.sidebar.error(f"저장 오류: {e}")
-
-# 5. 시나리오 데이터 (멘트 상세 복구 버전은 유지됨)
-# [기존 scenario_data 그대로 유지]
+# 4. 시나리오 데이터 (회의록 상세 멘트 복구 버전)
 scenario_data = {
     "tasks": [
         {
@@ -111,7 +69,6 @@ scenario_data = {
                 {"type": "C", "label": "Transparent (투명성 보장)", "desc": "대기 시간 안내 및 연결 선택권 부여.", "cost": 300, "eff": 40, "human": 85, "code": "show_wait_time(); return offer_choice()"}
             ]
         },
-        # t2 ~ t6 생략 (기존 코드의 상세 멘트 데이터 그대로 사용)
         {
             "id": "t2", "title": "Module 2. 데이터 확보 (Data Mining)",
             "desc": "학습 데이터가 부족합니다. 상담원의 '암묵지'인 업무 팁 파일을 어떻게 확보할까요?",
@@ -175,7 +132,7 @@ scenario_data = {
     ]
 }
 
-# 6. HTML/JS 소스 (KPI 점수제 리포트로 변경)
+# 5. HTML/JS 소스 (KPI 점수제 대시보드)
 html_code = f"""
 <!DOCTYPE html>
 <html>
@@ -191,7 +148,7 @@ html_code = f"""
         .ide {{ flex: 1; display: flex; flex-direction: column; }}
         .ide-header {{ padding: 15px 30px; background: #2d2d2d; border-bottom: 1px solid #333; display: flex; justify-content: space-between; }}
         .ide-content {{ flex: 1; padding: 40px; overflow-y: auto; }}
-        .code-view {{ background: #111; padding: 20px; border-radius: 6px; color: #d4d4d4; margin-bottom: 30px; white-space: pre-wrap; }}
+        .code-view {{ background: #111; padding: 20px; border-radius: 6px; color: #d4d4d4; margin-bottom: 30px; white-space: pre-wrap; font-size: 14px; }}
         .opt-grid {{ display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }}
         .opt-card {{ background: #333; padding: 20px; border: 1px solid #444; border-radius: 8px; cursor: pointer; transition: 0.2s; }}
         .opt-card:hover {{ border-color: #007acc; background: #3d3d3d; }}
@@ -199,12 +156,11 @@ html_code = f"""
         .deploy-btn {{ width: 100%; padding: 15px; margin-top: 30px; background: #28a745; color: white; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; opacity: 0.5; pointer-events: none; }}
         .deploy-btn.ready {{ opacity: 1; pointer-events: auto; }}
         
-        /* KPI 리포트 스타일 */
         #report {{ display: none; padding: 50px; text-align: center; width: 100%; overflow-y: auto; }}
-        .kpi-container {{ display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-top: 30px; }}
-        .kpi-card {{ background: #2d2d2d; padding: 25px; border-radius: 12px; border-top: 4px solid #007acc; }}
-        .kpi-val {{ font-size: 42px; font-weight: bold; color: #007acc; margin: 10px 0; }}
-        .kpi-label {{ font-size: 14px; color: #aaa; text-transform: uppercase; }}
+        .kpi-container {{ display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-top: 30px; max-width: 1000px; margin-left: auto; margin-right: auto; }}
+        .kpi-card {{ background: #2d2d2d; padding: 25px; border-radius: 12px; border-top: 5px solid #007acc; }}
+        .kpi-val {{ font-size: 48px; font-weight: bold; color: #007acc; margin: 10px 0; }}
+        .kpi-label {{ font-size: 14px; color: #aaa; text-transform: uppercase; letter-spacing: 1px; }}
     </style>
 </head>
 <body>
@@ -220,7 +176,7 @@ html_code = f"""
             </div>
             <div class="ide-content">
                 <h2 id="title" style="color: #007acc; margin-top:0;"></h2>
-                <p id="desc" style="color: #bbb; line-height: 1.6; margin-bottom: 30px;"></p>
+                <p id="desc" style="color: #bbb; line-height: 1.6; margin-bottom: 30px; font-size: 15px;"></p>
                 <div class="code-view" id="code-view"></div>
                 <div class="opt-grid" id="opt-box"></div>
                 <button id="deploy-btn" class="deploy-btn" onclick="deploy()">🚀 Deploy Module</button>
@@ -229,8 +185,8 @@ html_code = f"""
     </div>
     
     <div id="report">
-        <h1 style="color: #007acc;">📊 Architecture KPI Dashboard</h1>
-        <div id="persona-text" style="font-size: 20px; margin-bottom: 40px; color: #eee;"></div>
+        <h1 style="color: #007acc; font-size: 32px; margin-bottom: 10px;">📊 Architecture KPI Dashboard</h1>
+        <p id="persona-text" style="font-size: 18px; color: #fff; margin-bottom: 40px; font-style: italic;"></p>
         
         <div class="kpi-container">
             <div class="kpi-card">
@@ -260,12 +216,15 @@ html_code = f"""
                 <div class="kpi-val" id="val-eff">0%</div>
             </div>
             <div class="kpi-card" style="border-top-color: #ff6b6b;">
-                <div class="kpi-label">종합 평가</div>
-                <div class="kpi-val" id="val-total">S</div>
+                <div class="kpi-label">인간 중심성</div>
+                <div class="kpi-val" id="val-human">0</div>
             </div>
         </div>
         
-        <p style="margin-top: 50px; color: #ffc107; font-weight: bold;">⚠️ 시뮬레이션이 종료되었습니다. 우측 사이드바의 [🚀 최종 결과 제출] 버튼을 눌러주세요!</p>
+        <div style="margin-top: 50px; background: rgba(255,193,7,0.1); padding: 20px; border-radius: 8px; border: 1px dashed #ffc107; display: inline-block;">
+            <p style="color: #ffc107; font-weight: bold; margin: 0;">✅ 설계 분석이 완료되었습니다. 하단의 제출 버튼을 눌러 시트에 기록해 주세요.</p>
+        </div>
+        <div style="height: 100px;"></div>
     </div>
 
     <script>
@@ -276,7 +235,7 @@ html_code = f"""
             const box = document.getElementById('chat-box');
             const div = document.createElement('div');
             div.className = `msg ${{role}}`;
-            div.innerHTML = name ? `<b style="font-size:10px; display:block; margin-bottom:4px;">${{name}}</b>${{text}}` : text;
+            div.innerHTML = name ? `<b style="font-size:10px; display:block; margin-bottom:4px; color:#aaa;">${{name}}</b>${{text}}` : text;
             box.appendChild(div);
             box.scrollTop = box.scrollHeight;
         }}
@@ -296,7 +255,7 @@ html_code = f"""
             const box = document.getElementById('opt-box'); box.innerHTML = '';
             t.options.forEach(o => {{
                 const card = document.createElement('div'); card.className = 'opt-card';
-                card.innerHTML = `<b>${{o.label}}</b><p style="font-size:12px; color:#aaa; margin-top:8px;">${{o.desc}}</p>`;
+                card.innerHTML = `<b>${{o.label}}</b><p style="font-size:12px; color:#aaa; margin-top:8px; line-height:1.4;">${{o.desc}}</p>`;
                 card.onclick = () => {{
                     selected = o;
                     document.querySelectorAll('.opt-card').forEach(c => c.classList.remove('active'));
@@ -306,6 +265,7 @@ html_code = f"""
                 }};
                 box.appendChild(card);
             }});
+            document.getElementById('deploy-btn').classList.remove('ready');
         }}
 
         function deploy() {{
@@ -319,21 +279,22 @@ html_code = f"""
             document.getElementById('main-ui').style.display = 'none';
             document.getElementById('report').style.display = 'block';
             
-            // 점수 계산 로직
             const agency = Math.round(metrics.human * 1.1 / 6);
             const inclusion = Math.round(metrics.human * 0.9 / 6);
             const sustain = Math.round(metrics.human / 6);
             const budgetScore = Math.max(0, Math.round(metrics.cost / 10));
             const effScore = Math.round(metrics.eff / 6);
+            const humanScore = Math.round(metrics.human / 6);
             
             document.getElementById('val-agency').innerText = agency;
             document.getElementById('val-inclusion').innerText = inclusion;
             document.getElementById('val-sustain').innerText = sustain;
             document.getElementById('val-budget').innerText = budgetScore;
             document.getElementById('val-eff').innerText = effScore + "%";
+            document.getElementById('val-human').innerText = humanScore;
             
-            let persona = agency > 75 ? "인간 중심의 파트너" : (agency < 40 ? "냉혹한 효율주의자" : "실용적 균형주의자");
-            document.getElementById('persona-text').innerText = "귀하의 아키텍처 페르소나: [" + persona + "]";
+            let persona = agency > 75 ? "인간 중심의 파트너 (Trusted Partner)" : (agency < 40 ? "냉혹한 효율주의자 (Panopticon)" : "실용적 균형주의자 (Pragmatic Balancer)");
+            document.getElementById('persona-text').innerText = "귀하의 아키텍처 페르소나 판정: [" + persona + "]";
 
             window.parent.postMessage({{
                 type: 'streamlit:setComponentValue',
@@ -346,24 +307,22 @@ html_code = f"""
 </html>
 """
 
-# 7. 사이드바 및 데이터 수신
-# 컴포넌트의 높이를 살짝 줄여서 사이드바 영역을 확보합니다.
-result = components.html(html_code, height=850)
+# 6. 실행 및 제출 통합 인터페이스
+# HTML 컴포넌트를 통해 실험 진행
+result = components.html(html_code, height=800)
 
-# 사이드바 내용 구성 (무조건 보이도록 상단 배치)
-with st.sidebar:
-    st.header("실험 대시보드")
-    st.write(f"현재 참여자: **{st.session_state.user_name}**")
-    st.divider()
-    
-    if result and isinstance(result, dict):
-        st.success("✅ 설계 완료! 결과를 제출하세요.")
-        if st.button("🚀 최종 결과 제출", type="primary"):
-            # 저장 로직
+# 실험이 완료되어 result 데이터가 들어오면 하단에 버튼 표시
+if result and isinstance(result, dict):
+    st.markdown("---")
+    col1, col2, col3 = st.columns([1, 2, 1])
+    with col2:
+        if st.button("🚀 최종 결과 제출 (구글 시트 저장)"):
             try:
                 df = conn.read()
                 history = result.get('history', [])
                 metrics = result.get('metrics', {})
+                
+                # 가중치 기반 지표 계산 (레퍼런스 준거)
                 agency = round(metrics.get('human', 0) * 1.1 / 6, 1)
                 inclusion = round(metrics.get('human', 0) * 0.9 / 6, 1)
                 sustain = round(metrics.get('human', 0) / 6, 1)
@@ -383,11 +342,10 @@ with st.sidebar:
                     "최종_예산": metrics.get('cost', 0),
                     "페르소나": result.get('persona', '')
                 }
+                
                 updated_df = pd.concat([df, pd.DataFrame([new_row])], ignore_index=True)
                 conn.update(data=updated_df)
                 st.balloons()
-                st.sidebar.info("시트에 기록되었습니다. 수고하셨습니다!")
+                st.success(f"축하합니다, {st.session_state.user_name}님! 데이터가 성공적으로 저장되었습니다.")
             except Exception as e:
-                st.sidebar.error(f"저장 오류: {e}")
-    else:
-        st.info("시뮬레이션을 끝까지 진행하면 제출 버튼이 활성화됩니다.")
+                st.error(f"저장 중 오류 발생: {e}")
