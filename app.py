@@ -4,7 +4,7 @@ import json
 
 # =====================================================================
 # ⚠️ 여기에 Google Apps Script 배포 URL을 붙여넣으세요
-GAS_URL = "https://script.google.com/macros/s/AKfycbxoYKj_-UCP_U90AzmTMNE-M1J9oPfmubEvrMBFyCdWkVjwZsNOvfmKCPHqyAYaT58NHg/exec"
+GAS_URL = "https://script.google.com/macros/s/AKfycbwQtnJuqD-nDZqUyJ7KgV5RbC9KeR1BtqW7vwLPnAR77Ql4GpXeNfDljX6-3COe8b5JFA/exec"
 # =====================================================================
 
 st.set_page_config(
