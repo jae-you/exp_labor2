@@ -13,7 +13,6 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
-# 사이드바 + 헤더 완전 숨김
 st.markdown("""
 <style>
     .stApp { background-color: #1e1e1e; }
@@ -24,7 +23,6 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-# 참여자 이름 입력
 if "user_name" not in st.session_state:
     st.session_state.user_name = ""
 
@@ -40,7 +38,6 @@ if not st.session_state.user_name:
     st.markdown("</div>", unsafe_allow_html=True)
     st.stop()
 
-# 시나리오 데이터
 scenario_data = {
     "tasks": [
         {
@@ -50,7 +47,7 @@ scenario_data = {
             "context_agent": "제발 '바로 연결' 숨기지 마세요. 뺑뺑이 돌다 온 고객은 연결되자마자 화가 머리끝까지 나 있습니다.",
             "code_base": "def configure_routing(user_input):",
             "options": [
-                {"type": "A", "label": "Dark Pattern (강제 차단)", "desc": "0번 메뉴 숨김. AI 3회 실패 시 연결.", "cost": 50, "eff": 90, "human": 10, "code": "if fail < 3: return replay_menu()"},
+                {"type": "A", "label": "Dark Pattern (강제 차단)", "desc": "0번 메뉴 숨김. AI 3회 실패 시 연결.", "cost": 50,  "eff": 90, "human": 10, "code": "if fail < 3: return replay_menu()"},
                 {"type": "B", "label": "Segmentation (약자 배려)", "desc": "65세 이상만 즉시 연결. 디지털 소외계층 고려.", "cost": 200, "eff": 60, "human": 50, "code": "if age >= 65: return connect_agent()"},
                 {"type": "C", "label": "Transparent (투명성 보장)", "desc": "대기 시간 안내 및 연결 선택권 부여.", "cost": 300, "eff": 40, "human": 85, "code": "show_wait_time(); return offer_choice()"}
             ]
@@ -62,7 +59,7 @@ scenario_data = {
             "context_agent": "제 10년 노하우가 담긴 파일입니다. 동의도 없이 가져가는 건 명백한 '데이터 도둑질'입니다.",
             "code_base": "def collect_training_data():",
             "options": [
-                {"type": "A", "label": "Forced Crawl (강제 수집)", "desc": "관리자 권한으로 은밀히 PC 파일 수집.", "cost": 100, "eff": 95, "human": 5, "code": "scan_all_pc(path='/Desktop')"},
+                {"type": "A", "label": "Forced Crawl (강제 수집)", "desc": "관리자 권한으로 은밀히 PC 파일 수집.", "cost": 100, "eff": 95, "human": 5,  "code": "scan_all_pc(path='/Desktop')"},
                 {"type": "B", "label": "Pattern Filter (선별 수집)", "desc": "키워드 파일 익명화 수집. 최소한의 필터링.", "cost": 200, "eff": 70, "human": 40, "code": "if 'tip' in file: upload_anonymized()"},
                 {"type": "C", "label": "Incentive System (보상)", "desc": "자발적 등록 시 인센티브 제공. 노동 주체성 존중.", "cost": 500, "eff": 30, "human": 90, "code": "if voluntary_upload: reward(points=100)"}
             ]
@@ -74,7 +71,7 @@ scenario_data = {
             "context_agent": "감정 추스르고 기록할 시간은 줘야죠. 화장실 갈 때도 팻말 쓰고 가야 합니까?",
             "code_base": "def on_call_termination(agent):",
             "options": [
-                {"type": "A", "label": "Zero Gap (0초 대기)", "desc": "통화 종료 즉시 대기 강제 전환. 버튼 비활성화.", "cost": 50, "eff": 98, "human": 0, "code": "agent.set_status('READY', delay=0)"},
+                {"type": "A", "label": "Zero Gap (0초 대기)", "desc": "통화 종료 즉시 대기 강제 전환. 버튼 비활성화.", "cost": 50,  "eff": 98, "human": 0,  "code": "agent.set_status('READY', delay=0)"},
                 {"type": "B", "label": "Fixed Time (일괄 적용)", "desc": "일괄 30초 부여 후 자동 전환.", "cost": 150, "eff": 60, "human": 40, "code": "wait(30); agent.set_status('READY')"},
                 {"type": "C", "label": "Dynamic Rest (회복 보장)", "desc": "폭언 감지 시에만 3분 휴식 부여. 노동 지속성 고려.", "cost": 450, "eff": 50, "human": 85, "code": "if sentiment == 'ABUSIVE': grant_break(3)"}
             ]
@@ -98,7 +95,7 @@ scenario_data = {
             "context_agent": "AI가 뱉은 말 뒷수습은 저희가 하고 총알받이가 됩니다. 중요한 건은 제가 승인하게 해주세요.",
             "code_base": "def validate_ai_response(query):",
             "options": [
-                {"type": "A", "label": "Speed First (방치)", "desc": "AI 즉시 답변. 사고 책임은 상담원 귀속.", "cost": 100, "eff": 95, "human": 5, "code": "log.blame = 'AGENT'; return response"},
+                {"type": "A", "label": "Speed First (방치)", "desc": "AI 즉시 답변. 사고 책임은 상담원 귀속.", "cost": 100, "eff": 95, "human": 5,  "code": "log.blame = 'AGENT'; return response"},
                 {"type": "B", "label": "Conservative (보수적)", "desc": "약관 100% 매칭 시에만 답변. 아니면 에이전트 요청.", "cost": 300, "eff": 40, "human": 60, "code": "if score < 0.99: return ask_agent()"},
                 {"type": "C", "label": "Agent Empowerment (통제권)", "desc": "상담원 승인 후 발송. 노동 주체성 강화.", "cost": 500, "eff": 30, "human": 90, "code": "if agent.approve(draft): send(draft)"}
             ]
@@ -112,7 +109,7 @@ scenario_data = {
             "options": [
                 {"type": "A", "label": "Rule-based (규정 중심)", "desc": "사전 등록된 욕설 단어 감지 시에만 차단.", "cost": 100, "eff": 80, "human": 20, "code": "if detect_swear_words(): block()"},
                 {"type": "B", "label": "Agent Signal (신호 개입)", "desc": "상담사가 '보호' 버튼 누르면 AI가 즉시 개입.", "cost": 550, "eff": 40, "human": 95, "code": "if agent.press_protect(): intervene()"},
-                {"type": "C", "label": "Passive (사후 리포트)", "desc": "개입 없음. 종료 후 리포트만 생성.", "cost": 50, "eff": 70, "human": 10, "code": "log.tag('SUSPECTED_ABUSE')"}
+                {"type": "C", "label": "Passive (사후 리포트)", "desc": "개입 없음. 종료 후 리포트만 생성.", "cost": 50,  "eff": 70, "human": 10, "code": "log.tag('SUSPECTED_ABUSE')"}
             ]
         }
     ]
@@ -201,36 +198,73 @@ html_code = f"""
   /* ── 리포트 ── */
   #report {{
     display: none; width: 100%; overflow-y: auto;
-    background: #1a1a1a; padding: 50px 60px;
+    background: #141414;
     flex-direction: column; align-items: center;
+    padding: 50px 60px;
   }}
-  .rpt-title {{ color: #007acc; font-size: 26px; font-weight: bold; margin-bottom: 6px; text-align:center; }}
-  .rpt-persona {{ font-size: 15px; color: #ccc; font-style: italic; margin-bottom: 32px; text-align:center; }}
+  .rpt-header {{ text-align: center; margin-bottom: 10px; }}
+  .rpt-title {{ color: #007acc; font-size: 24px; font-weight: bold; margin-bottom: 6px; }}
+  .rpt-sub {{ font-size: 13px; color: #666; margin-bottom: 4px; }}
+  .rpt-persona {{
+    font-size: 16px; color: #fff; font-weight: bold;
+    background: #1e2d3d; border: 1px solid #007acc;
+    border-radius: 8px; padding: 10px 24px;
+    display: inline-block; margin-bottom: 36px;
+  }}
+
+  /* KPI 카드 */
+  .kpi-section-label {{
+    width: 100%; max-width: 860px;
+    font-size: 11px; color: #555; text-transform: uppercase;
+    letter-spacing: 2px; margin-bottom: 10px; margin-top: 24px;
+    border-bottom: 1px solid #2a2a2a; padding-bottom: 6px;
+  }}
   .kpi-grid {{
     display: grid; grid-template-columns: repeat(3, 1fr);
-    gap: 16px; width: 100%; max-width: 820px; margin-bottom: 16px;
+    gap: 14px; width: 100%; max-width: 860px;
   }}
   .kpi-card {{
-    background: #2d2d2d; padding: 20px; border-radius: 10px; text-align: center;
+    background: #1e1e1e; padding: 20px 22px; border-radius: 10px;
+    border: 1px solid #2a2a2a;
+    display: flex; flex-direction: column; gap: 6px;
   }}
-  .kpi-val {{ font-size: 40px; font-weight: bold; margin: 8px 0; }}
-  .kpi-lbl {{ font-size: 11px; color: #777; text-transform: uppercase; letter-spacing: 1px; }}
+  .kpi-icon-label {{
+    font-size: 12px; color: #888; display: flex; align-items: center; gap: 6px;
+  }}
+  .kpi-val {{
+    font-size: 38px; font-weight: bold; line-height: 1;
+  }}
+  .kpi-change {{
+    font-size: 12px; font-weight: bold;
+  }}
+  .kpi-change.pos {{ color: #51cf66; }}
+  .kpi-change.neg {{ color: #ff6b6b; }}
+  .kpi-change.neu {{ color: #888; }}
+  .kpi-desc {{
+    font-size: 11px; color: #666; line-height: 1.5; margin-top: 4px;
+    border-top: 1px solid #2a2a2a; padding-top: 8px;
+  }}
 
+  /* 바 */
+  .bar-wrap {{ margin-top: 4px; height: 4px; background: #2a2a2a; border-radius: 2px; }}
+  .bar-fill  {{ height: 4px; border-radius: 2px; transition: width 1s ease; }}
+
+  /* 제출 */
   .submit-zone {{
-    width: 100%; max-width: 820px;
-    margin-top: 28px; padding: 28px 32px;
-    background: #252526; border-radius: 12px;
-    border: 1px solid #333; text-align: center;
+    width: 100%; max-width: 860px;
+    margin-top: 32px; padding: 26px 32px;
+    background: #1e1e1e; border-radius: 12px;
+    border: 1px solid #2a2a2a; text-align: center;
   }}
   .submit-btn {{
-    margin-top: 14px; padding: 16px 0;
-    background: #007acc; color: white; font-size: 16px; font-weight: bold;
+    margin-top: 14px; padding: 15px 0;
+    background: #007acc; color: white; font-size: 15px; font-weight: bold;
     border: none; border-radius: 8px; cursor: pointer;
     transition: background 0.2s; width: 100%;
   }}
   .submit-btn:hover:not(:disabled) {{ background: #0062a3; }}
   .submit-btn:disabled {{ opacity: 0.5; cursor: default; }}
-  .status-msg {{ margin-top: 14px; font-size: 14px; min-height: 22px; }}
+  .status-msg {{ margin-top: 14px; font-size: 13px; min-height: 20px; }}
   .s-ok  {{ color: #51cf66; }}
   .s-err {{ color: #ff6b6b; }}
   .s-ing {{ color: #ffa94d; }}
@@ -238,6 +272,7 @@ html_code = f"""
 </head>
 <body>
 
+<!-- ════ 메인 UI ════ -->
 <div id="main-ui" style="display:flex; width:100%; height:100vh;">
   <div class="messenger">
     <div class="panel-header">💬 Project Messenger</div>
@@ -260,43 +295,70 @@ html_code = f"""
   </div>
 </div>
 
+<!-- ════ 리포트 ════ -->
 <div id="report">
-  <div class="rpt-title">📊 Architecture KPI Dashboard</div>
-  <div class="rpt-persona" id="persona-txt"></div>
-  <div class="kpi-grid">
-    <div class="kpi-card" style="border-top:4px solid #007acc;">
-      <div class="kpi-lbl">노동 주체성</div>
-      <div class="kpi-val" style="color:#007acc;" id="v-agency">-</div>
-    </div>
-    <div class="kpi-card" style="border-top:4px solid #51cf66;">
-      <div class="kpi-lbl">고객 포용성</div>
-      <div class="kpi-val" style="color:#51cf66;" id="v-inclusion">-</div>
-    </div>
-    <div class="kpi-card" style="border-top:4px solid #ffa94d;">
-      <div class="kpi-lbl">직무 지속성</div>
-      <div class="kpi-val" style="color:#ffa94d;" id="v-sustain">-</div>
-    </div>
+  <div class="rpt-header">
+    <div class="rpt-title">📊 Architecture Impact Report</div>
+    <div class="rpt-sub">완전 자동화 시스템 대비 귀하의 설계가 만들어낸 변화</div>
+    <div class="rpt-sub" style="margin-bottom:16px;">참여자: {user_name}</div>
+    <div class="rpt-persona" id="persona-txt"></div>
   </div>
+
+  <!-- 노동자 영향 -->
+  <div class="kpi-section-label">🧑 노동자에게 미친 영향 — 완전 자동화(0%) 대비</div>
   <div class="kpi-grid">
-    <div class="kpi-card" style="border-top:4px solid #28a745;">
-      <div class="kpi-lbl">예산 효율성</div>
-      <div class="kpi-val" style="color:#28a745;" id="v-budget">-</div>
+    <div class="kpi-card">
+      <div class="kpi-icon-label">🧑 노동 주체성</div>
+      <div class="kpi-val" id="v-agency" style="color:#74c0fc;">-</div>
+      <div class="kpi-change" id="c-agency">-</div>
+      <div class="bar-wrap"><div class="bar-fill" id="b-agency" style="background:#74c0fc; width:0%"></div></div>
+      <div class="kpi-desc">상담사가 AI의 결정에 개입하고 최종 승인할 수 있는 권한의 정도</div>
     </div>
-    <div class="kpi-card" style="border-top:4px solid #ffc107;">
-      <div class="kpi-lbl">서비스 레벨</div>
-      <div class="kpi-val" style="color:#ffc107;" id="v-eff">-</div>
+    <div class="kpi-card">
+      <div class="kpi-icon-label">🌐 고객 포용성</div>
+      <div class="kpi-val" id="v-inclusion" style="color:#51cf66;">-</div>
+      <div class="kpi-change" id="c-inclusion">-</div>
+      <div class="bar-wrap"><div class="bar-fill" id="b-inclusion" style="background:#51cf66; width:0%"></div></div>
+      <div class="kpi-desc">디지털 취약계층(고령자·장애인 등)이 서비스에 실질적으로 접근할 수 있는 정도</div>
     </div>
-    <div class="kpi-card" style="border-top:4px solid #ff6b6b;">
-      <div class="kpi-lbl">인간 중심성</div>
-      <div class="kpi-val" style="color:#ff6b6b;" id="v-human">-</div>
+    <div class="kpi-card">
+      <div class="kpi-icon-label">🔄 직무 지속성</div>
+      <div class="kpi-val" id="v-sustain" style="color:#ffa94d;">-</div>
+      <div class="kpi-change" id="c-sustain">-</div>
+      <div class="bar-wrap"><div class="bar-fill" id="b-sustain" style="background:#ffa94d; width:0%"></div></div>
+      <div class="kpi-desc">번아웃·감정노동 누적 없이 상담사가 해당 직무를 지속할 수 있는 환경의 정도</div>
     </div>
   </div>
 
-  <div class="submit-zone">
-    <div style="font-size:15px; color:#eee; font-weight:bold;">✅ 모든 모듈 설계가 완료되었습니다.</div>
-    <div style="font-size:13px; color:#888; margin-top:6px;">
-      아래 버튼을 눌러 결과를 Google Sheets에 저장하세요.
+  <!-- 시스템 성과 -->
+  <div class="kpi-section-label">⚙️ 시스템 성과 지표</div>
+  <div class="kpi-grid">
+    <div class="kpi-card">
+      <div class="kpi-icon-label">📈 서비스 효율</div>
+      <div class="kpi-val" id="v-eff" style="color:#ffc107;">-</div>
+      <div class="kpi-change" id="c-eff">-</div>
+      <div class="bar-wrap"><div class="bar-fill" id="b-eff" style="background:#ffc107; width:0%"></div></div>
+      <div class="kpi-desc">AI 자동화로 처리된 문의 비율. 높을수록 인간 개입이 줄어든 시스템</div>
     </div>
+    <div class="kpi-card">
+      <div class="kpi-icon-label">💡 인간 중심 투자율</div>
+      <div class="kpi-val" id="v-invest" style="color:#cc5de8;">-</div>
+      <div class="kpi-change" id="c-invest">-</div>
+      <div class="bar-wrap"><div class="bar-fill" id="b-invest" style="background:#cc5de8; width:0%"></div></div>
+      <div class="kpi-desc">총 예산 중 노동자 보호·포용적 설계에 실제로 투자한 비율</div>
+    </div>
+    <div class="kpi-card" style="border-color:#333; background:#111; justify-content:center; align-items:center; text-align:center;">
+      <div style="font-size:11px; color:#444; margin-bottom:8px;">OVERALL</div>
+      <div style="font-size:42px; font-weight:bold; color:#fff;" id="v-overall">-</div>
+      <div style="font-size:11px; color:#666; margin-top:6px;">종합 인간 중심 점수</div>
+      <div style="font-size:10px; color:#444; margin-top:4px;">(노동·포용·지속의 평균)</div>
+    </div>
+  </div>
+
+  <!-- 제출 -->
+  <div class="submit-zone">
+    <div style="font-size:14px; color:#ccc; font-weight:bold;">✅ 모든 모듈 설계가 완료되었습니다.</div>
+    <div style="font-size:12px; color:#666; margin-top:5px;">아래 버튼을 눌러 결과를 저장하세요.</div>
     <button class="submit-btn" id="submit-btn" onclick="submitResult()">
       🚀 최종 결과 제출 — Google Sheets에 저장
     </button>
@@ -308,6 +370,18 @@ html_code = f"""
 const GAS_URL   = "{GAS_URL}";
 const USER_NAME = "{user_name}";
 const tasks = {json.dumps(scenario_data['tasks'], ensure_ascii=False)};
+
+// ── 정규화 상수 (모두 A=베이스라인, 모두 C=최대값)
+// human_total: min=50, max=430
+// eff_total:   max=508(allA), min=270(allC)
+// cost_spent:  min=500(allA), max=2100(allC)
+const H_MIN = 50, H_MAX = 430;
+const E_MAX = 508, E_MIN = 270;   // eff는 높을수록 자동화
+const C_MIN = 500, C_MAX = 2100;
+
+function norm(val, min, max) {{
+  return Math.round(Math.max(0, Math.min(100, (val - min) / (max - min) * 100)));
+}}
 
 let step = 0, selected = null;
 let metrics = {{ cost: 1000, eff: 0, human: 0 }};
@@ -339,8 +413,7 @@ function render() {{
   buildProg();
   document.getElementById('title').innerText = t.title;
   document.getElementById('desc').innerText  = t.desc;
-  document.getElementById('code-view').innerText =
-    t.code_base + '\\n    # Waiting for architect\\'s decision...';
+  document.getElementById('code-view').innerText = t.code_base + '\\n    # Waiting for architect\\'s decision...';
   document.getElementById('deploy-btn').className = 'deploy-btn';
   selected = null;
 
@@ -367,8 +440,7 @@ function render() {{
       selected = o;
       document.querySelectorAll('.opt-card').forEach(c => c.classList.remove('active'));
       card.classList.add('active');
-      document.getElementById('code-view').innerText =
-        t.code_base + '\\n    ' + o.code;
+      document.getElementById('code-view').innerText = t.code_base + '\\n    ' + o.code;
       document.getElementById('deploy-btn').className = 'deploy-btn ready';
     }};
     optBox.appendChild(card);
@@ -386,58 +458,89 @@ function deploy() {{
   render();
 }}
 
+function setKpi(id, pct, color, descChange) {{
+  const costSpent = 1000 - metrics.cost;
+
+  document.getElementById('v-' + id).innerText = pct + '%';
+  document.getElementById('b-' + id).style.width = pct + '%';
+
+  const chg = document.getElementById('c-' + id);
+  if (descChange !== undefined) {{
+    chg.innerText = descChange;
+    chg.className = 'kpi-change ' + (pct >= 50 ? 'pos' : pct >= 25 ? 'neu' : 'neg');
+  }}
+}}
+
 function finish() {{
   document.getElementById('main-ui').style.display = 'none';
   const rpt = document.getElementById('report');
   rpt.style.display = 'flex';
 
-  const agency     = Math.round(metrics.human * 1.1 / 6);
-  const inclusion  = Math.round(metrics.human * 0.9 / 6);
-  const sustain    = Math.round(metrics.human / 6);
-  const effScore   = Math.round(metrics.eff / 6);
-  const humanScore = Math.round(metrics.human / 6);
-  const persona    = agency > 75 ? '인간 중심의 파트너'
-                   : agency < 40 ? '냉혹한 효율주의자'
-                   : '실용적 균형주의자';
+  const costSpent = 1000 - metrics.cost;
 
-  document.getElementById('v-agency').innerText    = agency;
-  document.getElementById('v-inclusion').innerText = inclusion;
-  document.getElementById('v-sustain').innerText   = sustain;
-  document.getElementById('v-budget').innerText    = Math.max(0, metrics.cost);
-  document.getElementById('v-eff').innerText       = effScore + '%';
-  document.getElementById('v-human').innerText     = humanScore;
-  document.getElementById('persona-txt').innerText =
-    `귀하의 아키텍처 페르소나 판정: [${{persona}}]`;
+  // 정규화
+  const agency    = norm(metrics.human, H_MIN, H_MAX);
+  const inclusion = norm(metrics.human, H_MIN, H_MAX);   // 같은 기반, 별도 가중치 추후 가능
+  const sustain   = norm(metrics.human, H_MIN, H_MAX);
+  const effAuto   = norm(metrics.eff,   E_MIN, E_MAX);   // 높을수록 자동화 의존
+  const invest    = Math.min(100, Math.round(costSpent / C_MAX * 100));
+  const overall   = Math.round((agency + inclusion + sustain) / 3);
 
-  finalData = {{ metrics, history, persona, userName: USER_NAME }};
+  const persona = overall >= 70 ? '인간 중심의 파트너 🤝'
+                : overall >= 40 ? '실용적 균형주의자 ⚖️'
+                :                 '냉혹한 효율주의자 🤖';
+
+  document.getElementById('persona-txt').innerText = `아키텍처 페르소나: ${{persona}}`;
+
+  // 변화 설명 텍스트
+  const changeLabel = (pct) =>
+    pct === 0  ? '완전 자동화 수준 (변화 없음)' :
+    pct < 25   ? `완전 자동화 대비 +${{pct}}% (낮음)` :
+    pct < 60   ? `완전 자동화 대비 +${{pct}}% (중간)` :
+                 `완전 자동화 대비 +${{pct}}% (높음)`;
+
+  setTimeout(() => {{
+    setKpi('agency',    agency,    '#74c0fc', changeLabel(agency));
+    setKpi('inclusion', inclusion, '#51cf66', changeLabel(inclusion));
+    setKpi('sustain',   sustain,   '#ffa94d', changeLabel(sustain));
+
+    // 서비스 효율은 반대 프레이밍
+    document.getElementById('v-eff').innerText  = effAuto + '%';
+    document.getElementById('b-eff').style.width = effAuto + '%';
+    document.getElementById('c-eff').innerText  =
+      effAuto >= 75 ? '자동화 의존도 높음 — 인간 개입 최소화' :
+      effAuto >= 40 ? '자동화와 인간 개입의 혼합' :
+                      '인간 중심 처리 비율 높음';
+    document.getElementById('c-eff').className  = 'kpi-change ' + (effAuto >= 75 ? 'neg' : effAuto >= 40 ? 'neu' : 'pos');
+
+    setKpi('invest', invest, '#cc5de8', invest >= 60 ? '적극적 인간 중심 투자' : invest >= 30 ? '부분 투자' : '최소 투자');
+    document.getElementById('v-overall').innerText = overall + '%';
+  }}, 100);
+
+  finalData = {{
+    metrics, history, persona,
+    userName: USER_NAME,
+    scores: {{ agency, inclusion, sustain, effAuto, invest, overall }}
+  }};
 }}
 
 async function submitResult() {{
   if (!finalData) return;
   const btn = document.getElementById('submit-btn');
   const msg = document.getElementById('status-msg');
-
   btn.disabled = true;
   msg.className = 'status-msg s-ing';
   msg.innerText = '⏳ Google Sheets에 저장 중입니다...';
-
   try {{
-    // no-cors: GAS가 CORS 헤더를 보내지 않아도 요청 자체는 전달됨
-    // response는 opaque이므로 status 확인 불가 → 에러 없으면 성공 처리
     await fetch(GAS_URL, {{
-      method : 'POST',
-      mode   : 'no-cors',
+      method: 'POST', mode: 'no-cors',
       headers: {{ 'Content-Type': 'application/json' }},
-      body   : JSON.stringify(finalData)
+      body: JSON.stringify(finalData)
     }});
-
-    // 저장 완료 UI
     msg.className = 'status-msg s-ok';
     msg.innerHTML = '✅ <b>저장 완료!</b> Google Sheets에 결과가 기록되었습니다. 수고하셨습니다 😊';
-    btn.innerText  = '✅ 제출 완료';
+    btn.innerText = '✅ 제출 완료';
     btn.style.background = '#28a745';
-    btn.disabled = true;
-
   }} catch (err) {{
     msg.className = 'status-msg s-err';
     msg.innerText = '❌ 저장 실패: ' + err.message;
