@@ -3,7 +3,7 @@ import streamlit.components.v1 as components
 import json
 
 # =====================================================================
-GAS_URL = "https://script.google.com/macros/s/AKfycbxoYKj_-UCP_U90AzmTMNE-M1J9oPfmubEvrMBFyCdWkVjwZsNOvfmKCPHqyAYaT58NHg/exec"
+GAS_URL = "https://script.google.com/macros/s/AKfycbyEB0gBk4KjbhH-18lRGSGG8yE3v0KHiCv90KZDDEvFtmcp7cTO3sDszG66l7fUW4GlTg/exec"
 # =====================================================================
 
 st.set_page_config(
