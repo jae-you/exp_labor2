@@ -14,13 +14,91 @@ st.set_page_config(
 
 st.markdown("""
 <style>
+    /* ── 기본 레이아웃 ── */
     .stApp { background-color: #1e1e1e; }
     .block-container { padding: 0 !important; max-width: 100% !important; }
     header, footer { display: none !important; }
     section[data-testid="stSidebar"] { display: none !important; }
     [data-testid="collapsedControl"] { display: none !important; }
     div[data-testid="stVerticalBlock"] { gap: 0 !important; }
+
+    /* ── 설문 페이지 전용 ── */
+    html, body, [class*="css"], .stApp, * {
+        font-family: 'Noto Sans KR', sans-serif !important;
+    }
+
+    /* 질문 레이블 */
+    div[data-testid="stRadio"] > label,
+    div[data-testid="stNumberInput"] > label,
+    div[data-testid="stTextInput"] > label {
+        font-size: 15px !important;
+        font-weight: 500 !important;
+        color: #e0e0e0 !important;
+        line-height: 1.6 !important;
+        margin-bottom: 8px !important;
+        padding-bottom: 0 !important;
+    }
+
+    /* 라디오 옵션 간격 */
+    div[data-testid="stRadio"] > div { gap: 7px !important; margin-top: 4px !important; }
+
+    /* 라디오 옵션 카드 */
+    div[data-testid="stRadio"] > div > label {
+        background: #252526 !important;
+        border: 1px solid #2e2e2e !important;
+        border-radius: 8px !important;
+        padding: 11px 16px !important;
+        color: #ccc !important;
+        font-size: 13px !important;
+        font-weight: 400 !important;
+        transition: border-color 0.15s !important;
+        width: 100% !important;
+    }
+    div[data-testid="stRadio"] > div > label:hover { border-color: #007acc66 !important; }
+
+    /* 인풋 박스 */
+    div[data-testid="stNumberInput"] input,
+    div[data-testid="stTextInput"] input {
+        background: #252526 !important;
+        border: 1px solid #2e2e2e !important;
+        border-radius: 8px !important;
+        color: #e0e0e0 !important;
+        font-family: 'Noto Sans KR', sans-serif !important;
+        font-size: 14px !important;
+    }
+
+    /* 설문 커스텀 클래스 */
+    .survey-divider { height: 1px; background: #2a2a2a; margin: 12px 0 28px; }
+    .stop-box {
+        background: #2a1a1a; border-left: 3px solid #ff6b6b;
+        border-radius: 0 8px 8px 0; padding: 14px 18px;
+        font-size: 13px; color: #ff6b6b; line-height: 1.7; margin-top: 6px;
+    }
+    .survey-badge {
+        display: inline-block; font-size: 10px; font-weight: 700;
+        letter-spacing: 2px; color: #007acc; text-transform: uppercase;
+        border: 1px solid #007acc44; border-radius: 4px;
+        padding: 4px 10px; margin-bottom: 12px;
+    }
+    .survey-h1  { font-size: 22px; font-weight: 700; color: #fff; margin-bottom: 4px; }
+    .survey-sub { font-size: 12px; color: #555; margin-bottom: 28px; font-weight: 300; }
+    .q-prefix {
+        display: block; font-size: 10px; font-weight: 700; color: #007acc;
+        letter-spacing: 1px; text-transform: uppercase; margin-bottom: 2px;
+    }
+    .q-note-txt {
+        display: block; font-size: 11px; color: #555;
+        font-weight: 300; margin-top: 2px; margin-bottom: 6px;
+    }
+
+    /* 설문 페이지 여백 */
+    .survey-page .block-container {
+        padding: 2rem 2rem 4rem !important;
+        max-width: 720px !important;
+    }
 </style>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
 """, unsafe_allow_html=True)
 
 # ── 세션 초기화
@@ -182,95 +260,6 @@ if st.session_state.page == "scenario":
 elif st.session_state.page == "survey":
 
     # Streamlit 위젯으로 설문 구성 (안정적 상태 관리)
-    st.markdown("""
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
-<style>
-  /* 전체 폰트 */
-  html, body, [class*="css"], .stApp, * {
-    font-family: 'Noto Sans KR', sans-serif !important;
-  }
-
-  /* 페이지 여백 */
-  .block-container { padding: 2rem 2rem 4rem !important; max-width: 720px !important; }
-
-  /* 질문 레이블 — st.radio/number_input/text_input의 label을 직접 스타일링 */
-  div[data-testid="stRadio"] > label,
-  div[data-testid="stNumberInput"] > label,
-  div[data-testid="stTextInput"] > label {
-    font-size: 15px !important;
-    font-weight: 500 !important;
-    color: #e0e0e0 !important;
-    line-height: 1.6 !important;
-    margin-bottom: 10px !important;
-    padding-bottom: 0 !important;
-  }
-
-  /* 라디오 옵션 간격 */
-  div[data-testid="stRadio"] > div { gap: 7px !important; margin-top: 4px !important; }
-
-  /* 라디오 옵션 카드 스타일 */
-  div[data-testid="stRadio"] > div > label {
-    background: #252526 !important;
-    border: 1px solid #2e2e2e !important;
-    border-radius: 8px !important;
-    padding: 11px 16px !important;
-    color: #ccc !important;
-    font-size: 13px !important;
-    font-weight: 400 !important;
-    transition: border-color 0.15s !important;
-    width: 100% !important;
-  }
-  div[data-testid="stRadio"] > div > label:hover {
-    border-color: #007acc66 !important;
-  }
-
-  /* 인풋 박스 */
-  div[data-testid="stNumberInput"] input,
-  div[data-testid="stTextInput"] input {
-    background: #252526 !important;
-    border: 1px solid #2e2e2e !important;
-    border-radius: 8px !important;
-    color: #e0e0e0 !important;
-    font-family: 'Noto Sans KR', sans-serif !important;
-    font-size: 14px !important;
-  }
-
-  /* 구분선 */
-  .survey-divider { height: 1px; background: #2a2a2a; margin: 12px 0 28px; }
-
-  /* 조사중단 박스 */
-  .stop-box {
-    background: #2a1a1a; border-left: 3px solid #ff6b6b;
-    border-radius: 0 8px 8px 0; padding: 14px 18px;
-    font-size: 13px; color: #ff6b6b; line-height: 1.7;
-    margin-top: 6px;
-  }
-
-  /* 페이지 헤더 (badge, h1, sub) */
-  .survey-badge {
-    display: inline-block; font-size: 10px; font-weight: 700;
-    letter-spacing: 2px; color: #007acc; text-transform: uppercase;
-    border: 1px solid #007acc44; border-radius: 4px;
-    padding: 4px 10px; margin-bottom: 12px;
-  }
-  .survey-h1  { font-size: 22px; font-weight: 700; color: #fff; margin-bottom: 4px; }
-  .survey-sub { font-size: 12px; color: #555; margin-bottom: 28px; font-weight: 300; }
-
-  /* Q 번호 뱃지 — 레이블 앞에 붙는 작은 태그 느낌 */
-  .q-prefix {
-    display: block;
-    font-size: 10px; font-weight: 700; color: #007acc;
-    letter-spacing: 1px; text-transform: uppercase;
-    margin-bottom: 2px;
-  }
-  .q-note-txt {
-    display: block; font-size: 11px; color: #555;
-    font-weight: 300; margin-top: 2px; margin-bottom: 6px;
-  }
-</style>
-""", unsafe_allow_html=True)
-
     st.markdown('<div class="survey-badge">사전 설문조사</div>', unsafe_allow_html=True)
     st.markdown('<div class="survey-h1">응답자 기본 정보</div>', unsafe_allow_html=True)
     st.markdown('<div class="survey-sub">모든 응답은 연구 목적으로만 활용되며 익명으로 처리됩니다.</div>', unsafe_allow_html=True)
