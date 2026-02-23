@@ -494,7 +494,7 @@ elif st.session_state.page == "sim":
   body {{
     background:#1e1e1e; color:#e0e0e0;
     font-family:'Noto Sans KR','Consolas',monospace;
-    display:flex; height:100vh; overflow:hidden;
+    display:flex; min-height:100%; overflow:auto;
   }}
   /* ── 메신저 ── */
   .messenger {{ width:300px; min-width:300px; background:#252526; border-right:1px solid #333; display:flex; flex-direction:column; }}
@@ -506,14 +506,14 @@ elif st.session_state.page == "sim":
   .client {{ background:#3a2e2e; border-left:3px solid #ff6b6b; }}
   .agent  {{ background:#2e3a2e; border-left:3px solid #51cf66; }}
   /* ── IDE ── */
-  .ide {{ flex:1; display:flex; flex-direction:column; overflow:hidden; }}
+  .ide {{ flex:1; display:flex; flex-direction:column; overflow:auto; }}
   .ide-header {{ padding:11px 26px; background:#2d2d2d; border-bottom:1px solid #333; display:flex; justify-content:space-between; align-items:center; font-size:13px; }}
   .budget {{ color:#007acc; font-weight:700; }}
   .progress-bar {{ display:flex; gap:5px; padding:9px 26px; background:#252526; border-bottom:1px solid #2a2a2a; }}
   .prog-step {{ flex:1; height:3px; border-radius:2px; background:#3a3a3a; transition:background 0.3s; }}
   .prog-step.done {{ background:#007acc; }}
   .prog-step.cur  {{ background:#4da8da; }}
-  .ide-body {{ flex:1; padding:26px 34px; overflow-y:auto; }}
+  .ide-body {{ flex:1; padding:26px 34px 60px; overflow-y:auto; }}
   .mod-title {{ color:#007acc; font-size:18px; font-weight:700; margin-bottom:8px; }}
   .mod-desc  {{ color:#bbb; font-size:13px; line-height:1.9; margin-bottom:20px; font-weight:300; }}
   .code-block {{ background:#111; padding:14px 18px; border-radius:6px; color:#d4d4d4; font-size:12px; white-space:pre-wrap; border:1px solid #2a2a2a; margin-bottom:22px; font-family:'Consolas',monospace; }}
@@ -772,4 +772,4 @@ elif st.session_state.page == "sim":
 </body>
 </html>
 """
-    components.html(html_code, height=820, scrolling=False)
+    components.html(html_code, height=900, scrolling=True)
