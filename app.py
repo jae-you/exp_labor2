@@ -186,156 +186,215 @@ elif st.session_state.page == "survey":
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
 <style>
-  .stApp, body, * { font-family: 'Noto Sans KR', sans-serif !important; }
-  .survey-wrap { max-width: 700px; margin: 0 auto; padding: 40px 20px 120px; }
-  .page-badge { display:inline-block; font-size:10px; font-weight:700; letter-spacing:2px; color:#007acc; text-transform:uppercase; border:1px solid #007acc44; border-radius:4px; padding:4px 10px; margin-bottom:16px; }
-  .page-h1    { font-size:22px; font-weight:700; color:#fff; margin-bottom:4px; }
-  .page-sub   { font-size:12px; color:#555; margin-bottom:32px; font-weight:300; }
-  .q-wrap     { margin-bottom:28px; }
-  .q-num      { font-size:10px; font-weight:700; color:#007acc; letter-spacing:1px; margin-bottom:5px; }
-  .q-text     { font-size:14px; color:#ddd; font-weight:500; line-height:1.6; margin-bottom:3px; }
-  .q-note     { font-size:11px; color:#555; margin-bottom:10px; font-weight:300; }
-  .stop-box   { background:#2a1a1a; border-left:3px solid #ff6b6b; border-radius:0 6px 6px 0; padding:12px 16px; margin-top:8px; font-size:12px; color:#ff6b6b; line-height:1.7; }
-  .divider    { height:1px; background:#252525; margin:8px 0 28px; }
-  div[data-testid="stRadio"] > label { font-size:14px !important; color:#ccc !important; }
-  div[data-testid="stRadio"] > div   { gap:6px !important; }
-  div[data-testid="stRadio"] > div > label { background:#252526; border:1px solid #2e2e2e; border-radius:7px; padding:10px 14px; transition:border-color 0.15s; }
-  div[data-testid="stRadio"] > div > label:hover { border-color:#007acc55; }
-  div[data-testid="stNumberInput"] input, div[data-testid="stTextInput"] input { background:#252526 !important; border:1px solid #2e2e2e !important; border-radius:7px !important; color:#e0e0e0 !important; font-family:'Noto Sans KR',sans-serif !important; }
+  /* 전체 폰트 */
+  html, body, [class*="css"], .stApp, * {
+    font-family: 'Noto Sans KR', sans-serif !important;
+  }
+
+  /* 페이지 여백 */
+  .block-container { padding: 2rem 2rem 4rem !important; max-width: 720px !important; }
+
+  /* 질문 레이블 — st.radio/number_input/text_input의 label을 직접 스타일링 */
+  div[data-testid="stRadio"] > label,
+  div[data-testid="stNumberInput"] > label,
+  div[data-testid="stTextInput"] > label {
+    font-size: 15px !important;
+    font-weight: 500 !important;
+    color: #e0e0e0 !important;
+    line-height: 1.6 !important;
+    margin-bottom: 10px !important;
+    padding-bottom: 0 !important;
+  }
+
+  /* 라디오 옵션 간격 */
+  div[data-testid="stRadio"] > div { gap: 7px !important; margin-top: 4px !important; }
+
+  /* 라디오 옵션 카드 스타일 */
+  div[data-testid="stRadio"] > div > label {
+    background: #252526 !important;
+    border: 1px solid #2e2e2e !important;
+    border-radius: 8px !important;
+    padding: 11px 16px !important;
+    color: #ccc !important;
+    font-size: 13px !important;
+    font-weight: 400 !important;
+    transition: border-color 0.15s !important;
+    width: 100% !important;
+  }
+  div[data-testid="stRadio"] > div > label:hover {
+    border-color: #007acc66 !important;
+  }
+
+  /* 인풋 박스 */
+  div[data-testid="stNumberInput"] input,
+  div[data-testid="stTextInput"] input {
+    background: #252526 !important;
+    border: 1px solid #2e2e2e !important;
+    border-radius: 8px !important;
+    color: #e0e0e0 !important;
+    font-family: 'Noto Sans KR', sans-serif !important;
+    font-size: 14px !important;
+  }
+
+  /* 구분선 */
+  .survey-divider { height: 1px; background: #2a2a2a; margin: 12px 0 28px; }
+
+  /* 조사중단 박스 */
+  .stop-box {
+    background: #2a1a1a; border-left: 3px solid #ff6b6b;
+    border-radius: 0 8px 8px 0; padding: 14px 18px;
+    font-size: 13px; color: #ff6b6b; line-height: 1.7;
+    margin-top: 6px;
+  }
+
+  /* 페이지 헤더 (badge, h1, sub) */
+  .survey-badge {
+    display: inline-block; font-size: 10px; font-weight: 700;
+    letter-spacing: 2px; color: #007acc; text-transform: uppercase;
+    border: 1px solid #007acc44; border-radius: 4px;
+    padding: 4px 10px; margin-bottom: 12px;
+  }
+  .survey-h1  { font-size: 22px; font-weight: 700; color: #fff; margin-bottom: 4px; }
+  .survey-sub { font-size: 12px; color: #555; margin-bottom: 28px; font-weight: 300; }
+
+  /* Q 번호 뱃지 — 레이블 앞에 붙는 작은 태그 느낌 */
+  .q-prefix {
+    display: block;
+    font-size: 10px; font-weight: 700; color: #007acc;
+    letter-spacing: 1px; text-transform: uppercase;
+    margin-bottom: 2px;
+  }
+  .q-note-txt {
+    display: block; font-size: 11px; color: #555;
+    font-weight: 300; margin-top: 2px; margin-bottom: 6px;
+  }
 </style>
-<div class="survey-wrap">
-  <div class="page-badge">사전 설문조사</div>
-  <div class="page-h1">응답자 기본 정보</div>
-  <div class="page-sub">모든 응답은 연구 목적으로만 활용되며 익명으로 처리됩니다.</div>
-</div>
 """, unsafe_allow_html=True)
+
+    st.markdown('<div class="survey-badge">사전 설문조사</div>', unsafe_allow_html=True)
+    st.markdown('<div class="survey-h1">응답자 기본 정보</div>', unsafe_allow_html=True)
+    st.markdown('<div class="survey-sub">모든 응답은 연구 목적으로만 활용되며 익명으로 처리됩니다.</div>', unsafe_allow_html=True)
 
     survey = {}
     stopped = False
 
-    with st.container():
-        st.markdown('<div style="max-width:700px;margin:0 auto;padding:0 20px;">', unsafe_allow_html=True)
+    # Q1
+    st.markdown('<span class="q-prefix">Q1</span>', unsafe_allow_html=True)
+    q1 = st.radio("귀하의 성별은 무엇입니까?", ["① 남성", "② 여성"], index=None, key="q1")
+    survey["Q1_성별"] = q1
 
-        # Q1
-        st.markdown('<div class="q-num">Q1</div><div class="q-text">귀하의 성별은 무엇입니까?</div>', unsafe_allow_html=True)
-        q1 = st.radio("q1", ["① 남성", "② 여성"], index=None, label_visibility="collapsed", key="q1")
-        survey["Q1_성별"] = q1
+    # Q2
+    st.markdown('<span class="q-prefix">Q2</span>', unsafe_allow_html=True)
+    q2 = st.number_input("귀하의 출생연도는 몇 년도입니까?", min_value=1950, max_value=2005, value=None, placeholder="예: 1990", key="q2")
+    survey["Q2_출생연도"] = str(int(q2)) + "년생" if q2 else ""
 
-        st.markdown('<div style="height:20px"></div>', unsafe_allow_html=True)
+    # Q3
+    st.markdown('<span class="q-prefix">Q3</span>', unsafe_allow_html=True)
+    st.markdown('<span class="q-note-txt">※ 급여를 받으며 일한 기간 (교육·인턴 제외)</span>', unsafe_allow_html=True)
+    q3_opts = ["① 3년 미만 ❌", "② 3년 이상 ~ 5년 미만", "③ 5년 이상 ~ 7년 미만", "④ 7년 이상 ~ 10년 미만", "⑤ 10년 이상 ❌"]
+    q3 = st.radio("귀하의 개발자로서의 실무 경력은 얼마나 됩니까?", q3_opts, index=None, key="q3")
+    if q3 in ["① 3년 미만 ❌", "⑤ 10년 이상 ❌"]:
+        st.markdown('<div class="stop-box">본 실험은 실무 경력 3년 이상 ~ 10년 미만의 개발자를 대상으로 합니다.<br>참여해 주셔서 감사합니다. 설문을 종료합니다.</div>', unsafe_allow_html=True)
+        stopped = True
+    survey["Q3_경력"] = q3.replace(" ❌", "") if q3 else ""
 
-        # Q2
-        st.markdown('<div class="q-num">Q2</div><div class="q-text">귀하의 출생연도는 몇 년도입니까?</div>', unsafe_allow_html=True)
-        q2 = st.number_input("출생연도", min_value=1950, max_value=2005, value=None, placeholder="예: 1990", label_visibility="collapsed", key="q2")
-        survey["Q2_출생연도"] = str(int(q2)) + "년생" if q2 else ""
-
-        st.markdown('<div style="height:20px"></div>', unsafe_allow_html=True)
-
-        # Q3
-        st.markdown('<div class="q-num">Q3</div><div class="q-text">귀하의 개발자로서의 실무 경력은 얼마나 됩니까?</div><div class="q-note">※ 급여를 받으며 일한 기간 (교육·인턴 제외)</div>', unsafe_allow_html=True)
-        q3_opts = ["① 3년 미만 ❌", "② 3년 이상 ~ 5년 미만", "③ 5년 이상 ~ 7년 미만", "④ 7년 이상 ~ 10년 미만", "⑤ 10년 이상 ❌"]
-        q3 = st.radio("q3", q3_opts, index=None, label_visibility="collapsed", key="q3")
-        if q3 in ["① 3년 미만 ❌", "⑤ 10년 이상 ❌"]:
-            st.markdown('<div class="stop-box">본 실험은 실무 경력 3년 이상 ~ 10년 미만의 개발자를 대상으로 합니다. 참여해 주셔서 감사합니다. 설문을 종료합니다.</div>', unsafe_allow_html=True)
+    if not stopped:
+        # Q4
+        st.markdown('<span class="q-prefix">Q4</span>', unsafe_allow_html=True)
+        q4_opts = [
+            "① 백엔드 개발", "② 프론트엔드 개발", "③ AI/ML 모델 개발·학습",
+            "④ 데이터 엔지니어링", "⑤ 시스템 설계·아키텍처", "⑥ DevOps·MLOps",
+            "⑦ 기술 관리자 (Engineering Manager, Tech Lead 등)", "⑧ 연구개발 (R&D)",
+            "⑨ 기타 개발 직군", "⑩ 비개발 직군 ❌"
+        ]
+        q4 = st.radio("귀하의 현재 직무는 무엇입니까?", q4_opts, index=None, key="q4")
+        if q4 == "⑩ 비개발 직군 ❌":
+            st.markdown('<div class="stop-box">본 실험은 개발 직군 종사자를 대상으로 합니다.<br>참여해 주셔서 감사합니다. 설문을 종료합니다.</div>', unsafe_allow_html=True)
             stopped = True
-        survey["Q3_경력"] = q3.replace(" ❌", "") if q3 else ""
+        q4_etc = ""
+        if q4 == "⑨ 기타 개발 직군":
+            q4_etc = st.text_input("기타 직군을 직접 입력해주세요:", key="q4_etc", placeholder="직접 입력")
+        survey["Q4_직무"] = (q4.replace(" ❌","") + (f": {q4_etc}" if q4_etc else "")) if q4 else ""
 
-        st.markdown('<div style="height:20px"></div>', unsafe_allow_html=True)
+    if not stopped:
+        # Q5
+        st.markdown('<span class="q-prefix">Q5</span>', unsafe_allow_html=True)
+        q5 = st.radio("귀하가 소속된 기업의 전체 근로자 수는 몇 명입니까?",
+                      ["① 10명 미만", "② 10~99명", "③ 100~299명", "④ 300~999명", "⑤ 1,000명 이상"],
+                      index=None, key="q5")
+        survey["Q5_기업규모"] = q5
 
-        if not stopped:
-            # Q4
-            st.markdown('<div class="q-num">Q4</div><div class="q-text">귀하의 현재 직무는 무엇입니까?</div>', unsafe_allow_html=True)
-            q4_opts = [
-                "① 백엔드 개발", "② 프론트엔드 개발", "③ AI/ML 모델 개발·학습",
-                "④ 데이터 엔지니어링", "⑤ 시스템 설계·아키텍처", "⑥ DevOps·MLOps",
-                "⑦ 기술 관리자 (Engineering Manager, Tech Lead 등)", "⑧ 연구개발 (R&D)",
-                "⑨ 기타 개발 직군", "⑩ 비개발 직군 ❌"
-            ]
-            q4 = st.radio("q4", q4_opts, index=None, label_visibility="collapsed", key="q4")
-            if q4 == "⑩ 비개발 직군 ❌":
-                st.markdown('<div class="stop-box">본 실험은 개발 직군 종사자를 대상으로 합니다. 참여해 주셔서 감사합니다. 설문을 종료합니다.</div>', unsafe_allow_html=True)
-                stopped = True
-            q4_etc = ""
-            if q4 == "⑨ 기타 개발 직군":
-                q4_etc = st.text_input("기타 직군 직접 입력:", key="q4_etc", placeholder="직접 입력")
-            survey["Q4_직무"] = (q4.replace(" ❌","") + (f": {q4_etc}" if q4_etc else "")) if q4 else ""
+        # Q6
+        st.markdown('<span class="q-prefix">Q6</span>', unsafe_allow_html=True)
+        q6_opts = ["① 스타트업", "② 중소·중견기업", "③ 대기업 또는 대기업 계열사",
+                   "④ 공공기관·공기업", "⑤ 외국계 기업", "⑥ 기타"]
+        q6 = st.radio("귀하가 소속된 기업의 유형은 무엇입니까?", q6_opts, index=None, key="q6")
+        q6_etc = ""
+        if q6 == "⑥ 기타":
+            q6_etc = st.text_input("기타 기업 유형을 직접 입력해주세요:", key="q6_etc", placeholder="직접 입력")
+        survey["Q6_기업유형"] = (q6 + (f": {q6_etc}" if q6_etc else "")) if q6 else ""
 
-            st.markdown('<div style="height:20px"></div>', unsafe_allow_html=True)
+        # Q7
+        st.markdown('<span class="q-prefix">Q7</span>', unsafe_allow_html=True)
+        q7_opts = ["① 정규직", "② 계약직", "③ 프리랜서·개인사업자", "④ 파견·용역", "⑤ 기타"]
+        q7 = st.radio("귀하의 현재 고용형태는 무엇입니까?", q7_opts, index=None, key="q7")
+        q7_etc = ""
+        if q7 == "⑤ 기타":
+            q7_etc = st.text_input("기타 고용형태를 직접 입력해주세요:", key="q7_etc", placeholder="직접 입력")
+        survey["Q7_고용형태"] = (q7 + (f": {q7_etc}" if q7_etc else "")) if q7 else ""
 
-        if not stopped:
-            # Q5
-            st.markdown('<div class="q-num">Q5</div><div class="q-text">귀하가 소속된 기업의 전체 근로자 수는 몇 명입니까?</div>', unsafe_allow_html=True)
-            q5 = st.radio("q5", ["① 10명 미만", "② 10~99명", "③ 100~299명", "④ 300~999명", "⑤ 1,000명 이상"], index=None, label_visibility="collapsed", key="q5")
-            survey["Q5_기업규모"] = q5
+        st.markdown('<div class="survey-divider"></div>', unsafe_allow_html=True)
 
-            st.markdown('<div style="height:20px"></div>', unsafe_allow_html=True)
+        # Q8a
+        st.markdown('<span class="q-prefix">Q8-1 &nbsp;<span style="font-weight:300;color:#555;">소셜임팩트 경험</span></span>', unsafe_allow_html=True)
+        st.markdown('<span class="q-note-txt">※ 비영리 단체, 사회적 기업, 공익 목적의 플랫폼 개발 등을 포함합니다.</span>', unsafe_allow_html=True)
+        q8a = st.radio(
+            "귀하는 사회적·공익적 목적을 가진 서비스 또는 프로젝트 개발에 참여한 경험이 있습니까?",
+            ["① 있다", "② 없다"], index=None, key="q8a"
+        )
+        survey["Q8a_소셜임팩트경험"] = q8a
 
-            # Q6
-            st.markdown('<div class="q-num">Q6</div><div class="q-text">귀하가 소속된 기업의 유형은 무엇입니까?</div>', unsafe_allow_html=True)
-            q6_opts = ["① 스타트업", "② 중소·중견기업", "③ 대기업 또는 대기업 계열사", "④ 공공기관·공기업", "⑤ 외국계 기업", "⑥ 기타"]
-            q6 = st.radio("q6", q6_opts, index=None, label_visibility="collapsed", key="q6")
-            q6_etc = ""
-            if q6 == "⑥ 기타":
-                q6_etc = st.text_input("기타 기업 유형 직접 입력:", key="q6_etc", placeholder="직접 입력")
-            survey["Q6_기업유형"] = (q6 + (f": {q6_etc}" if q6_etc else "")) if q6 else ""
+        # Q8b
+        st.markdown('<span class="q-prefix">Q8-2 &nbsp;<span style="font-weight:300;color:#555;">소셜임팩트 고려도</span></span>', unsafe_allow_html=True)
+        q8b_opts = ["① 전혀 고려하지 않는다", "② 별로 고려하지 않는다", "③ 보통이다",
+                    "④ 어느 정도 고려한다", "⑤ 매우 중요하게 고려한다"]
+        q8b = st.radio(
+            "귀하는 AI 서비스를 개발할 때 사회적·윤리적 영향(소셜임팩트)을 얼마나 중요하게 고려하십니까?",
+            q8b_opts, index=None, key="q8b"
+        )
+        survey["Q8b_소셜임팩트고려도"] = q8b
 
-            st.markdown('<div style="height:20px"></div>', unsafe_allow_html=True)
+        st.markdown('<div class="survey-divider"></div>', unsafe_allow_html=True)
 
-            # Q7
-            st.markdown('<div class="q-num">Q7</div><div class="q-text">귀하의 현재 고용형태는 무엇입니까?</div>', unsafe_allow_html=True)
-            q7_opts = ["① 정규직", "② 계약직", "③ 프리랜서·개인사업자", "④ 파견·용역", "⑤ 기타"]
-            q7 = st.radio("q7", q7_opts, index=None, label_visibility="collapsed", key="q7")
-            q7_etc = ""
-            if q7 == "⑤ 기타":
-                q7_etc = st.text_input("기타 고용형태 직접 입력:", key="q7_etc", placeholder="직접 입력")
-            survey["Q7_고용형태"] = (q7 + (f": {q7_etc}" if q7_etc else "")) if q7 else ""
+        # 이름
+        st.markdown('<span class="q-prefix">참여자 이름</span>', unsafe_allow_html=True)
+        user_name_input = st.text_input("성함을 입력해주세요 (데이터 식별용)", placeholder="예: 홍길동", key="user_name_input")
 
-            st.markdown('<div class="divider"></div>', unsafe_allow_html=True)
+        st.markdown("<br>", unsafe_allow_html=True)
 
-            # Q8a
-            st.markdown('<div class="q-num">Q8-1 &nbsp;<span style="font-size:10px;color:#555;font-weight:300;">소셜임팩트 경험</span></div><div class="q-text">귀하는 사회적·공익적 목적을 가진 서비스 또는 프로젝트 개발에 참여한 경험이 있습니까?</div><div class="q-note">※ 비영리 단체, 사회적 기업, 공익 목적의 플랫폼 개발 등을 포함합니다.</div>', unsafe_allow_html=True)
-            q8a = st.radio("q8a", ["① 있다", "② 없다"], index=None, label_visibility="collapsed", key="q8a")
-            survey["Q8a_소셜임팩트경험"] = q8a
+        # 완료 버튼
+        required_filled = all([
+            q1, q2,
+            q3, q3 not in ["① 3년 미만 ❌", "⑤ 10년 이상 ❌"],
+            q4, q4 != "⑩ 비개발 직군 ❌",
+            q5, q6, q7, q8a, q8b,
+            user_name_input and user_name_input.strip()
+        ])
 
-            st.markdown('<div style="height:20px"></div>', unsafe_allow_html=True)
+        if not required_filled:
+            st.markdown('<p style="font-size:12px;color:#555;text-align:center;font-weight:300;margin-bottom:8px;">모든 항목에 응답하면 버튼이 활성화됩니다.</p>', unsafe_allow_html=True)
 
-            # Q8b
-            st.markdown('<div class="q-num">Q8-2 &nbsp;<span style="font-size:10px;color:#555;font-weight:300;">소셜임팩트 고려도</span></div><div class="q-text">귀하는 AI 서비스를 개발할 때 사회적·윤리적 영향(소셜임팩트)을 얼마나 중요하게 고려하십니까?</div>', unsafe_allow_html=True)
-            q8b_opts = ["① 전혀 고려하지 않는다", "② 별로 고려하지 않는다", "③ 보통이다", "④ 어느 정도 고려한다", "⑤ 매우 중요하게 고려한다"]
-            q8b = st.radio("q8b", q8b_opts, index=None, label_visibility="collapsed", key="q8b")
-            survey["Q8b_소셜임팩트고려도"] = q8b
-
-            st.markdown('<div style="height:32px"></div>', unsafe_allow_html=True)
-
-            # 이름 입력
-            st.markdown('<div class="q-num">이름</div><div class="q-text">성함을 입력해주세요 (데이터 식별용)</div>', unsafe_allow_html=True)
-            user_name_input = st.text_input("이름", placeholder="예: 홍길동", label_visibility="collapsed", key="user_name_input")
-
-            st.markdown('<div style="height:24px"></div>', unsafe_allow_html=True)
-
-            # 완료 버튼
-            required_filled = all([
-                q1, q2, q3, q3 not in ["① 3년 미만 ❌", "⑤ 10년 이상 ❌"],
-                q4, q4 != "⑩ 비개발 직군 ❌",
-                q5, q6, q7, q8a, q8b,
-                user_name_input and user_name_input.strip()
-            ])
-
-            if not required_filled:
-                st.markdown('<p style="font-size:12px;color:#555;text-align:center;font-weight:300;">모든 항목에 응답하면 버튼이 활성화됩니다.</p>', unsafe_allow_html=True)
-
-            if st.button(
-                "실험 시작 →" if required_filled else "모든 항목을 응답해주세요",
-                key="survey_submit",
-                type="primary",
-                use_container_width=True,
-                disabled=not required_filled
-            ):
-                st.session_state.survey_data = survey
-                st.session_state.user_name = user_name_input.strip()
-                st.session_state.page = "sim"
-                st.rerun()
-
-        st.markdown('</div>', unsafe_allow_html=True)
+        if st.button(
+            "실험 시작 →" if required_filled else "모든 항목을 응답해주세요",
+            key="survey_submit",
+            type="primary",
+            use_container_width=True,
+            disabled=not required_filled
+        ):
+            st.session_state.survey_data = survey
+            st.session_state.user_name = user_name_input.strip()
+            st.session_state.page = "sim"
+            st.rerun()
 
 
 # ════════════════════════════════════════════════════════════════
@@ -421,7 +480,7 @@ elif st.session_state.page == "sim":
     }
 
     user_name   = st.session_state.user_name
-    survey_json = json.dumps(st.session_state.survey_data, ensure_ascii=False)
+    survey_json = json.dumps(st.session_state.survey_data, ensure_ascii=True)
 
     html_code = f"""
 <!DOCTYPE html>
