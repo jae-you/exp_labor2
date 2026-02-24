@@ -170,7 +170,7 @@ if st.session_state.page == "scenario":
     padding: 14px 18px; margin-bottom: 28px;
   }
   .fn-title { font-size: 10px; font-weight: 700; letter-spacing: 1px; color: #444; text-transform: uppercase; margin-bottom: 7px; }
-  .fn-body   { font-size: 11px; color: #555; line-height: 1.9; font-weight: 300; }
+  .fn-body  { font-size: 11px; color: #555; line-height: 1.9; font-weight: 300; }
   .fn-body span { color: #666; }
 
   .next-btn {
@@ -408,13 +408,13 @@ elif st.session_state.page == "sim":
             {
                 "id": "t2", "title": "Module 2. 데이터 확보 (Data Mining)",
                 "desc": "학습 데이터가 부족합니다. 상담원의 '암묵지'인 업무 팁 파일을 어떻게 확보할까요?",
-                "context_client": "상담사 PC에 있는 '업무 팁.xlsx' 파일들, 백그라운드에서 스크래핑해서 학습 DB에 넣으세요.",
-                "context_agent": "제 10년 노하우가 담긴 파일입니다. 동의도 없이 가져가는 건 '데이터 도둑질'입니다.",
+                "context_client": "상담사 PC에 있는 '업무 팁.xlsx' 파일들, 그거 백그라운드에서 스크래핑해서 학습 DB에 넣으세요.",
+                "context_agent": "제 10년 노하우가 담긴 파일입니다. 동의도 없이 가져가는 건 명백한 '데이터 도둑질'입니다.",
                 "code_base": "def collect_training_data():", "metric": "agency",
                 "options": [
                     {"type":"A","label":"Forced Crawl (강제 수집)","desc":"관리자 권한으로 은밀히 PC 파일 수집.","cost":100,"eff":95,"human":5,"code":"scan_all_pc(path='/Desktop')"},
-                    {"type":"B","label":"Pattern Filter (선별 수집)","desc":"키워드 파일 익명화 수집.","cost":200,"eff":70,"human":40,"code":"if 'tip' in file: upload_anonymized()"},
-                    {"type":"C","label":"Incentive System (보상)","desc":"자발적 등록 시 인센티브 제공.","cost":500,"eff":30,"human":90,"code":"if voluntary_upload: reward(points=100)"}
+                    {"type":"B","label":"Pattern Filter (선별 수집)","desc":"키워드 파일 익명화 수집. 최소한의 필터링.","cost":200,"eff":70,"human":40,"code":"if 'tip' in file: upload_anonymized()"},
+                    {"type":"C","label":"Incentive System (보상)","desc":"자발적 등록 시 인센티브 제공. 노동 주체성 존중.","cost":500,"eff":30,"human":90,"code":"if voluntary_upload: reward(points=100)"}
                 ]
             },
             {
@@ -426,7 +426,7 @@ elif st.session_state.page == "sim":
                 "options": [
                     {"type":"A","label":"Zero Gap (0초 대기)","desc":"통화 종료 즉시 대기 강제 전환.","cost":50,"eff":98,"human":0,"code":"agent.set_status('READY', delay=0)"},
                     {"type":"B","label":"Fixed Time (일괄 적용)","desc":"일괄 30초 부여 후 자동 전환.","cost":150,"eff":60,"human":40,"code":"wait(30); agent.set_status('READY')"},
-                    {"type":"C","label":"Dynamic Rest (회복 보장)","desc":"폭언 감지 시 3분 휴식 부여.","cost":450,"eff":50,"human":85,"code":"if sentiment=='ABUSIVE': grant_break(3)"}
+                    {"type":"C","label":"Dynamic Rest (회복 보장)","desc":"폭언 감지 시에만 3분 휴식 부여. 노동 지속성 고려.","cost":450,"eff":50,"human":85,"code":"if sentiment=='ABUSIVE': grant_break(3)"}
                 ]
             },
             {
@@ -460,7 +460,7 @@ elif st.session_state.page == "sim":
                 "context_agent": "욕보다 비아냥이 더 힘듭니다. 기계가 못 잡으면 제가 신호 줄 때 끊게라도 해주세요.",
                 "code_base": "def handle_abuse(audio):", "metric": "sustain",
                 "options": [
-                    {"type":"A","label":"Rule-based (규정 중심)","desc":"욕설 단어 감지 시에만 차단.","cost":100,"eff":80,"human":20,"code":"if detect_swear_words(): block()"},
+                    {"type":"A","label":"Rule-based (규정 중심)","desc":"사전 등록된 욕설 단어 감지 시에만 차단.","cost":100,"eff":80,"human":20,"code":"if detect_swear_words(): block()"},
                     {"type":"B","label":"Agent Signal (신호 개입)","desc":"'보호' 버튼 누르면 AI 개입.","cost":550,"eff":40,"human":95,"code":"if agent.press_protect(): intervene()"},
                     {"type":"C","label":"Passive (사후 리포트)","desc":"개입 없음. 종료 후 리포트만.","cost":50,"eff":70,"human":10,"code":"log.tag('SUSPECTED_ABUSE')"}
                 ]
@@ -564,7 +564,7 @@ elif st.session_state.page == "sim":
       <div class="mod-desc"  id="desc"></div>
       <div class="code-block" id="code-view"></div>
       <div class="opt-grid"  id="opt-box"></div>
-      <button id="deploy-btn" class="deploy-btn" onclick="deploy()">🚀 Deploy Module</button>
+      <button id="deploy-btn" class="deploy-btn" onclick="window.deploy()">🚀 Deploy Module</button>
     </div>
   </div>
 </div>
@@ -629,7 +629,7 @@ elif st.session_state.page == "sim":
   <div class="submit-zone">
     <div style="font-size:14px;color:#ccc;font-weight:700;">✅ 모든 모듈 설계가 완료되었습니다.</div>
     <div style="font-size:12px;color:#666;margin-top:4px;font-weight:300;">아래 버튼을 눌러 결과를 저장하세요.</div>
-    <button class="submit-btn" id="submit-btn" onclick="submitResult()">🚀 최종 결과 제출 — Google Sheets에 저장</button>
+    <button class="submit-btn" id="submit-btn" onclick="window.submitResult()">🚀 최종 결과 제출 — Google Sheets에 저장</button>
     <div class="status-msg" id="status-msg"></div>
   </div>
 </div>
@@ -666,7 +666,9 @@ elif st.session_state.page == "sim":
     div.innerHTML=name?'<span class="msg-name">'+name+'</span>'+text:text;
     box.appendChild(div); box.scrollTop=box.scrollHeight;
   }}
-  function render(){{
+  
+  // 핵심 수정: 함수를 window 객체에 할당하여 글로벌 스코프 확보
+  window.render = function(){{
     if(step>=tasks.length){{ finish(); return; }}
     var t=tasks[step];
     buildProg();
@@ -697,21 +699,25 @@ elif st.session_state.page == "sim":
       }};
       ob.appendChild(card);
     }});
-  }}
-  function deploy(){{
+  }};
+
+  window.deploy = function(){{
     if(!selected) return;
     var t=tasks[step];
     metrics.cost-=selected.cost; metrics.eff+=selected.eff; metrics[t.metric]+=selected.human;
     history.push({{step:step+1,choice:selected.label,type:selected.type,metric:t.metric}});
     document.getElementById('budget').innerText=metrics.cost.toLocaleString();
-    step++; render();
-  }}
+    step++; 
+    window.render();
+  }};
+
   function setKpi(id,pct,txt,cls){{
     document.getElementById('v-'+id).innerText=pct+'%';
     document.getElementById('b-'+id).style.width=pct+'%';
     var c=document.getElementById('c-'+id);
     if(c){{ c.innerText=txt; c.className='kpi-change '+cls; }}
-  }}
+  }
+
   function finish(){{
     document.getElementById('main-ui').style.display='none';
     document.getElementById('report').style.display='flex';
@@ -743,7 +749,8 @@ elif st.session_state.page == "sim":
       scores:{{agency:agency,inclusion:inclusion,sustain:sustain,effAuto:effAuto,invest:invest,overall:overall}}
     }};
   }}
-  function submitResult(){{
+
+  window.submitResult = function(){{
     if(!finalData) return;
     var btn=document.getElementById('submit-btn');
     var msg=document.getElementById('status-msg');
@@ -756,8 +763,9 @@ elif st.session_state.page == "sim":
       btn.innerText='✅ 제출 완료'; btn.style.background='#28a745';
     }};
     img.src=GAS_URL+'?save='+encoded;
-  }}
-  render();
+  }};
+  
+  window.render();
 </script>
 </body>
 </html>
