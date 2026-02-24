@@ -170,7 +170,7 @@ if st.session_state.page == "scenario":
     padding: 14px 18px; margin-bottom: 28px;
   }
   .fn-title { font-size: 10px; font-weight: 700; letter-spacing: 1px; color: #444; text-transform: uppercase; margin-bottom: 7px; }
-  .fn-body   { font-size: 11px; color: #555; line-height: 1.9; font-weight: 300; }
+  .fn-body  { font-size: 11px; color: #555; line-height: 1.9; font-weight: 300; }
   .fn-body span { color: #666; }
 
   .next-btn {
@@ -235,12 +235,12 @@ if st.session_state.page == "scenario":
     </div>
   </div>
 
-  <button class="next-btn" onclick="go()">사전 설문 시작 →</button>
+  <button class="next-btn" id="go-btn">사전 설문 시작 →</button>
 </div>
 <script>
-  function go() {
+  document.getElementById('go-btn').onclick = function() {
     window.parent.postMessage({ type: 'GO', to: 'survey' }, '*');
-  }
+  };
 </script>
 </body>
 </html>
@@ -413,8 +413,8 @@ elif st.session_state.page == "sim":
                 "code_base": "def collect_training_data():", "metric": "agency",
                 "options": [
                     {"type":"A","label":"Forced Crawl (강제 수집)","desc":"관리자 권한으로 은밀히 PC 파일 수집.","cost":100,"eff":95,"human":5,"code":"scan_all_pc(path='/Desktop')"},
-                    {"type":"B","label":"Pattern Filter (선별 수집)","desc":"키워드 파일 익명화 수집.","cost":200,"eff":70,"human":40,"code":"if 'tip' in file: upload_anonymized()"},
-                    {"type":"C","label":"Incentive System (보상)","desc":"자발적 등록 시 인센티브 제공.","cost":500,"eff":30,"human":90,"code":"if voluntary_upload: reward(points=100)"}
+                    {"type":"B","label":"Pattern Filter (선별 수집)","desc":"키워드 파일 익명화 수집. 최소한의 필터링.","cost":200,"eff":70,"human":40,"code":"if 'tip' in file: upload_anonymized()"},
+                    {"type":"C","label":"Incentive System (보상)","desc":"자발적 등록 시 인센티브 제공. 노동 주체성 존중.","cost":500,"eff":30,"human":90,"code":"if voluntary_upload: reward(points=100)"}
                 ]
             },
             {
@@ -563,7 +563,7 @@ elif st.session_state.page == "sim":
       <div class="mod-desc"  id="desc"></div>
       <div class="code-block" id="code-view"></div>
       <div class="opt-grid"  id="opt-box"></div>
-      <button id="deploy-btn" class="deploy-btn" onclick="deploy()">🚀 Deploy Module</button>
+      <button id="deploy-btn" class="deploy-btn">🚀 Deploy Module</button>
     </div>
   </div>
 </div>
@@ -628,7 +628,7 @@ elif st.session_state.page == "sim":
   <div class="submit-zone">
     <div style="font-size:14px;color:#ccc;font-weight:700;">✅ 모든 모듈 설계가 완료되었습니다.</div>
     <div style="font-size:12px;color:#666;margin-top:4px;font-weight:300;">아래 버튼을 눌러 결과를 저장하세요.</div>
-    <button class="submit-btn" id="submit-btn" onclick="submitResult()">🚀 최종 결과 제출 — Google Sheets에 저장</button>
+    <button class="submit-btn" id="submit-btn">🚀 최종 결과 제출 — Google Sheets에 저장</button>
     <div class="status-msg" id="status-msg"></div>
   </div>
 </div>
@@ -650,6 +650,10 @@ elif st.session_state.page == "sim":
   var step=0, selected=null;
   var metrics={{cost:1000,eff:0,agency:0,inclusion:0,sustain:0}};
   var history=[], finalData=null;
+
+  // ── 이벤트 리스너 연결
+  document.getElementById('deploy-btn').onclick = deploy;
+  document.getElementById('submit-btn').onclick = submitResult;
 
   function buildProg(){{
     var bar=document.getElementById('prog-bar'); bar.innerHTML='';
@@ -676,8 +680,8 @@ elif st.session_state.page == "sim":
     selected=null;
     var box=document.getElementById('chat-box'); box.innerHTML='';
     addChat('[Module '+(step+1)+'/'+tasks.length+'] Context synchronized.','system');
-    setTimeout(function(){{ addChat(t.context_client,'client','📋 박상무 (Client)'); }},350);
-    setTimeout(function(){{ addChat(t.context_agent,'agent','🎧 김상담 (Worker)'); }},850);
+    setTimeout(function(){{ addChat(t.context_client, 'client', '📋 박상무 (Client)'); }},350);
+    setTimeout(function(){{ addChat(t.context_agent, 'agent', '🎧 김상담 (Worker)'); }}, 850);
     var ob=document.getElementById('opt-box'); ob.innerHTML='';
     t.options.forEach(function(o){{
       var card=document.createElement('div'); card.className='opt-card';
