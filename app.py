@@ -92,7 +92,6 @@ TASKS = [
         ],
     },
 ]
-
 # ──────────────────────────────────────────────────────
 st.set_page_config(page_title="AICC Simulation", layout="wide", initial_sidebar_state="collapsed")
 
