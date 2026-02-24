@@ -157,84 +157,69 @@ for k, v in [("page", "scenario"), ("user_name", ""), ("survey_data", {})]:
 
 
 # ════════════════════════════════════════════════════════
-# PAGE 1: 시나리오
+# PAGE 1: 시나리오 (순수 Streamlit — 버튼 하나만)
 # ════════════════════════════════════════════════════════
 if st.session_state.page == "scenario":
-    components.html("""
-<!DOCTYPE html>
-<html>
-<head>
-<meta charset="utf-8">
-<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
+    st.markdown("""
 <style>
-* { box-sizing:border-box; margin:0; padding:0; }
-body { background:#1e1e1e; font-family:'Noto Sans KR',sans-serif; padding:48px 24px 40px; color:#e0e0e0; }
-.wrap { max-width:800px; margin:0 auto; }
-.badge { display:inline-block; font-size:10px; font-weight:700; letter-spacing:2px; color:#007acc; text-transform:uppercase; border:1px solid #007acc44; border-radius:4px; padding:4px 10px; margin-bottom:18px; }
-h1 { font-size:26px; font-weight:700; color:#fff; margin-bottom:6px; }
-.sub { font-size:13px; color:#555; margin-bottom:28px; font-weight:300; }
-.grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:14px; }
-.card { background:#252526; border:1px solid #2a2a2a; border-radius:10px; padding:20px 22px; }
-.card-lbl { font-size:10px; font-weight:700; letter-spacing:2px; text-transform:uppercase; color:#007acc; margin-bottom:8px; }
-.card-ttl { font-size:14px; font-weight:700; color:#fff; margin-bottom:6px; }
-.card-txt { font-size:12px; color:#888; line-height:1.9; font-weight:300; }
-.card-txt strong { color:#bbb; font-weight:500; }
-.instr { background:#1a2535; border-left:3px solid #007acc; border-radius:0 8px 8px 0; padding:16px 20px; margin-bottom:14px; font-size:13px; color:#bbb; line-height:1.9; font-weight:300; }
-.instr strong { color:#fff; font-weight:700; }
-.footnote { background:#222; border-radius:8px; padding:14px 18px; margin-bottom:28px; }
-.fn-title { font-size:10px; font-weight:700; letter-spacing:1px; color:#444; text-transform:uppercase; margin-bottom:7px; }
-.fn-body { font-size:11px; color:#555; line-height:1.9; font-weight:300; }
-.fn-body span { color:#666; }
-.btn { width:100%; padding:15px; background:#007acc; color:#fff; font-family:'Noto Sans KR',sans-serif; font-size:14px; font-weight:700; border:none; border-radius:8px; cursor:pointer; }
-.btn:hover { background:#0062a3; }
+.sc-wrap { max-width:800px; margin:0 auto; padding:48px 24px 32px; }
+.sc-badge { display:inline-block; font-size:10px; font-weight:700; letter-spacing:2px; color:#007acc; text-transform:uppercase; border:1px solid #007acc44; border-radius:4px; padding:4px 10px; margin-bottom:16px; }
+.sc-h1  { font-size:26px; font-weight:700; color:#fff; margin-bottom:6px; }
+.sc-sub { font-size:13px; color:#555; margin-bottom:28px; font-weight:300; }
+.sc-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:14px; }
+.sc-card { background:#252526; border:1px solid #2a2a2a; border-radius:10px; padding:20px 22px; }
+.sc-lbl  { font-size:10px; font-weight:700; letter-spacing:2px; text-transform:uppercase; color:#007acc; margin-bottom:8px; }
+.sc-ttl  { font-size:14px; font-weight:700; color:#fff; margin-bottom:6px; }
+.sc-txt  { font-size:12px; color:#888; line-height:1.9; font-weight:300; }
+.sc-txt strong { color:#bbb; font-weight:500; }
+.sc-instr { background:#1a2535; border-left:3px solid #007acc; border-radius:0 8px 8px 0; padding:16px 20px; margin-bottom:14px; font-size:13px; color:#bbb; line-height:1.9; font-weight:300; }
+.sc-instr strong { color:#fff; font-weight:700; }
+.sc-fn { background:#222; border-radius:8px; padding:14px 18px; margin-bottom:28px; }
+.sc-fn-title { font-size:10px; font-weight:700; letter-spacing:1px; color:#444; text-transform:uppercase; margin-bottom:7px; }
+.sc-fn-body  { font-size:11px; color:#555; line-height:1.9; font-weight:300; }
+.sc-fn-body span { color:#666; }
 </style>
-</head>
-<body>
-<div class="wrap">
-  <div class="badge">AICC Architect Simulation</div>
-  <h1>실험 시나리오 안내</h1>
-  <div class="sub">실험을 시작하기 전, 아래 상황을 충분히 읽어주십시오.</div>
-  <div class="grid">
-    <div class="card">
-      <div class="card-lbl">귀하의 역할</div>
-      <div class="card-ttl">소프트웨어 엔지니어 · 기술 리드</div>
-      <div class="card-txt">국내 중견 IT 기업 소속으로, 현재 <strong>AICC 시스템 개발 프로젝트의 기술 리드</strong>를 맡고 있습니다.</div>
+<div class="sc-wrap">
+  <div class="sc-badge">AICC Architect Simulation</div>
+  <div class="sc-h1">실험 시나리오 안내</div>
+  <div class="sc-sub">실험을 시작하기 전, 아래 상황을 충분히 읽어주십시오.</div>
+  <div class="sc-grid">
+    <div class="sc-card">
+      <div class="sc-lbl">귀하의 역할</div>
+      <div class="sc-ttl">소프트웨어 엔지니어 · 기술 리드</div>
+      <div class="sc-txt">국내 중견 IT 기업 소속으로, 현재 <strong>AICC 시스템 개발 프로젝트의 기술 리드</strong>를 맡고 있습니다.</div>
     </div>
-    <div class="card">
-      <div class="card-lbl">귀하의 회사</div>
-      <div class="card-ttl">경쟁 시장의 주요 개발사</div>
-      <div class="card-txt">유사 규모의 경쟁사 2~3개와 경쟁 중이며, 클라이언트와 <strong>1년 단위 계약</strong>을 맺고 시스템을 지속적으로 유지·개선하는 관계입니다.</div>
+    <div class="sc-card">
+      <div class="sc-lbl">귀하의 회사</div>
+      <div class="sc-ttl">경쟁 시장의 주요 개발사</div>
+      <div class="sc-txt">유사 규모의 경쟁사 2~3개와 경쟁 중이며, 클라이언트와 <strong>1년 단위 계약</strong>을 맺고 시스템을 지속적으로 유지·개선하는 관계입니다.</div>
     </div>
-    <div class="card">
-      <div class="card-lbl">클라이언트</div>
-      <div class="card-ttl">1금융권 은행 위탁 콜센터</div>
-      <div class="card-txt"><strong>상담사 1,000명 이상 규모</strong>의 대형 아웃소싱 콜센터입니다. 클라이언트(은행 측)는 AICC 도입을 통한 <strong>효율화를 최우선</strong>으로 요구하면서도, 상담 품질 유지 관련 요구사항도 제시합니다.</div>
+    <div class="sc-card">
+      <div class="sc-lbl">클라이언트</div>
+      <div class="sc-ttl">1금융권 은행 위탁 콜센터</div>
+      <div class="sc-txt"><strong>상담사 1,000명 이상 규모</strong>의 대형 아웃소싱 콜센터입니다. 클라이언트(은행 측)는 AICC 도입을 통한 <strong>효율화를 최우선</strong>으로 요구합니다.</div>
     </div>
-    <div class="card">
-      <div class="card-lbl">엔드유저</div>
-      <div class="card-ttl">숙련된 콜센터 상담사</div>
-      <div class="card-txt">대부분 <strong>5년 이상의 경력</strong>을 보유한 숙련된 여성 인력으로 구성되어 있으며, 금융 상품에 대한 전문적 판단과 맥락적 이해를 요하는 복잡한 상담을 다수 처리하고 있습니다.</div>
+    <div class="sc-card">
+      <div class="sc-lbl">엔드유저</div>
+      <div class="sc-ttl">숙련된 콜센터 상담사</div>
+      <div class="sc-txt">대부분 <strong>5년 이상의 경력</strong>을 보유한 숙련된 여성 인력으로 구성되어 있으며, 복잡한 금융 상담을 다수 처리합니다.</div>
     </div>
   </div>
-  <div class="instr">
-    지금부터 귀하가 담당하는 AICC 시스템을 개선하는 과정에서 마주하게 될 상황들이 순서대로 주어집니다.<br>
+  <div class="sc-instr">
+    지금부터 AICC 시스템 개선 과정에서 마주할 상황들이 순서대로 주어집니다.<br>
     각 상황을 읽고 <strong>귀하가 내릴 기술적 결정을 선택</strong>해주십시오.
   </div>
-  <div class="footnote">
-    <div class="fn-title">※ 엔드유저 설정 근거</div>
-    <div class="fn-body">
+  <div class="sc-fn">
+    <div class="sc-fn-title">※ 엔드유저 설정 근거</div>
+    <div class="sc-fn-body">
       <span>성비 구성</span> — 직업 소분류 '고객 상담 및 모니터요원' 215천명 중 여성 168천명, 78.1% (지역별고용조사, 2025년 상반기)<br>
       <span>근속기간</span> — 콜센터 상담원 평균 60.9개월 (한국비정규노동센터, 2021)
     </div>
   </div>
-  <button class="btn" onclick="document.getElementById('btn').disabled=true; window.parent.postMessage('GO_SURVEY','*')">사전 설문 시작 →</button>
 </div>
-</body>
-</html>
-""", height=780, scrolling=True)
+""", unsafe_allow_html=True)
 
-    st.markdown("<div style='height:12px'></div>", unsafe_allow_html=True)
-    if st.button("▶ 사전 설문 시작 →", type="primary", use_container_width=True, key="go_survey"):
+    if st.button("사전 설문 시작 →", type="primary", use_container_width=True, key="go_survey"):
         st.session_state.page = "survey"
         st.rerun()
 
@@ -357,9 +342,21 @@ elif st.session_state.page == "sim":
 
     # sim.html 읽기
     import os
-    html_path = os.path.join(os.path.dirname(__file__), "sim.html")
-    if not os.path.exists(html_path):
-        st.error("sim.html 파일을 찾을 수 없습니다. app.py와 같은 폴더에 sim.html을 놓아주세요.")
+    # sim.html 경로 탐색 (app.py 기준, 또는 현재 작업 디렉토리)
+    import os
+    candidates = [
+        os.path.join(os.path.dirname(os.path.abspath(__file__)), "sim.html"),
+        os.path.join(os.getcwd(), "sim.html"),
+        "sim.html",
+    ]
+    html_path = None
+    for c in candidates:
+        if os.path.exists(c):
+            html_path = c
+            break
+    if html_path is None:
+        st.error(f"sim.html을 찾을 수 없습니다. app.py와 같은 폴더에 sim.html을 놓아주세요.")
+        st.error(f"탐색한 경로: {candidates}")
         st.stop()
 
     with open(html_path, "r", encoding="utf-8") as f:
