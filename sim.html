@@ -330,7 +330,7 @@ var COST_MAX = 2100;
 var step = 0;
 var selected = null;
 var metrics = { cost: 1000, eff: 0, agency: 0, inclusion: 0, sustain: 0 };
-var history = [];
+var deployHistory = [];
 
 // ─── 유틸 ────────────────────────────────────────────────
 function norm(v, min, max) {
@@ -449,7 +449,7 @@ function doDeploy() {
   metrics.eff  += selected.eff;
   metrics[t.metric] += selected.human;
 
-  history.push({
+  deployHistory.push({
     step:   step + 1,
     choice: selected.label,
     type:   selected.type,
@@ -506,7 +506,7 @@ function showReport() {
     survey:   CONFIG.survey,
     scores:   { agency: agency, inclusion: inclusion, sustain: sustain, effAuto: effAuto, invest: invest, overall: overall },
     persona:  persona,
-    history:  history,
+    history:  deployHistory,
     metrics:  metrics
   };
 }
