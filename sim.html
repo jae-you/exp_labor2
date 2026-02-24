@@ -530,9 +530,12 @@ function doSubmit() {
   var img = new Image();
   img.onload = img.onerror = function() {
     msg.style.color = '#51cf66';
-    msg.textContent = '✅ 저장 완료! 수고하셨습니다 😊';
+    msg.textContent = '✅ 저장 완료! 잠시 후 다음 단계로 이동합니다...';
     btn.textContent = '✅ 제출 완료';
     btn.style.background = '#28a745';
+    setTimeout(function() {
+      window.parent.postMessage({ type: 'GOTO_PHASE2' }, '*');
+    }, 1500);
   };
   img.src = CONFIG.gasUrl + '?save=' + encoded;
 }
