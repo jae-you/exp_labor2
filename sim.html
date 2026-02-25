@@ -1,73 +1,377 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-<meta charset="utf-8">
-<style>
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { background: #1e1e1e; color: #e0e0e0; font-family: sans-serif; overflow: hidden; }
-  #app { display: flex; height: 100vh; padding: 20px; flex-direction: column; align-items: center; justify-content: center; }
-  .opt-card { background: #333; padding: 15px; margin: 10px; cursor: pointer; border-radius: 8px; border: 1px solid #444; width: 300px; text-align: center; }
-  #deploy-btn { padding: 12px 40px; background: #28a745; color: white; border: none; border-radius: 6px; cursor: pointer; margin-top: 20px; font-weight: bold; }
-  #report { display: none; width: 100%; height: 100vh; background: #141414; padding: 40px; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
-  /* 파란 버튼 관련 스타일(submit-zone 등)은 아예 삭제함 */
-</style>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>AICC Simulation</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: #1e1e1e;
+      color: #e0e0e0;
+      font-family: system-ui, -apple-system, "Noto Sans KR", "Segoe UI", Roboto, Arial, sans-serif;
+      overflow: hidden;
+    }
+
+    /* ====== App Layout ====== */
+    #app {
+      display: flex;
+      height: 100vh;
+      padding: 28px 20px;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+    }
+
+    .badge {
+      display: inline-block;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      color: #007acc;
+      text-transform: uppercase;
+      border: 1px solid #007acc44;
+      border-radius: 999px;
+      padding: 6px 12px;
+      margin-bottom: 6px;
+    }
+
+    #mod-title {
+      font-size: 28px;
+      font-weight: 800;
+      color: #fff;
+      text-align: center;
+      line-height: 1.25;
+      max-width: 920px;
+      padding: 0 8px;
+    }
+
+    #mod-desc {
+      color: #9a9a9a;
+      font-size: 14px;
+      line-height: 1.8;
+      text-align: center;
+      max-width: 920px;
+      padding: 0 10px;
+      margin-top: 2px;
+    }
+
+    .stepbar {
+      width: min(920px, 92vw);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-top: 8px;
+      margin-bottom: 8px;
+      padding: 0 10px;
+    }
+
+    .stepbar .track {
+      flex: 1;
+      height: 8px;
+      border-radius: 999px;
+      background: #2a2a2a;
+      overflow: hidden;
+      border: 1px solid #303030;
+    }
+
+    .stepbar .fill {
+      height: 100%;
+      width: 0%;
+      background: #007acc;
+      border-radius: 999px;
+    }
+
+    .stepbar .txt {
+      font-size: 12px;
+      color: #7c7c7c;
+      white-space: nowrap;
+    }
+
+    /* ====== Options ====== */
+    #opt-grid {
+      width: min(920px, 92vw);
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+      margin-top: 8px;
+      padding: 0 10px;
+    }
+
+    @media (max-width: 880px) {
+      #opt-grid { grid-template-columns: 1fr; }
+    }
+
+    .opt-card {
+      background: #252526;
+      border: 1px solid #2e2e2e;
+      border-radius: 12px;
+      padding: 14px 14px;
+      cursor: pointer;
+      transition: transform 120ms ease, border-color 120ms ease, box-shadow 120ms ease;
+      min-height: 82px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      color: #d0d0d0;
+      font-size: 14px;
+      font-weight: 600;
+      line-height: 1.4;
+      user-select: none;
+    }
+
+    .opt-card:hover {
+      transform: translateY(-1px);
+      border-color: #007acc66;
+      box-shadow: 0 6px 18px rgba(0,0,0,0.25);
+    }
+
+    .opt-card.selected {
+      border-color: #007acc;
+      box-shadow: 0 0 0 1px #007acc inset, 0 10px 24px rgba(0,0,0,0.28);
+      color: #ffffff;
+    }
+
+    /* ====== Controls ====== */
+    .controls {
+      width: min(920px, 92vw);
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      margin-top: 10px;
+      padding: 0 10px;
+    }
+
+    #deploy-btn {
+      padding: 12px 40px;
+      background: #2ea043;
+      color: white;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      font-weight: 800;
+      font-size: 14px;
+      letter-spacing: 0.2px;
+      transition: opacity 120ms ease, transform 120ms ease;
+      min-width: 240px;
+    }
+
+    #deploy-btn:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    #deploy-btn:not(:disabled):hover {
+      transform: translateY(-1px);
+    }
+
+    .hint {
+      font-size: 12px;
+      color: #6f6f6f;
+      margin-top: 4px;
+      text-align: center;
+    }
+
+    /* ====== Report ====== */
+    #report {
+      display: none;
+      width: 100%;
+      height: 100vh;
+      background: #141414;
+      padding: 40px 16px;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      gap: 10px;
+    }
+
+    .report-title {
+      color: #007acc;
+      font-size: 44px;
+      font-weight: 900;
+      letter-spacing: -0.5px;
+      margin-bottom: 6px;
+    }
+
+    .report-sub {
+      font-size: 18px;
+      color: #ffffff;
+      line-height: 1.6;
+    }
+
+    .report-note {
+      color: #666;
+      margin-top: 6px;
+      font-size: 13px;
+      line-height: 1.7;
+    }
+
+    .report-small {
+      margin-top: 18px;
+      font-size: 12px;
+      color: #555;
+      max-width: 640px;
+      line-height: 1.7;
+    }
+  </style>
 </head>
+
 <body>
+  <div id="app">
+    <div class="badge">AICC Architect Simulation</div>
 
-<div id="app">
-  <h2 id="mod-title"></h2>
-  <p id="mod-desc" style="color: #aaa; margin: 10px 0 20px;"></p>
-  <div id="opt-grid" style="display: flex; gap: 10px;"></div>
-  <button id="deploy-btn" onclick="doDeploy()">🚀 Deploy Module</button>
-</div>
+    <div class="stepbar">
+      <div class="track"><div class="fill" id="step-fill"></div></div>
+      <div class="txt" id="step-txt">0 / 0</div>
+    </div>
 
-<div id="report">
-  <h1 style="color: #007acc; margin-bottom: 15px;">📊 Architecture Analysis Complete</h1>
-  <p style="font-size: 18px; color: #fff;">아키텍처 설계 분석이 완료되었습니다.</p>
-  <p style="color: #666; margin-top: 10px;">데이터를 정리하여 Phase 2(설계기술서)로 안전하게 이동합니다...</p>
-</div>
+    <h2 id="mod-title"></h2>
+    <p id="mod-desc"></p>
 
-<script>
-var CONFIG = window.SIM_CONFIG || { userName: '' };
-var TASKS = window.SIM_TASKS || [];
-var step = 0; var deployHistory = []; var metrics = { agency: 0, inclusion: 0, sustain: 0, eff: 0 }; var selected = null;
+    <div id="opt-grid"></div>
 
-function renderStep() {
-  if (step >= TASKS.length) { showReport(); return; }
-  var t = TASKS[step]; document.getElementById('mod-title').textContent = t.title; document.getElementById('mod-desc').textContent = t.desc;
-  var g = document.getElementById('opt-grid'); g.innerHTML = '';
-  t.options.forEach(o => {
-    var c = document.createElement('div'); c.className = 'opt-card'; c.innerHTML = `<b>${o.label}</b>`;
-    c.onclick = () => { document.querySelectorAll('.opt-card').forEach(x => x.style.borderColor = '#444'); c.style.borderColor = '#007acc'; selected = o; };
-    g.appendChild(c);
-  });
-}
+    <div class="controls">
+      <button id="deploy-btn" onclick="doDeploy()" disabled>🚀 Deploy Module</button>
+    </div>
+    <div class="hint" id="hint">옵션을 선택하면 배포 버튼이 활성화됩니다.</div>
+  </div>
 
-function doDeploy() {
-  if (!selected) return;
-  var t = TASKS[step]; metrics[t.metric] += selected.human; metrics.eff += selected.eff;
-  deployHistory.push({ step: step + 1, choice: selected.label });
-  step++; selected = null; renderStep();
-}
+  <div id="report">
+    <div class="report-title">📊 Architecture Analysis Complete</div>
+    <div class="report-sub">아키텍처 설계 분석이 완료되었습니다.</div>
+    <div class="report-note">데이터를 정리하여 Phase 2(설계기술서)로 안전하게 이동합니다...</div>
+    <div class="report-small" id="report-small"></div>
+  </div>
 
-function showReport() {
-  document.getElementById('app').style.display = 'none';
-  document.getElementById('report').style.display = 'flex';
+  <script>
+    // ====== Inputs from Streamlit injection ======
+    var CONFIG = window.SIM_CONFIG || { userName: "" };
+    var TASKS = window.SIM_TASKS || [];
 
-  // 결과 만들기 (기존과 동일)
-  var simPayload = { history: deployHistory, scores: metrics };
+    // ====== State ======
+    var step = 0;
+    var deployHistory = [];
+    var metrics = { agency: 0, inclusion: 0, sustain: 0, eff: 0 };
+    var selected = null;
 
-  // URL 이동(redirect) 제거
-  // 부모(스트림릿)로 결과 전달
-  setTimeout(function () {
-    window.parent.postMessage(
-      { type: "SIM_DONE", payload: simPayload },
-      "*"
-    );
-  }, 400);
-}
+    function setDeployEnabled(enabled) {
+      var btn = document.getElementById("deploy-btn");
+      btn.disabled = !enabled;
+    }
 
-renderStep();
-</script>
+    function setStepbar() {
+      var total = Array.isArray(TASKS) ? TASKS.length : 0;
+      var cur = Math.min(step, total);
+      var pct = total > 0 ? Math.round((cur / total) * 100) : 0;
+      document.getElementById("step-fill").style.width = pct + "%";
+      document.getElementById("step-txt").textContent = cur + " / " + total;
+    }
+
+    function safeText(v) {
+      if (v === null || v === undefined) return "";
+      return String(v);
+    }
+
+    function renderStep() {
+      if (!Array.isArray(TASKS) || TASKS.length === 0) {
+        document.getElementById("mod-title").textContent = "TASKS 데이터가 없습니다.";
+        document.getElementById("mod-desc").textContent = "Streamlit에서 window.SIM_TASKS가 주입되지 않았습니다.";
+        document.getElementById("opt-grid").innerHTML = "";
+        setDeployEnabled(false);
+        setStepbar();
+        return;
+      }
+
+      if (step >= TASKS.length) {
+        showReport();
+        return;
+      }
+
+      var t = TASKS[step];
+      document.getElementById("mod-title").textContent = safeText(t.title || "");
+      document.getElementById("mod-desc").textContent = safeText(t.desc || "");
+
+      var grid = document.getElementById("opt-grid");
+      grid.innerHTML = "";
+      selected = null;
+      setDeployEnabled(false);
+
+      (t.options || []).forEach(function(o, idx) {
+        var card = document.createElement("div");
+        card.className = "opt-card";
+        card.innerHTML = "<div>" + safeText(o.label || ("Option " + (idx + 1))) + "</div>";
+
+        card.onclick = function() {
+          document.querySelectorAll(".opt-card").forEach(function(x) {
+            x.classList.remove("selected");
+          });
+          card.classList.add("selected");
+          selected = o;
+          setDeployEnabled(true);
+        };
+
+        grid.appendChild(card);
+      });
+
+      setStepbar();
+    }
+
+    function doDeploy() {
+      if (!selected) return;
+
+      var t = TASKS[step];
+      var human = Number(selected.human || 0);
+      var eff = Number(selected.eff || 0);
+
+      // metric accumulation
+      var m = safeText(t.metric || "");
+      if (m && metrics[m] !== undefined) {
+        metrics[m] += human;
+      }
+      metrics.eff += eff;
+
+      deployHistory.push({
+        step: step + 1,
+        taskId: safeText(t.id || ""),
+        choice: safeText(selected.label || ""),
+        type: safeText(selected.type || ""),
+      });
+
+      step += 1;
+      renderStep();
+    }
+
+    function showReport() {
+      document.getElementById("app").style.display = "none";
+      document.getElementById("report").style.display = "flex";
+
+      var simPayload = {
+        userName: safeText(CONFIG.userName || ""),
+        history: deployHistory,
+        scores: metrics,
+      };
+
+      // 디버그용(화면 하단 작은 글씨)
+      var small = document.getElementById("report-small");
+      small.textContent = "전송 준비 완료: " + deployHistory.length + "개 모듈 선택값";
+
+      // ✅ 중요: parent.location 건드리지 말고 postMessage만 사용
+      // (Streamlit iframe sandbox 환경에서도 안전)
+      try {
+        window.parent.postMessage({ type: "SIM_DONE", payload: simPayload }, "*");
+      } catch (e) {
+        // postMessage 자체가 막히는 경우는 거의 없지만, 그래도 안전장치
+        small.textContent = "전송 실패(브라우저 보안): 새로고침 후 다시 시도해주세요.";
+        console.error(e);
+      }
+    }
+
+    // Start
+    renderStep();
+  </script>
 </body>
 </html>
