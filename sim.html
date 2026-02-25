@@ -3,104 +3,63 @@
 <head>
 <meta charset="utf-8">
 <style>
-/* CSS 스타일은 이전과 동일 */
+/* CSS 동일 */
 * { box-sizing: border-box; margin: 0; padding: 0; }
 html, body { height: 100%; background: #1e1e1e; color: #e0e0e0; font-family: sans-serif; overflow: hidden; }
 #app { display: flex; height: 100vh; }
-#messenger { width: 280px; background: #252526; border-right: 1px solid #333; display: flex; flex-direction: column; }
-#chat-box { flex: 1; padding: 12px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; }
-.msg { padding: 9px 12px; border-radius: 7px; font-size: 12px; }
-.msg-client { background: #3a2e2e; } .msg-agent { background: #2e3a2e; }
-#ide { flex: 1; display: flex; flex-direction: column; padding: 20px; }
-#deploy-btn { padding: 15px; background: #28a745; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; margin-top: 10px; opacity: 0.5; }
-#deploy-btn.ready { opacity: 1; }
-#report { display: none; width: 100%; height: 100vh; background: #141414; padding: 50px; flex-direction: column; align-items: center; overflow-y: auto; }
-#final-btn { padding: 15px 40px; background: #007acc; color: white; border: none; border-radius: 8px; cursor: pointer; margin-top: 20px; font-weight: bold; }
+#ide { flex: 1; padding: 40px; display: flex; flex-direction: column; align-items: center; }
+.opt-card { background: #333; padding: 20px; margin: 10px; cursor: pointer; border-radius: 8px; width: 250px; text-align: center; }
+#deploy-btn { padding: 15px 50px; background: #28a745; color: white; border: none; border-radius: 8px; cursor: pointer; margin-top: 20px; font-weight: bold; }
+#report { display: none; width: 100%; height: 100vh; background: #141414; padding: 50px; flex-direction: column; align-items: center; }
+#final-btn { padding: 15px 40px; background: #007acc; color: white; border: none; border-radius: 8px; cursor: pointer; margin-top: 20px; }
 </style>
 </head>
 <body>
-
 <div id="app">
-  <div id="messenger"><div id="chat-box"></div></div>
   <div id="ide">
     <h2 id="mod-title"></h2>
-    <p id="mod-desc"></p>
-    <div id="opt-grid" style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px; margin:20px 0;"></div>
+    <p id="mod-desc" style="color: #888; margin-bottom: 20px;"></p>
+    <div id="opt-grid" style="display:flex;"></div>
     <button id="deploy-btn" onclick="doDeploy()">🚀 Deploy Module</button>
   </div>
 </div>
-
 <div id="report">
-  <h1>Architecture Impact Report</h1>
-  <div id="rpt-name" style="margin-top:20px;"></div>
-  <div id="rpt-persona" style="font-size:20px; font-weight:bold; color:#007acc; margin:20px 0;"></div>
-  <p>모든 시뮬레이션 결과가 자동으로 기록되었습니다.</p>
-  <button id="final-btn" onclick="doSubmit()">다음 단계(Phase 2)로 이동하기</button>
+  <h1>Simulation Analysis Complete</h1>
+  <div id="rpt-persona" style="font-size:24px; color:#007acc; margin:30px 0;"></div>
+  <p>설계 데이터가 준비되었습니다. 다음 단계에서 기술서를 작성하면 최종 저장됩니다.</p>
+  <button id="final-btn" onclick="passToParent()">설계기술서 작성하러 가기 (Phase 2) →</button>
 </div>
 
 <script>
-var CONFIG = window.SIM_CONFIG || { gasUrl: '', userName: '', survey: {} };
+var CONFIG = window.SIM_CONFIG || { userName: '' };
 var TASKS = window.SIM_TASKS || [];
-var step = 0;
-var deployHistory = [];
-var metrics = { agency: 0, inclusion: 0, sustain: 0, eff: 0, cost: 1000 };
-var selected = null;
+var step = 0; var deployHistory = []; var metrics = { agency: 0, inclusion: 0, sustain: 0, eff: 0 }; var selected = null;
 
 function renderStep() {
   if (step >= TASKS.length) { showReport(); return; }
-  var t = TASKS[step];
-  document.getElementById('mod-title').textContent = t.title;
-  document.getElementById('mod-desc').textContent = t.desc;
+  var t = TASKS[step]; document.getElementById('mod-title').textContent = t.title; document.getElementById('mod-desc').textContent = t.desc;
   var g = document.getElementById('opt-grid'); g.innerHTML = '';
-  t.options.forEach(opt => {
-    var c = document.createElement('div');
-    c.style.padding = '15px'; c.style.background = '#333'; c.style.cursor = 'pointer'; c.style.borderRadius = '8px';
-    c.innerHTML = `<b>${opt.label}</b><br><small>${opt.desc}</small>`;
-    c.onclick = () => {
-      document.querySelectorAll('#opt-grid div').forEach(x => x.style.border = 'none');
-      c.style.border = '2px solid #007acc'; selected = opt;
-      document.getElementById('deploy-btn').classList.add('ready');
-    };
+  t.options.forEach(o => {
+    var c = document.createElement('div'); c.className = 'opt-card'; c.innerHTML = `<b>${o.label}</b>`;
+    c.onclick = () => { document.querySelectorAll('.opt-card').forEach(x => x.style.border = 'none'); c.style.border = '2px solid #007acc'; selected = o; };
     g.appendChild(c);
   });
 }
-
 function doDeploy() {
   if (!selected) return;
-  var t = TASKS[step];
-  metrics[t.metric] += selected.human;
-  metrics.eff += selected.eff;
+  var t = TASKS[step]; metrics[t.metric] += selected.human; metrics.eff += selected.eff;
   deployHistory.push({ step: step + 1, choice: selected.label });
-  step++; selected = null;
-  document.getElementById('deploy-btn').classList.remove('ready');
-  if (step === TASKS.length) { autoSave(); }
-  renderStep();
+  step++; selected = null; renderStep();
 }
-
-// [자동 저장] 마지막 모듈 선택 시 백그라운드 전송
-function autoSave() {
-  var data = { userName: CONFIG.userName, survey: CONFIG.survey, history: deployHistory, scores: metrics, type: "SIM_COMPLETE" };
-  var img = new Image();
-  img.src = CONFIG.gasUrl + '?save=' + encodeURIComponent(JSON.stringify(data));
-}
-
 function showReport() {
-  document.getElementById('app').style.display = 'none';
-  document.getElementById('report').style.display = 'flex';
-  document.getElementById('rpt-name').textContent = '참여자: ' + CONFIG.userName;
-  document.getElementById('rpt-persona').textContent = '분석된 아키텍트 성향: 균형주의자';
+  document.getElementById('app').style.display = 'none'; document.getElementById('report').style.display = 'flex';
+  document.getElementById('rpt-persona').textContent = "시스템 아키텍트 분석 완료";
 }
-
-function doSubmit() {
-  // 확정 전송 및 페이지 이동
-  var data = { userName: CONFIG.userName, history: deployHistory, scores: metrics, is_final: true };
-  var img = new Image();
-  img.onload = img.onerror = () => {
-    window.parent.postMessage({ type: 'GOTO_PHASE2' }, '*');
-  };
-  img.src = CONFIG.gasUrl + '?save=' + encodeURIComponent(JSON.stringify(data));
+function passToParent() {
+  // 데이터를 JSON화해서 URL 파라미터로 부모(Streamlit)에게 전달
+  var simResult = JSON.stringify({ history: deployHistory, scores: metrics });
+  window.parent.location.href = window.parent.location.pathname + "?sim_result=" + encodeURIComponent(simResult);
 }
-
 renderStep();
 </script>
 </body>
