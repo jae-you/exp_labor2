@@ -674,7 +674,7 @@ elif st.session_state.page == "sim":
         st.stop()
 
     # 5) 렌더
-    components.html(final_html, height=900, scrolling=True, key="sim_iframe_v2")
+    components.html(final_html, height=900, scrolling=True)
 
 # ════════════════════════════════════════════════════════
 # PAGE 4: Phase 2 + 최종 저장(1회)
