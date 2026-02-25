@@ -53,15 +53,18 @@ function doDeploy() {
 function showReport() {
   document.getElementById('app').style.display = 'none';
   document.getElementById('report').style.display = 'flex';
-  
-  // [중요] 시뮬레이션 데이터를 JSON으로 변환
-  var simResult = JSON.stringify({ history: deployHistory, scores: metrics });
-  
-  // 2초 뒤에 부모(Streamlit) URL을 변경하면서 데이터를 쿼리 파라미터로 전달
-  setTimeout(function() {
-    var parentUrl = window.parent.location.origin + window.parent.location.pathname;
-    window.parent.location.href = parentUrl + "?sim_result=" + encodeURIComponent(simResult);
-  }, 2000);
+
+  // 결과 만들기 (기존과 동일)
+  var simPayload = { history: deployHistory, scores: metrics };
+
+  // URL 이동(redirect) 제거
+  // 부모(스트림릿)로 결과 전달
+  setTimeout(function () {
+    window.parent.postMessage(
+      { type: "SIM_DONE", payload: simPayload },
+      "*"
+    );
+  }, 400);
 }
 
 renderStep();
