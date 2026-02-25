@@ -257,59 +257,49 @@ st.set_page_config(page_title="AICC Simulation", layout="wide", initial_sidebar_
 st.markdown(
     """
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
+
 <style>
- html, body, * { font-family: 'Noto Sans KR', sans-serif !important; }
- .stApp { background: #1e1e1e; }
- .block-container { padding: 0 !important; max-width: 100% !important; }
- header, footer, section[data-testid="stSidebar"],
- [data-testid="collapsedControl"] { display: none !important; }
+  html, body, * { font-family: 'Noto Sans KR', sans-serif !important; }
+  .stApp { background: #1e1e1e; }
+  .block-container { padding: 0 !important; max-width: 100% !important; }
+  header, footer, section[data-testid="stSidebar"],
+  [data-testid="collapsedControl"] { display: none !important; }
 
- /* 설문 위젯 스타일 */
- div[data-testid="stRadio"] > label,
- div[data-testid="stNumberInput"] > label,
- div[data-testid="stTextInput"] > label,
- div[data-testid="stTextArea"] > label {
-   font-size: 15px !important; font-weight: 500 !important;
-   color: #e0e0e0 !important; line-height: 1.6 !important;
-   margin-bottom: 8px !important;
- }
- div[data-testid="stRadio"] > div { gap: 7px !important; margin-top: 4px !important; }
- div[data-testid="stRadio"] > div > label {
-   background: #252526 !important; border: 1px solid #2e2e2e !important;
-   border-radius: 8px !important; padding: 11px 16px !important;
-   color: #ccc !important; font-size: 13px !important; width: 100% !important;
- }
- div[data-testid="stRadio"] > div > label:hover { border-color: #007acc66 !important; }
- div[data-testid="stNumberInput"] input,
- div[data-testid="stTextInput"] input,
- div[data-testid="stTextArea"] textarea {
-   background: #252526 !important; border: 1px solid #2e2e2e !important;
-   border-radius: 8px !important; color: #e0e0e0 !important;
-   font-size: 14px !important;
- }
+  /* 설문 텍스트 스타일 */
+  .survey-badge { display: inline-block; font-size: 10px; font-weight: 700; letter-spacing: 2px; color: #007acc; text-transform: uppercase; border: 1px solid #007acc44; border-radius: 4px; padding: 4px 10px; margin-bottom: 12px; }
+  .survey-h1 { font-size: 22px; font-weight: 700; color: #fff; margin-bottom: 4px; }
+  .survey-sub { font-size: 12px; color: #555; margin-bottom: 28px; font-weight: 300; }
+  .survey-divider { height: 1px; background: #2a2a2a; margin: 12px 0 28px; }
 
- .survey-badge {
-   display: inline-block; font-size: 10px; font-weight: 700;
-   letter-spacing: 2px; color: #007acc; text-transform: uppercase;
-   border: 1px solid #007acc44; border-radius: 4px; padding: 4px 10px; margin-bottom: 12px;
- }
- .survey-h1  { font-size: 22px; font-weight: 700; color: #fff; margin-bottom: 4px; }
- .survey-sub { font-size: 12px; color: #555; margin-bottom: 28px; font-weight: 300; }
- .survey-divider { height: 1px; background: #2a2a2a; margin: 12px 0 28px; }
+  .stop-box { background: #2a1a1a; border-left: 3px solid #ff6b6b; border-radius: 0 8px 8px 0; padding: 14px 18px; font-size: 13px; color: #ff6b6b; line-height: 1.7; margin-top: 6px; }
+  .q-prefix { display: block; font-size: 10px; font-weight: 700; color: #007acc; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 2px; }
+  .q-note-txt { display: block; font-size: 11px; color: #555; font-weight: 300; margin-top: 2px; margin-bottom: 6px; }
 
- .stop-box {
-   background: #2a1a1a; border-left: 3px solid #ff6b6b;
-   border-radius: 0 8px 8px 0; padding: 14px 18px;
-   font-size: 13px; color: #ff6b6b; line-height: 1.7; margin-top: 6px;
- }
- .q-prefix {
-   display: block; font-size: 10px; font-weight: 700; color: #007acc;
-   letter-spacing: 1px; text-transform: uppercase; margin-bottom: 2px;
- }
- .q-note-txt {
-   display: block; font-size: 11px; color: #555;
-   font-weight: 300; margin-top: 2px; margin-bottom: 6px;
- }
+  /* 설문 위젯 스타일 */
+  div[data-testid="stRadio"] > label,
+  div[data-testid="stNumberInput"] > label,
+  div[data-testid="stTextInput"] > label,
+  div[data-testid="stTextArea"] > label {
+    font-size: 15px !important; font-weight: 500 !important;
+    color: #e0e0e0 !important; line-height: 1.6 !important;
+    margin-bottom: 8px !important;
+  }
+
+  div[data-testid="stRadio"] > div { gap: 7px !important; margin-top: 4px !important; }
+  div[data-testid="stRadio"] > div > label {
+    background: #252526 !important; border: 1px solid #2e2e2e !important;
+    border-radius: 8px !important; padding: 11px 16px !important;
+    color: #ccc !important; font-size: 13px !important; width: 100% !important;
+  }
+  div[data-testid="stRadio"] > div > label:hover { border-color: #007acc66 !important; }
+
+  div[data-testid="stNumberInput"] input,
+  div[data-testid="stTextInput"] input,
+  div[data-testid="stTextArea"] textarea {
+    background: #252526 !important; border: 1px solid #2e2e2e !important;
+    border-radius: 8px !important; color: #e0e0e0 !important;
+    font-size: 14px !important;
+  }
 </style>
 """,
     unsafe_allow_html=True,
@@ -607,19 +597,23 @@ elif st.session_state.page == "survey":
 #    브릿지가 query param sim_result로 1회 전환 → phase2로 이동
 # ════════════════════════════════════════════════════════
 elif st.session_state.page == "sim":
-    # ✅ sim_result가 query param으로 들어오면 phase1_result로 저장 후 phase2로
+    # 1) sim_result query param 수신 → phase2 이동
     sim_result_raw = _get_query_param("sim_result")
     if sim_result_raw and not st.session_state.phase1_result:
         try:
-            st.session_state.phase1_result = json.loads(sim_result_raw)
+            sim_result_decoded = urllib.parse.unquote(sim_result_raw)
+            st.session_state.phase1_result = json.loads(sim_result_decoded)
             st.session_state.page = "phase2"
             _clear_query_params()
             st.rerun()
         except Exception as e:
             st.error(f"sim_result 파싱 실패: {e}")
-            # 그래도 sim 화면은 보여주기
 
+    # 2) sim.html 로드
     sim_html = _load_sim_html()
+    if not isinstance(sim_html, str) or len(sim_html.strip()) == 0:
+        st.error("sim.html 내용이 비어있습니다.")
+        st.stop()
 
     config = {
         "gasUrl": GAS_URL,
@@ -634,8 +628,6 @@ elif st.session_state.page == "sim":
         "</script>\n"
     )
 
-    # ✅ 브릿지: sim.html이 postMessage로 SIM_DONE을 보내면,
-    #   우리가 통제하는 redirect(쿼리파라미터 1회)로만 phase 전환
     bridge = """
 <script>
 (function() {
@@ -659,11 +651,30 @@ elif st.session_state.page == "sim":
 </script>
 """
 
-    final_html = sim_html.replace("</head>", inject + bridge + "</head>", 1)
+    # 3) </head> 유무 체크해서 안전하게 주입
+    final_html = None
+    lower = sim_html.lower()
 
-    # ✅ key 바꿔서 캐시/이전 iframe 잔상 줄이기
+    if "</head>" in lower:
+        idx = lower.find("</head>")
+        final_html = sim_html[:idx] + inject + bridge + sim_html[idx:]
+    else:
+        final_html = "<!doctype html><html><head>" + inject + bridge + "</head><body>" + sim_html + "</body></html>"
+
+    # 4) 타입/길이 검증
+    if not isinstance(final_html, str):
+        st.error(f"final_html 타입 이상: {type(final_html)}")
+        st.stop()
+
+    if len(final_html) > 2_500_000:
+        st.error(
+            f"final_html이 너무 큽니다({len(final_html)} bytes). "
+            "TASKS/HTML이 너무 길면 components.html이 실패할 수 있어요."
+        )
+        st.stop()
+
+    # 5) 렌더
     components.html(final_html, height=900, scrolling=True, key="sim_iframe_v2")
-
 
 # ════════════════════════════════════════════════════════
 # PAGE 4: Phase 2 + 최종 저장(1회)
