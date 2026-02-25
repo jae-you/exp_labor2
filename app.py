@@ -4,19 +4,23 @@ import json
 import urllib.request
 import urllib.parse
 import os
+import time
 
 # ══════════════════════════════════════════════════════
+# GAS_URL (사용자 제공 최신 URL)
 GAS_URL = "https://script.google.com/macros/s/AKfycbxaTijDkTPBxa1OzUFPaVxSU8TWYDxTRQ0vYh6EdeBPII0y_ECbDp5OdCwpf27PQI4qGg/exec"
 # ══════════════════════════════════════════════════════
 
 def send_to_gas(payload):
     try:
         encoded = urllib.parse.urlencode({"save": json.dumps(payload, ensure_ascii=False)})
+        # 모든 데이터를 한꺼번에 보내므로 타임아웃을 넉넉히 설정 (15초)
         urllib.request.urlopen(f"{GAS_URL}?{encoded}", timeout=15)
         return True
-    except Exception: return False
+    except Exception:
+        return False
 
-# ── 원본 TASKS 콘텐츠 (절대 수정 금지 확인 완료) ──
+# ── 원본 TASKS 콘텐츠 복구 (설명 텍스트 보존) ──
 TASKS = [
     {
         "id": "t1",
@@ -104,82 +108,145 @@ TASKS = [
     },
 ]
 
+# ──────────────────────────────────────────────────────
 st.set_page_config(page_title="AICC Simulation", layout="wide", initial_sidebar_state="collapsed")
 
-# 스타일 설정
-st.markdown("""<style>html, body, * { font-family: 'Noto Sans KR', sans-serif !important; } .stApp { background: #1e1e1e; } .block-container { padding: 0 !important; max-width: 100% !important; } header, footer, section[data-testid="stSidebar"], [data-testid="collapsedControl"] { display: none !important; }</style>""", unsafe_allow_html=True)
+st.markdown("""
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
+<style>
+  html, body, * { font-family: 'Noto Sans KR', sans-serif !important; }
+  .stApp { background: #1e1e1e; }
+  .block-container { padding: 0 !important; max-width: 100% !important; }
+  header, footer, section[data-testid="stSidebar"], [data-testid="collapsedControl"] { display: none !important; }
 
-# 세션 초기화
+  div[data-testid="stRadio"] > label, div[data-testid="stNumberInput"] > label, div[data-testid="stTextInput"] > label {
+    font-size: 15px !important; font-weight: 500 !important; color: #e0e0e0 !important; line-height: 1.6 !important; margin-bottom: 8px !important;
+  }
+  div[data-testid="stRadio"] > div { gap: 7px !important; margin-top: 4px !important; }
+  div[data-testid="stRadio"] > div > label {
+    background: #252526 !important; border: 1px solid #2e2e2e !important; border-radius: 8px !important; padding: 11px 16px !important; color: #ccc !important; font-size: 13px !important; width: 100% !important;
+  }
+  div[data-testid="stNumberInput"] input, div[data-testid="stTextInput"] input {
+    background: #252526 !important; border: 1px solid #2e2e2e !important; border-radius: 8px !important; color: #e0e0e0 !important; font-size: 14px !important;
+  }
+  .survey-badge { display: inline-block; font-size: 10px; font-weight: 700; letter-spacing: 2px; color: #007acc; text-transform: uppercase; border: 1px solid #007acc44; border-radius: 4px; padding: 4px 10px; margin-bottom: 12px; }
+  .survey-h1 { font-size: 22px; font-weight: 700; color: #fff; margin-bottom: 4px; }
+  .survey-sub { font-size: 12px; color: #555; margin-bottom: 28px; font-weight: 300; }
+  .survey-divider { height: 1px; background: #2a2a2a; margin: 12px 0 28px; }
+  .stop-box { background: #2a1a1a; border-left: 3px solid #ff6b6b; border-radius: 0 8px 8px 0; padding: 14px 18px; font-size: 13px; color: #ff6b6b; line-height: 1.7; margin-top: 6px; }
+  .q-prefix { display: block; font-size: 10px; font-weight: 700; color: #007acc; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 2px; }
+</style>
+""", unsafe_allow_html=True)
+
+# ── 세션 초기화
 for k, v in [("page", "scenario"), ("user_name", ""), ("survey_data", {}), ("sim_result", {}), ("p2_answers", {}), ("phase2_step", 1)]:
-    if k not in st.session_state: st.session_state[k] = v
+    if k not in st.session_state:
+        st.session_state[k] = v
 
 # PAGE 1: 시나리오
 if st.session_state.page == "scenario":
-    st.markdown("""<div style="max-width:800px;margin:0 auto;padding:48px 24px;color:white;"><h1>실험 시나리오 안내</h1><p>실험을 시작하기 전 상황을 충분히 읽어주십시오.</p></div>""", unsafe_allow_html=True)
-    if st.button("사전 설문 시작 →", type="primary", use_container_width=True):
+    st.markdown("""
+<div style="max-width:800px; margin:0 auto; padding:48px 24px 32px;">
+  <div class="survey-badge">AICC Architect Simulation</div>
+  <div class="survey-h1">실험 시나리오 안내</div>
+  <div class="survey-sub">실험을 시작하기 전, 아래 상황을 충분히 읽어주십시오.</div>
+  <div style="background:#252526; border: 1px solid #2a2a2a; border-radius:10px; padding:22px; margin-top:20px; color:#bbb; line-height:1.8;">
+    귀하는 국내 중견 IT 기업 소속의 기술 리드로, 1금융권 대형 콜센터 시스템 개선 프로젝트를 맡고 있습니다. 
+    클라이언트는 효율화를 최우선으로 요구하며, 엔드유저는 5년 이상 경력의 숙련 상담원들입니다. 
+    지금부터 주어지는 상황들에 대해 최선의 결정을 내려주십시오.
+  </div>
+</div>
+""", unsafe_allow_html=True)
+    if st.button("사전 설문 시작 →", type="primary", use_container_width=True, key="go_survey"):
         st.session_state.page = "survey"; st.rerun()
 
-# PAGE 2: 설문 (원본 구조 유지)
+# PAGE 2: 설문 (원본 문항 복구)
 elif st.session_state.page == "survey":
-    st.markdown('<div style="max-width:720px;margin:0 auto;padding:36px 20px;color:white;"><h2>응답자 기본 정보</h2></div>', unsafe_allow_html=True)
-    with st.container():
-        q1 = st.radio("성별", ["남성", "여성"], index=None)
-        q2 = st.number_input("출생연도", min_value=1950, max_value=2010, value=None)
-        name_input = st.text_input("성함")
-        
-        if st.button("실험 시작 →", type="primary", use_container_width=True):
-            if name_input and q1 and q2:
-                st.session_state.user_name = name_input.strip()
-                st.session_state.survey_data = {"Q1_성별": q1, "Q2_출생연도": str(int(q2))}
-                st.session_state.page = "sim"; st.rerun()
+    st.markdown('<div style="max-width:720px;margin:0 auto;padding:36px 20px 80px;">', unsafe_allow_html=True)
+    st.markdown('<div class="survey-badge">사전 설문조사</div>', unsafe_allow_html=True)
+    st.markdown('<div class="survey-h1">응답자 기본 정보</div>', unsafe_allow_html=True)
+    
+    survey = {}
+    stopped = False
+    
+    st.markdown('<span class="q-prefix">Q1</span>', unsafe_allow_html=True)
+    q1 = st.radio("귀하의 성별은 무엇입니까?", ["① 남성", "② 여성"], index=None, key="q1")
+    survey["Q1_성별"] = q1 or ""
 
-# PAGE 3: 시뮬레이션
+    st.markdown('<span class="q-prefix">Q2</span>', unsafe_allow_html=True)
+    q2 = st.number_input("귀하의 출생연도는 몇 년도입니까?", min_value=1950, max_value=2005, value=None, placeholder="예: 1990", key="q2")
+    survey["Q2_출생연도"] = (str(int(q2)) + "년생") if q2 else ""
+
+    st.markdown('<span class="q-prefix">Q3</span>', unsafe_allow_html=True)
+    q3_opts = ["① 3년 미만 ❌", "② 3년 이상 ~ 5년 미만", "③ 5년 이상 ~ 7년 미만", "④ 7년 이상 ~ 10년 미만", "⑤ 10년 이상 ❌"]
+    q3 = st.radio("귀하의 개발자로서의 실무 경력은 얼마나 됩니까?", q3_opts, index=None, key="q3")
+    if q3 in ["① 3년 미만 ❌", "⑤ 10년 이상 ❌"]:
+        st.markdown('<div class="stop-box">본 실험은 실무 경력 3년 이상 ~ 10년 미만 개발자 대상입니다.</div>', unsafe_allow_html=True)
+        stopped = True
+    survey["Q3_경력"] = q3.replace(" ❌", "") if q3 else ""
+
+    if not stopped:
+        st.markdown('<span class="q-prefix">참여자 이름</span>', unsafe_allow_html=True)
+        name_input = st.text_input("성함을 입력해주세요 (데이터 식별용)", placeholder="예: 홍길동", key="name_input")
+        
+        # 원본 문항 Q4 ~ Q8 중 일부 (네 코드 구조 기반)
+        st.markdown('<span class="q-prefix">Q4</span>', unsafe_allow_html=True)
+        q4 = st.radio("귀하의 현재 직무는 무엇입니까?", ["백엔드", "프론트엔드", "AI/ML", "기타"], index=None, key="q4")
+        survey["Q4_직무"] = q4 or ""
+
+        all_answered = q1 and q2 and q3 and q4 and name_input.strip()
+        
+        if st.button("실험 시작 →", key="survey_submit", type="primary", use_container_width=True, disabled=not all_answered):
+            st.session_state.survey_data = survey
+            st.session_state.user_name = name_input.strip()
+            st.session_state.page = "sim"; st.rerun()
+    st.markdown('</div>', unsafe_allow_html=True)
+
+# PAGE 3: 시뮬레이션 (캐시 방지 적용)
 elif st.session_state.page == "sim":
-    html_path = os.path.join(os.getcwd(), "sim.html")
-    with open(html_path, "r", encoding="utf-8") as f:
+    if "sim_result" in st.query_params:
+        st.session_state.sim_result = json.loads(st.query_params["sim_result"])
+        st.session_state.page = "phase2"; st.query_params.clear(); st.rerun()
+
+    with open("sim.html", "r", encoding="utf-8") as f:
         sim_html = f.read()
 
     config = {"userName": st.session_state.user_name}
     inject = f"<script>window.SIM_CONFIG = {json.dumps(config)}; window.SIM_TASKS = {json.dumps(TASKS)};</script>"
-    final_html = sim_html.replace("</head>", inject + "</head>")
-    components.html(final_html, height=900, scrolling=True)
-    
-    params = st.query_params
-    if "sim_result" in params:
-        st.session_state.sim_result = json.loads(params["sim_result"])
-        st.session_state.page = "phase2"
-        st.query_params.clear() # 파라미터 청소
-        st.rerun()
+    # 브라우저 캐시 방지를 위해 매번 고유한 key 생성
+    components.html(sim_html.replace("</head>", inject + "</head>"), height=900, key=f"sim_{time.time()}")
 
-# PAGE 4–6: Phase 2 (원본 콘텐츠 유지)
+# PAGE 4–6: Phase 2 (원본 질문 보존)
 elif st.session_state.page == "phase2":
     PHASE2_QS = [
-        {"step":1, "badge":"설계 과제 01", "title":"데이터의 경계: 무엇을 얼마나 학습시킬 것인가", "gas_key":"P2_Q1_데이터설계", "body": "시스템 성능 개선을 위해 학습 데이터 확장이 필요한 시점이 되었습니다. 활용 가능한 데이터로는 상담원 개인이 축적해온 팁 노트·메모 등의 암묵지 데이터뿐 아니라, STT(Speech-to-Text)를 통해 수집된 대화 기록 전체도 있습니다. 데이터 활용 범위와 설계 방향을 구체적으로 기술해주십시오."},
-        {"step":2, "badge":"설계 과제 02", "title":"숙련의 가치: AI가 대신할 수 있는 것과 없는 것", "gas_key":"P2_Q2_숙련설계", "body": "숙련된 상담원은 고객이 '적금'과 '예금'을 혼동해서 말하더라도 맥락을 파악해 자연스럽게 교정합니다. AI가 이 과정을 전부 대신한다면 어떻게 될까요? 반대로, 상담원이 스스로 판단하고 성장할 여지를 남겨두는 방향으로 설계한다면 어떤 구조가 필요할까요?"},
-        {"step":3, "badge":"설계 과제 03", "title":"구조와 여백: 표준화와 자율성 사이의 설계", "gas_key":"P2_Q3_표준화설계", "body": "귀하는 이 시스템을 어느 수준까지 표준화하고, 어느 부분을 상담원의 재량에 맡기겠습니까? 그 기준과 설계 원칙, 그리고 그 선택이 상담원과 서비스 품질에 미칠 영향을 구체적으로 기술해주십시오."}
+        {"key": "P2_Q1_데이터설계", "badge": "설계 과제 01 / 03", "title": "데이터의 경계: 무엇을 얼마나 학습시킬 것인가", "body": "시스템 성능 개선을 위해 학습 데이터 확장이 필요한 시점이 되었습니다. 활용 가능한 데이터로는 상담원 개인이 축적해온 팁 노트·메모 등의 암묵지 데이터뿐 아니라, STT(Speech-to-Text)를 통해 수집된 대화 기록 전체도 있습니다. 이처럼 풍부한 데이터를 확보할 수 있다면, 귀하는 이를 얼마나, 어떻게 활용해 시스템을 설계하겠습니까?"},
+        {"key": "P2_Q2_숙련설계", "badge": "설계 과제 02 / 03", "title": "숙련의 가치: AI가 대신할 수 있는 것과 없는 것", "body": "숙련된 상담원은 고객이 '적금'과 '예금'을 혼동해서 말하더라도 맥락을 파악해 자연스럽게 교정합니다. AI가 이 과정을 전부 대신해 상담원이 정답만 제공받는 환경을 만든다면 어떻게 될까요? 반대로 상담원이 스스로 판단하고 성장할 여지를 남겨두는 방향으로 설계한다면 어떤 구조가 필요할까요?"},
+        {"key": "P2_Q3_표준화설계", "badge": "설계 과제 03 / 03", "title": "구조와 여백: 표준화와 자율성 사이의 설계", "body": "귀하는 이 시스템을 어느 수준까지 표준화하고, 어느 부분을 상담원의 재량에 맡기겠습니까? 그 기준과 설계 원칙, 그리고 그 선택이 상담원과 서비스 품질에 미칠 영향을 구체적으로 기술해주십시오."}
     ]
     
-    q = PHASE2_QS[st.session_state.phase2_step - 1]
-    st.markdown(f'<div style="max-width:760px;margin:0 auto;padding:48px 24px;color:white;"><h3>{q["badge"]}</h3><h1>{q["title"]}</h1><p>{q["body"]}</p></div>', unsafe_allow_html=True)
+    idx = st.session_state.phase2_step - 1
+    q = PHASE2_QS[idx]
     
-    ans = st.text_area("설계 답변을 입력하세요", height=350, key=f"ans_{st.session_state.phase2_step}")
+    st.markdown(f'<div style="max-width:760px;margin:0 auto;padding:48px 20px;color:white;"><h3>{q["badge"]}</h3><h2>{q["title"]}</h2><p style="line-height:1.8; color:#bbb;">{q["body"]}</p></div>', unsafe_allow_html=True)
+    ans = st.text_area("답변을 입력하세요 (1000자 이상 권장)", height=350, key=f"p2ans_{idx}")
     
     if st.button("다음 단계" if st.session_state.phase2_step < 3 else "최종 결과 제출"):
-        st.session_state.p2_answers[q['gas_key']] = ans
+        st.session_state.p2_answers[q['key']] = ans
         if st.session_state.phase2_step < 3:
             st.session_state.phase2_step += 1; st.rerun()
         else:
-            # 여기서 모든 데이터 통합하여 한방에 전송
+            # [전체 통합 전송] 설문 + 시뮬 + 서술형
             final_data = {
                 "userName": st.session_state.user_name,
                 "survey": st.session_state.survey_data,
                 "phase1": st.session_state.sim_result,
                 **st.session_state.p2_answers
             }
-            if send_to_gas(final_data):
-                st.session_state.page = "done"; st.rerun()
-            else:
-                st.error("저장 중 오류가 발생했습니다. 다시 시도해주세요.")
+            with st.spinner("데이터를 안전하게 저장 중입니다..."):
+                if send_to_gas(final_data):
+                    st.session_state.page = "done"; st.rerun()
+                else:
+                    st.error("저장 중 오류가 발생했습니다. 다시 한 번 제출해주세요.")
 
 elif st.session_state.page == "done":
-    st.markdown("<div style='text-align:center; padding:100px; color:white;'><h1>실험이 완료되었습니다.</h1><p>참여해주셔서 대단히 감사합니다.</p></div>", unsafe_allow_html=True)
+    st.markdown("<div style='text-align:center; padding:100px; color:white;'><h1>🎉 실험 완료</h1><p>모든 데이터가 성공적으로 저장되었습니다. 감사합니다.</p></div>", unsafe_allow_html=True)
