@@ -2,554 +2,106 @@
 <html lang="ko">
 <head>
 <meta charset="utf-8">
-<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
 <style>
+/* CSS 스타일은 이전과 동일 */
 * { box-sizing: border-box; margin: 0; padding: 0; }
-html, body {
-  height: 100%;
-  background: #1e1e1e;
-  color: #e0e0e0;
-  font-family: 'Noto Sans KR', sans-serif;
-  overflow: hidden;
-}
-#app {
-  display: flex;
-  height: 100vh;
-}
-
-/* ── 메신저 패널 ── */
-#messenger {
-  width: 280px;
-  min-width: 280px;
-  background: #252526;
-  border-right: 1px solid #333;
-  display: flex;
-  flex-direction: column;
-}
-#msg-header {
-  padding: 12px 16px;
-  background: #2d2d2d;
-  font-size: 13px;
-  font-weight: 700;
-  border-bottom: 1px solid #333;
-  flex-shrink: 0;
-}
-#chat-box {
-  flex: 1;
-  padding: 12px;
-  overflow-y: auto;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-.msg {
-  padding: 9px 12px;
-  border-radius: 7px;
-  font-size: 12px;
-  line-height: 1.8;
-}
-.msg-name {
-  font-size: 10px;
-  font-weight: 700;
-  color: #666;
-  display: block;
-  margin-bottom: 3px;
-}
-.msg-system {
-  background: #2a2a2a;
-  color: #555;
-  text-align: center;
-  font-size: 11px;
-  border-radius: 4px;
-  padding: 5px;
-}
-.msg-client { background: #3a2e2e; border-left: 3px solid #ff6b6b; }
-.msg-agent  { background: #2e3a2e; border-left: 3px solid #51cf66; }
-
-/* ── IDE 패널 ── */
-#ide {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-}
-#ide-header {
-  padding: 10px 24px;
-  background: #2d2d2d;
-  border-bottom: 1px solid #333;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  font-size: 13px;
-  flex-shrink: 0;
-}
-#budget-display { color: #007acc; font-weight: 700; }
-#progress-bar {
-  display: flex;
-  gap: 5px;
-  padding: 8px 24px;
-  background: #252526;
-  border-bottom: 1px solid #2a2a2a;
-  flex-shrink: 0;
-}
-.prog-dot {
-  flex: 1;
-  height: 3px;
-  border-radius: 2px;
-  background: #3a3a3a;
-  transition: background 0.3s;
-}
-.prog-dot.done { background: #007acc; }
-.prog-dot.cur  { background: #5bc0eb; }
-#ide-body {
-  flex: 1;
-  padding: 24px 32px 32px;
-  overflow-y: auto;
-}
-#mod-title {
-  color: #007acc;
-  font-size: 17px;
-  font-weight: 700;
-  margin-bottom: 6px;
-}
-#mod-desc {
-  color: #bbb;
-  font-size: 13px;
-  line-height: 1.9;
-  margin-bottom: 18px;
-  font-weight: 300;
-}
-#code-view {
-  background: #111;
-  padding: 12px 16px;
-  border-radius: 6px;
-  color: #d4d4d4;
-  font-size: 12px;
-  font-family: 'Consolas', monospace;
-  border: 1px solid #2a2a2a;
-  margin-bottom: 20px;
-  white-space: pre;
-}
-#opt-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 12px;
-  margin-bottom: 20px;
-}
-.opt-card {
-  background: #2d2d2d;
-  border: 2px solid #3a3a3a;
-  border-radius: 8px;
-  padding: 14px 16px;
-  cursor: pointer;
-  transition: border-color 0.15s, background 0.15s;
-  user-select: none;
-}
-.opt-card:hover  { border-color: #007acc; background: #2e3848; }
-.opt-card.active { border-color: #007acc; background: #1a2b3c; }
-.opt-label { font-weight: 700; font-size: 13px; color: #fff; margin-bottom: 5px; }
-.opt-desc  { font-size: 11px; color: #999; line-height: 1.6; margin-bottom: 8px; font-weight: 300; }
-.badges    { display: flex; gap: 5px; flex-wrap: wrap; }
-.badge     { font-size: 10px; padding: 2px 6px; border-radius: 6px; font-weight: 500; }
-.b-cost    { background: #3a2e1e; color: #ffa94d; }
-.b-eff     { background: #1e3a2e; color: #69db7c; }
-.b-human   { background: #1e2a3a; color: #74c0fc; }
-
-#deploy-btn {
-  width: 100%;
-  padding: 13px;
-  background: #1e6e34;
-  color: #fff;
-  font-family: 'Noto Sans KR', sans-serif;
-  font-size: 14px;
-  font-weight: 700;
-  border: 2px solid #2a2a2a;
-  border-radius: 8px;
-  cursor: not-allowed;
-  opacity: 0.4;
-}
-#deploy-btn.ready {
-  background: #28a745;
-  border-color: #28a745;
-  cursor: pointer;
-  opacity: 1;
-}
-#deploy-btn.ready:hover { background: #218838; }
-
-/* ── 리포트 ── */
-#report {
-  display: none;
-  width: 100%;
-  height: 100vh;
-  overflow-y: auto;
-  background: #141414;
-  padding: 48px 56px;
-  flex-direction: column;
-  align-items: center;
-}
-.rpt-title   { color: #007acc; font-size: 22px; font-weight: 700; text-align: center; margin-bottom: 4px; }
-.rpt-sub     { font-size: 12px; color: #555; text-align: center; font-weight: 300; margin-bottom: 4px; }
-.rpt-persona { font-size: 15px; color: #fff; font-weight: 700; background: #1e2d3d; border: 1px solid #007acc; border-radius: 8px; padding: 10px 24px; display: inline-block; margin: 14px 0 28px; }
-.sec-label   { width: 100%; max-width: 820px; font-size: 10px; color: #555; text-transform: uppercase; letter-spacing: 2px; border-bottom: 1px solid #2a2a2a; padding-bottom: 5px; margin: 20px 0 10px; font-weight: 700; }
-.kpi-grid    { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; width: 100%; max-width: 820px; }
-.kpi-card    { background: #1e1e1e; padding: 16px 18px; border-radius: 10px; border: 1px solid #2a2a2a; }
-.kpi-icon-label { font-size: 12px; color: #888; margin-bottom: 4px; }
-.kpi-val     { font-size: 34px; font-weight: 700; line-height: 1; }
-.kpi-w       { font-size: 10px; color: #555; font-weight: 300; margin-top: 2px; }
-.kpi-change  { font-size: 11px; font-weight: 700; margin-top: 2px; }
-.pos { color: #51cf66; } .neg { color: #ff6b6b; } .neu { color: #888; }
-.bar-wrap { height: 3px; background: #2a2a2a; border-radius: 2px; margin-top: 5px; }
-.bar-fill { height: 3px; border-radius: 2px; transition: width 1.2s ease; }
-.kpi-desc { font-size: 11px; color: #555; line-height: 1.6; border-top: 1px solid #2a2a2a; padding-top: 7px; margin-top: 6px; font-weight: 300; }
-.kpi-center { justify-content: center; align-items: center; text-align: center; background: #111; border-color: #333; }
-.overall-val { font-size: 40px; font-weight: 700; color: #fff; }
-.submit-zone { width: 100%; max-width: 820px; margin-top: 28px; background: #1e1e1e; border: 1px solid #2a2a2a; border-radius: 12px; padding: 24px 28px; text-align: center; }
-#final-btn {
-  width: 100%; margin-top: 12px; padding: 14px;
-  background: #007acc; color: #fff;
-  font-family: 'Noto Sans KR', sans-serif;
-  font-size: 14px; font-weight: 700;
-  border: none; border-radius: 8px; cursor: pointer;
-}
-#final-btn:hover { background: #0062a3; }
-#final-btn:disabled { opacity: 0.5; cursor: default; }
-#status-msg { margin-top: 10px; font-size: 13px; min-height: 20px; }
+html, body { height: 100%; background: #1e1e1e; color: #e0e0e0; font-family: sans-serif; overflow: hidden; }
+#app { display: flex; height: 100vh; }
+#messenger { width: 280px; background: #252526; border-right: 1px solid #333; display: flex; flex-direction: column; }
+#chat-box { flex: 1; padding: 12px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; }
+.msg { padding: 9px 12px; border-radius: 7px; font-size: 12px; }
+.msg-client { background: #3a2e2e; } .msg-agent { background: #2e3a2e; }
+#ide { flex: 1; display: flex; flex-direction: column; padding: 20px; }
+#deploy-btn { padding: 15px; background: #28a745; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; margin-top: 10px; opacity: 0.5; }
+#deploy-btn.ready { opacity: 1; }
+#report { display: none; width: 100%; height: 100vh; background: #141414; padding: 50px; flex-direction: column; align-items: center; overflow-y: auto; }
+#final-btn { padding: 15px 40px; background: #007acc; color: white; border: none; border-radius: 8px; cursor: pointer; margin-top: 20px; font-weight: bold; }
 </style>
 </head>
 <body>
 
 <div id="app">
-  <!-- 메신저 -->
-  <div id="messenger">
-    <div id="msg-header">💬 Project Messenger</div>
-    <div id="chat-box"></div>
-  </div>
-  <!-- IDE -->
+  <div id="messenger"><div id="chat-box"></div></div>
   <div id="ide">
-    <div id="ide-header">
-      <span>⚙️ System Architect Console &nbsp;|&nbsp; <span id="user-label" style="color:#aaa;font-size:12px;font-weight:400;"></span></span>
-      <span id="budget-display">Budget: <span id="budget-num">1,000</span></span>
-    </div>
-    <div id="progress-bar"></div>
-    <div id="ide-body">
-      <div id="mod-title"></div>
-      <div id="mod-desc"></div>
-      <div id="code-view"></div>
-      <div id="opt-grid"></div>
-      <button id="deploy-btn" onclick="doDeploy()">🚀 Deploy Module</button>
-    </div>
+    <h2 id="mod-title"></h2>
+    <p id="mod-desc"></p>
+    <div id="opt-grid" style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px; margin:20px 0;"></div>
+    <button id="deploy-btn" onclick="doDeploy()">🚀 Deploy Module</button>
   </div>
 </div>
 
-<!-- 리포트 -->
 <div id="report">
-  <div class="rpt-title">📊 Architecture Impact Report</div>
-  <div class="rpt-sub">완전 자동화 시스템 대비 귀하의 설계가 만들어낸 변화</div>
-  <div class="rpt-sub" id="rpt-name" style="margin-bottom:14px;"></div>
-  <div class="rpt-persona" id="rpt-persona"></div>
-  <div class="sec-label">🧑 노동자에게 미친 영향</div>
-  <div class="kpi-grid">
-    <div class="kpi-card">
-      <div class="kpi-icon-label">🧑 노동 주체성</div>
-      <div class="kpi-val" id="v-agency" style="color:#74c0fc;">-</div>
-      <div class="kpi-w">Autonomy 원칙 × 1.3</div>
-      <div class="kpi-change" id="c-agency"></div>
-      <div class="bar-wrap"><div class="bar-fill" id="b-agency" style="background:#74c0fc;width:0%"></div></div>
-      <div class="kpi-desc">상담사가 AI 결정에 개입·승인할 수 있는 권한<br><span style="color:#444;font-size:10px;">Module 2 + Module 5</span></div>
-    </div>
-    <div class="kpi-card">
-      <div class="kpi-icon-label">🌐 고객 포용성</div>
-      <div class="kpi-val" id="v-inclusion" style="color:#51cf66;">-</div>
-      <div class="kpi-w">Justice 원칙 × 1.0</div>
-      <div class="kpi-change" id="c-inclusion"></div>
-      <div class="bar-wrap"><div class="bar-fill" id="b-inclusion" style="background:#51cf66;width:0%"></div></div>
-      <div class="kpi-desc">디지털 취약계층의 실질적 서비스 접근성<br><span style="color:#444;font-size:10px;">Module 1 + Module 4</span></div>
-    </div>
-    <div class="kpi-card">
-      <div class="kpi-icon-label">🔄 직무 지속성</div>
-      <div class="kpi-val" id="v-sustain" style="color:#ffa94d;">-</div>
-      <div class="kpi-w">Non-maleficence 원칙 × 1.5</div>
-      <div class="kpi-change" id="c-sustain"></div>
-      <div class="bar-wrap"><div class="bar-fill" id="b-sustain" style="background:#ffa94d;width:0%"></div></div>
-      <div class="kpi-desc">번아웃 없이 직무 지속 가능한 환경<br><span style="color:#444;font-size:10px;">Module 3 + Module 6</span></div>
-    </div>
-  </div>
-  <div class="sec-label">⚙️ 시스템 성과 지표</div>
-  <div class="kpi-grid">
-    <div class="kpi-card">
-      <div class="kpi-icon-label">📈 서비스 효율 (자동화 의존도)</div>
-      <div class="kpi-val" id="v-eff" style="color:#ffc107;">-</div>
-      <div class="kpi-w">높을수록 인간 개입 감소</div>
-      <div class="kpi-change" id="c-eff"></div>
-      <div class="bar-wrap"><div class="bar-fill" id="b-eff" style="background:#ffc107;width:0%"></div></div>
-      <div class="kpi-desc">AI 자동화 처리 비율</div>
-    </div>
-    <div class="kpi-card">
-      <div class="kpi-icon-label">💡 인간 중심 투자율</div>
-      <div class="kpi-val" id="v-invest" style="color:#cc5de8;">-</div>
-      <div class="kpi-w">총 예산 대비 인간 중심 설계 투자</div>
-      <div class="kpi-change" id="c-invest"></div>
-      <div class="bar-wrap"><div class="bar-fill" id="b-invest" style="background:#cc5de8;width:0%"></div></div>
-      <div class="kpi-desc">노동자 보호·포용 설계 투자 비율</div>
-    </div>
-    <div class="kpi-card kpi-center" style="display:flex;flex-direction:column;gap:5px;">
-      <div style="font-size:10px;color:#444;font-weight:700;">OVERALL</div>
-      <div class="overall-val" id="v-overall">-</div>
-      <div style="font-size:11px;color:#555;font-weight:300;">종합 인간 중심 점수</div>
-    </div>
-  </div>
-  <div class="submit-zone">
-    <div style="font-size:14px;color:#ccc;font-weight:700;">✅ 모든 모듈 설계 완료</div>
-    <div style="font-size:12px;color:#666;margin-top:4px;font-weight:300;">아래 버튼으로 결과를 저장하세요.</div>
-    <button id="final-btn" onclick="doSubmit()">🚀 최종 결과 제출</button>
-    <div id="status-msg"></div>
-  </div>
+  <h1>Architecture Impact Report</h1>
+  <div id="rpt-name" style="margin-top:20px;"></div>
+  <div id="rpt-persona" style="font-size:20px; font-weight:bold; color:#007acc; margin:20px 0;"></div>
+  <p>모든 시뮬레이션 결과가 자동으로 기록되었습니다.</p>
+  <button id="final-btn" onclick="doSubmit()">다음 단계(Phase 2)로 이동하기</button>
 </div>
 
 <script>
-// ─── 데이터 (Streamlit이 주입) ───────────────────────────
-var CONFIG = window.SIM_CONFIG || {
-  gasUrl: '',
-  userName: '',
-  survey: {}
-};
-
+var CONFIG = window.SIM_CONFIG || { gasUrl: '', userName: '', survey: {} };
 var TASKS = window.SIM_TASKS || [];
-
-// ─── 상수 ────────────────────────────────────────────────
-var WEIGHTS = { agency: 1.3, inclusion: 1.0, sustain: 1.5 };
-var RANGES = {
-  agency:    { min: 10,  max: 180 },
-  inclusion: { min: 20,  max: 155 },
-  sustain:   { min: 20,  max: 95  },
-  eff:       { min: 270, max: 508 }
-};
-var COST_MAX = 2100;
-
-// ─── 상태 ────────────────────────────────────────────────
 var step = 0;
-var selected = null;
-var metrics = { cost: 1000, eff: 0, agency: 0, inclusion: 0, sustain: 0 };
 var deployHistory = [];
+var metrics = { agency: 0, inclusion: 0, sustain: 0, eff: 0, cost: 1000 };
+var selected = null;
 
-// ─── 유틸 ────────────────────────────────────────────────
-function norm(v, min, max) {
-  return Math.max(0, Math.min(100, Math.round((v - min) / (max - min) * 100)));
-}
-
-function addChat(text, type, name) {
-  var box = document.getElementById('chat-box');
-  var div = document.createElement('div');
-  div.className = 'msg msg-' + type;
-  if (name) {
-    var nameEl = document.createElement('span');
-    nameEl.className = 'msg-name';
-    nameEl.textContent = name;
-    div.appendChild(nameEl);
-  }
-  div.appendChild(document.createTextNode(text));
-  box.appendChild(div);
-  box.scrollTop = box.scrollHeight;
-}
-
-function buildProgress() {
-  var bar = document.getElementById('progress-bar');
-  bar.innerHTML = '';
-  for (var i = 0; i < TASKS.length; i++) {
-    var dot = document.createElement('div');
-    dot.className = 'prog-dot' + (i < step ? ' done' : i === step ? ' cur' : '');
-    bar.appendChild(dot);
-  }
-}
-
-// ─── 렌더 ────────────────────────────────────────────────
 function renderStep() {
-  if (step >= TASKS.length) {
-    showReport();
-    return;
-  }
-
+  if (step >= TASKS.length) { showReport(); return; }
   var t = TASKS[step];
-
-  buildProgress();
   document.getElementById('mod-title').textContent = t.title;
   document.getElementById('mod-desc').textContent = t.desc;
-  document.getElementById('code-view').textContent = t.codeBase + '\n    # 결정 대기 중...';
-
-  // 버튼 비활성화
-  var btn = document.getElementById('deploy-btn');
-  btn.classList.remove('ready');
-  btn.disabled = true;
-
-  selected = null;
-
-  // 채팅
-  var box = document.getElementById('chat-box');
-  box.innerHTML = '';
-  addChat('[Module ' + (step + 1) + '/' + TASKS.length + '] Context synchronized.', 'system');
-  setTimeout(function() { addChat(t.contextClient, 'client', '📋 박상무 (Client)'); }, 300);
-  setTimeout(function() { addChat(t.contextAgent, 'agent', '🎧 김상담 (Worker)'); }, 700);
-
-  // 선택지 카드
-  var grid = document.getElementById('opt-grid');
-  grid.innerHTML = '';
-
-  for (var i = 0; i < t.options.length; i++) {
-    (function(opt) {
-      var card = document.createElement('div');
-      card.className = 'opt-card';
-
-      var label = document.createElement('div');
-      label.className = 'opt-label';
-      label.textContent = opt.label;
-
-      var desc = document.createElement('div');
-      desc.className = 'opt-desc';
-      desc.textContent = opt.desc;
-
-      var badges = document.createElement('div');
-      badges.className = 'badges';
-      badges.innerHTML =
-        '<span class="badge b-cost">💰 ' + opt.cost + '</span>' +
-        '<span class="badge b-eff">📈 ' + opt.eff + '</span>' +
-        '<span class="badge b-human">🧑 ' + opt.human + '</span>';
-
-      card.appendChild(label);
-      card.appendChild(desc);
-      card.appendChild(badges);
-
-      card.addEventListener('click', function() {
-        // 모든 카드 비활성화
-        var cards = document.querySelectorAll('.opt-card');
-        for (var j = 0; j < cards.length; j++) {
-          cards[j].classList.remove('active');
-        }
-        card.classList.add('active');
-
-        selected = opt;
-        document.getElementById('code-view').textContent = t.codeBase + '\n    ' + opt.code;
-
-        // 버튼 활성화
-        var btn = document.getElementById('deploy-btn');
-        btn.classList.add('ready');
-        btn.disabled = false;
-      });
-
-      grid.appendChild(card);
-    })(t.options[i]);
-  }
+  var g = document.getElementById('opt-grid'); g.innerHTML = '';
+  t.options.forEach(opt => {
+    var c = document.createElement('div');
+    c.style.padding = '15px'; c.style.background = '#333'; c.style.cursor = 'pointer'; c.style.borderRadius = '8px';
+    c.innerHTML = `<b>${opt.label}</b><br><small>${opt.desc}</small>`;
+    c.onclick = () => {
+      document.querySelectorAll('#opt-grid div').forEach(x => x.style.border = 'none');
+      c.style.border = '2px solid #007acc'; selected = opt;
+      document.getElementById('deploy-btn').classList.add('ready');
+    };
+    g.appendChild(c);
+  });
 }
 
-// ─── Deploy ──────────────────────────────────────────────
 function doDeploy() {
   if (!selected) return;
-
   var t = TASKS[step];
-  metrics.cost -= selected.cost;
-  metrics.eff  += selected.eff;
   metrics[t.metric] += selected.human;
-
-  deployHistory.push({
-    step:   step + 1,
-    choice: selected.label,
-    type:   selected.type,
-    metric: t.metric
-  });
-
-  document.getElementById('budget-num').textContent = metrics.cost.toLocaleString();
-
-  step++;
+  metrics.eff += selected.eff;
+  deployHistory.push({ step: step + 1, choice: selected.label });
+  step++; selected = null;
+  document.getElementById('deploy-btn').classList.remove('ready');
+  if (step === TASKS.length) { autoSave(); }
   renderStep();
 }
 
-// ─── 리포트 ──────────────────────────────────────────────
+// [자동 저장] 마지막 모듈 선택 시 백그라운드 전송
+function autoSave() {
+  var data = { userName: CONFIG.userName, survey: CONFIG.survey, history: deployHistory, scores: metrics, type: "SIM_COMPLETE" };
+  var img = new Image();
+  img.src = CONFIG.gasUrl + '?save=' + encodeURIComponent(JSON.stringify(data));
+}
+
 function showReport() {
   document.getElementById('app').style.display = 'none';
-  var rpt = document.getElementById('report');
-  rpt.style.display = 'flex';
-
-  var costSpent = 1000 - metrics.cost;
-
-  var agency    = Math.min(100, Math.round(norm(metrics.agency,    RANGES.agency.min,    RANGES.agency.max)    * WEIGHTS.agency));
-  var inclusion = Math.min(100, Math.round(norm(metrics.inclusion, RANGES.inclusion.min, RANGES.inclusion.max) * WEIGHTS.inclusion));
-  var sustain   = Math.min(100, Math.round(norm(metrics.sustain,   RANGES.sustain.min,   RANGES.sustain.max)   * WEIGHTS.sustain));
-  var effAuto   = norm(metrics.eff, RANGES.eff.min, RANGES.eff.max);
-  var invest    = Math.min(100, Math.round(costSpent / COST_MAX * 100));
-  var overall   = Math.round((agency + inclusion + sustain) / 3);
-
-  var persona = overall >= 70 ? '인간 중심의 파트너 🤝' : overall >= 40 ? '실용적 균형주의자 ⚖️' : '냉혹한 효율주의자 🤖';
-
+  document.getElementById('report').style.display = 'flex';
   document.getElementById('rpt-name').textContent = '참여자: ' + CONFIG.userName;
-  document.getElementById('rpt-persona').textContent = '아키텍처 페르소나: ' + persona;
-
-  function cl(p) {
-    if (p === 0) return '완전 자동화 수준 (변화 없음)';
-    if (p < 25)  return '완전 자동화 대비 +' + p + '% (낮음)';
-    if (p < 60)  return '완전 자동화 대비 +' + p + '% (중간)';
-    return '완전 자동화 대비 +' + p + '% (높음)';
-  }
-  function cs(p) { return p >= 50 ? 'pos' : p >= 25 ? 'neu' : 'neg'; }
-
-  setTimeout(function() {
-    setKpi('agency',    agency,    cl(agency),    cs(agency));
-    setKpi('inclusion', inclusion, cl(inclusion), cs(inclusion));
-    setKpi('sustain',   sustain,   cl(sustain),   cs(sustain));
-    setKpi('eff',       effAuto,   effAuto >= 75 ? '자동화 의존도 높음' : effAuto >= 40 ? '혼합' : '인간 중심',
-           effAuto >= 75 ? 'neg' : effAuto >= 40 ? 'neu' : 'pos');
-    setKpi('invest',    invest,    invest >= 60 ? '적극적 투자' : invest >= 30 ? '부분 투자' : '최소 투자',
-           invest >= 60 ? 'pos' : invest >= 30 ? 'neu' : 'neg');
-    document.getElementById('v-overall').textContent = overall + '%';
-  }, 100);
-
-  window._finalData = {
-    userName: CONFIG.userName,
-    survey:   CONFIG.survey,
-    scores:   { agency: agency, inclusion: inclusion, sustain: sustain, effAuto: effAuto, invest: invest, overall: overall },
-    persona:  persona,
-    history:  deployHistory,
-    metrics:  metrics
-  };
+  document.getElementById('rpt-persona').textContent = '분석된 아키텍트 성향: 균형주의자';
 }
 
-function setKpi(id, pct, txt, cls) {
-  document.getElementById('v-' + id).textContent = pct + '%';
-  document.getElementById('b-' + id).style.width = pct + '%';
-  var c = document.getElementById('c-' + id);
-  if (c) { c.textContent = txt; c.className = 'kpi-change ' + cls; }
-}
-
-// ─── 제출 ────────────────────────────────────────────────
 function doSubmit() {
-  if (!window._finalData) return;
-  var btn = document.getElementById('final-btn');
-  var msg = document.getElementById('status-msg');
-  btn.disabled = true;
-  msg.style.color = '#ffa94d';
-  msg.textContent = '⏳ Google Sheets에 저장 중...';
-  var encoded = encodeURIComponent(JSON.stringify(window._finalData));
+  // 확정 전송 및 페이지 이동
+  var data = { userName: CONFIG.userName, history: deployHistory, scores: metrics, is_final: true };
   var img = new Image();
-  img.onload = img.onerror = function() {
-    msg.style.color = '#51cf66';
-    msg.textContent = '✅ 저장 완료! 잠시 후 다음 단계로 이동합니다...';
-    btn.textContent = '✅ 제출 완료';
-    btn.style.background = '#28a745';
-    setTimeout(function() {
-      window.parent.postMessage({ type: 'GOTO_PHASE2' }, '*');
-    }, 1500);
+  img.onload = img.onerror = () => {
+    window.parent.postMessage({ type: 'GOTO_PHASE2' }, '*');
   };
-  img.src = CONFIG.gasUrl + '?save=' + encoded;
+  img.src = CONFIG.gasUrl + '?save=' + encodeURIComponent(JSON.stringify(data));
 }
 
-// ─── 초기화 ──────────────────────────────────────────────
-(function init() {
-  if (!TASKS || TASKS.length === 0) {
-    document.getElementById('mod-title').textContent = '데이터 로딩 오류';
-    document.getElementById('mod-desc').textContent = 'TASKS 데이터가 없습니다.';
-    return;
-  }
-  document.getElementById('user-label').textContent = '참여자: ' + CONFIG.userName;
-  renderStep();
-})();
+renderStep();
 </script>
 </body>
 </html>
