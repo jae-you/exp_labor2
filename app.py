@@ -144,10 +144,12 @@ elif st.session_state.page == "sim":
     final_html = sim_html.replace("</head>", inject + "</head>")
     components.html(final_html, height=900, scrolling=True)
     
-    if "sim_result" in st.query_params:
-        st.session_state.sim_result = json.loads(st.query_params["sim_result"])
+    params = st.query_params
+    if "sim_result" in params:
+        st.session_state.sim_result = json.loads(params["sim_result"])
         st.session_state.page = "phase2"
-        st.query_params.clear(); st.rerun()
+        st.query_params.clear() # 파라미터 청소
+        st.rerun()
 
 # PAGE 4–6: Phase 2 (원본 콘텐츠 유지)
 elif st.session_state.page == "phase2":
