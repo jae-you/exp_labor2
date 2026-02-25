@@ -3,55 +3,67 @@
 <head>
 <meta charset="utf-8">
 <style>
-body { background: #1e1e1e; color: #e0e0e0; font-family: sans-serif; padding: 20px; }
-.opt-card { background: #333; padding: 20px; margin: 10px 0; cursor: pointer; border-radius: 8px; border: 1px solid #444; }
-.opt-card:hover { border-color: #007acc; }
-#deploy-btn { padding: 15px 40px; background: #28a745; color: white; border: none; border-radius: 8px; cursor: pointer; margin-top: 20px; font-weight: bold; }
-#report { display: none; text-align: center; margin-top: 100px; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: #1e1e1e; color: #e0e0e0; font-family: sans-serif; overflow: hidden; }
+  #app { display: flex; height: 100vh; padding: 20px; flex-direction: column; align-items: center; justify-content: center; }
+  .opt-card { background: #333; padding: 15px; margin: 10px; cursor: pointer; border-radius: 8px; border: 1px solid #444; width: 300px; text-align: center; }
+  #deploy-btn { padding: 12px 40px; background: #28a745; color: white; border: none; border-radius: 6px; cursor: pointer; margin-top: 20px; font-weight: bold; }
+  #report { display: none; width: 100%; height: 100vh; background: #141414; padding: 40px; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
+  /* 파란 버튼 관련 스타일(submit-zone 등)은 아예 삭제함 */
 </style>
 </head>
 <body>
+
 <div id="app">
   <h2 id="mod-title"></h2>
-  <p id="mod-desc" style="color:#aaa;"></p>
-  <div id="opt-grid"></div>
+  <p id="mod-desc" style="color: #aaa; margin: 10px 0 20px;"></p>
+  <div id="opt-grid" style="display: flex; gap: 10px;"></div>
   <button id="deploy-btn" onclick="doDeploy()">🚀 Deploy Module</button>
 </div>
+
 <div id="report">
-  <h1 style="color:#007acc;">분석 완료</h1>
-  <p>시뮬레이션 데이터가 정리되었습니다.</p>
-  <p>잠시 후 다음 단계(Phase 2)로 자동으로 이동합니다...</p>
+  <h1 style="color: #007acc; margin-bottom: 15px;">📊 Architecture Analysis Complete</h1>
+  <p style="font-size: 18px; color: #fff;">아키텍처 설계 분석이 완료되었습니다.</p>
+  <p style="color: #666; margin-top: 10px;">데이터를 정리하여 Phase 2(설계기술서)로 안전하게 이동합니다...</p>
 </div>
+
 <script>
 var CONFIG = window.SIM_CONFIG || { userName: '' };
 var TASKS = window.SIM_TASKS || [];
-var step = 0; var history = []; var metrics = { agency: 0, inclusion: 0, sustain: 0, eff: 0 }; var selected = null;
+var step = 0; var deployHistory = []; var metrics = { agency: 0, inclusion: 0, sustain: 0, eff: 0 }; var selected = null;
 
 function renderStep() {
-  if (step >= TASKS.length) { finishSim(); return; }
-  var t = TASKS[step]; document.getElementById('mod-title').textContent = t.title;
-  document.getElementById('mod-desc').textContent = t.desc;
+  if (step >= TASKS.length) { showReport(); return; }
+  var t = TASKS[step]; document.getElementById('mod-title').textContent = t.title; document.getElementById('mod-desc').textContent = t.desc;
   var g = document.getElementById('opt-grid'); g.innerHTML = '';
   t.options.forEach(o => {
-    var c = document.createElement('div'); c.className = 'opt-card'; c.innerHTML = `<b>${o.label}</b><br><small>${o.desc}</small>`;
-    c.onclick = () => { document.querySelectorAll('.opt-card').forEach(x=>x.style.borderColor='#444'); c.style.borderColor='#007acc'; selected=o; };
+    var c = document.createElement('div'); c.className = 'opt-card'; c.innerHTML = `<b>${o.label}</b>`;
+    c.onclick = () => { document.querySelectorAll('.opt-card').forEach(x => x.style.borderColor = '#444'); c.style.borderColor = '#007acc'; selected = o; };
     g.appendChild(c);
   });
 }
+
 function doDeploy() {
-  if(!selected) return;
+  if (!selected) return;
   var t = TASKS[step]; metrics[t.metric] += selected.human; metrics.eff += selected.eff;
-  history.push({ step: step + 1, choice: selected.label });
+  deployHistory.push({ step: step + 1, choice: selected.label });
   step++; selected = null; renderStep();
 }
-function finishSim() {
+
+function showReport() {
   document.getElementById('app').style.display = 'none';
-  document.getElementById('report').style.display = 'block';
-  var simResult = JSON.stringify({ history: history, scores: metrics });
-  setTimeout(() => {
-    window.parent.location.href = window.parent.location.pathname + "?sim_result=" + encodeURIComponent(simResult);
-  }, 1500);
+  document.getElementById('report').style.display = 'flex';
+  
+  // [중요] 시뮬레이션 데이터를 JSON으로 변환
+  var simResult = JSON.stringify({ history: deployHistory, scores: metrics });
+  
+  // 2초 뒤에 부모(Streamlit) URL을 변경하면서 데이터를 쿼리 파라미터로 전달
+  setTimeout(function() {
+    var parentUrl = window.parent.location.origin + window.parent.location.pathname;
+    window.parent.location.href = parentUrl + "?sim_result=" + encodeURIComponent(simResult);
+  }, 2000);
 }
+
 renderStep();
 </script>
 </body>
