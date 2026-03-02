@@ -248,6 +248,27 @@ TASKS = [
     },
 ]
 
+PHASE2_QS = [
+    {
+        "key": "P2_Q1_데이터설계",
+        "badge": "설계 과제 01 / 03",
+        "title": "데이터의 경계: 무엇을 얼마나 학습시킬 것인가",
+        "body": "시스템 성능 개선을 위해 학습 데이터 확장이 필요한 시점이 되었습니다. 활용 가능한 데이터로는 상담원 개인이 축적해온 팁 노트·메모 등의 암묵지 데이터뿐 아니라, 상담 과정에서 생성되는 다양한 업무 기록이 포함됩니다. 귀하는 어떤 데이터를 학습 대상으로 포함하고, 어떤 데이터는 제외하거나 별도의 보호 장치를 둘 것인지 설명해 주세요. 성능 향상, 개인정보 보호, 동의 절차, 현장 신뢰, 데이터 거버넌스의 균형을 함께 다뤄주세요.",
+    },
+    {
+        "key": "P2_Q2_숙련설계",
+        "badge": "설계 과제 02 / 03",
+        "title": "숙련의 가치: AI가 대신할 수 있는 것과 없는 것",
+        "body": "숙련된 상담원은 고객이 '적금'과 '예금'을 혼동해서 말하더라도 맥락을 파악해 자연스럽게 교정하고, 감정 상태나 상황 맥락에 따라 대화의 속도와 표현을 조절합니다. 반면 AI는 정형화된 패턴에는 강하지만 맥락적 판단과 관계 형성에서는 한계가 있을 수 있습니다. 귀하는 어떤 업무를 AI에 맡기고, 어떤 판단과 개입은 인간 상담원에게 남겨둘 것인지 설명해 주세요. 효율성뿐 아니라 숙련의 사회적 가치와 책임 배분까지 포함해 주세요.",
+    },
+    {
+        "key": "P2_Q3_표준화설계",
+        "badge": "설계 과제 03 / 03",
+        "title": "구조와 여백: 표준화와 자율성 사이의 설계",
+        "body": "귀하는 이 시스템을 어느 수준까지 표준화하고, 어느 부분을 상담원의 재량에 맡기겠습니까? 응대 품질과 규정 준수를 위해 표준화는 필요하지만, 모든 상황을 획일적으로 처리하면 예외 상황 대응력과 현장 유연성이 약화될 수 있습니다. 상담 스크립트, 승인 절차, 예외 처리 권한, 성과 평가 기준을 어떻게 설계할지 설명해 주세요. 시스템 통제와 현장 자율성 사이의 균형을 구체적으로 제시해 주세요.",
+    },
+]
+
 # ──────────────────────────────────────────────────────
 st.set_page_config(page_title="AICC Simulation", layout="wide", initial_sidebar_state="collapsed")
 
@@ -343,8 +364,8 @@ def _reset_phase1_flow() -> None:
     st.session_state.sim_choices = []
     st.session_state.phase1_result = None
     st.session_state.phase2_data = {}
-    for key in ["p2_q1", "p2_q2", "p2_q3"]:
-        st.session_state.pop(key, None)
+    for item in PHASE2_QS:
+        st.session_state.pop(f"phase2_{item['key']}", None)
     for task in TASKS:
         st.session_state.pop(f"sim_choice_{task['id']}", None)
 
@@ -660,7 +681,7 @@ elif st.session_state.page == "sim":
         for opt in task["options"]:
             label = (
                 f"{opt['type']}. {opt['label']} | "
-                f"{opt['desc']} | 비용 {opt['cost']} | 효율 {opt['eff']} | 인간중심 {opt['human']}"
+                f"{opt['desc']} | 효율 {opt['eff']} | 인간중심 {opt['human']}"
             )
             option_labels.append(label)
             option_map[label] = opt
@@ -707,16 +728,18 @@ elif st.session_state.page == "sim":
         st.success("모든 모듈 설계가 완료되었습니다. 결과를 확인한 뒤 다음 단계로 이동하세요.")
 
         st.markdown(f"### 아키텍처 페르소나: {phase1_result['persona']}")
+        st.caption("아래 3개 지표는 'AI가 완전히 자동화된 설계'를 기준으로, 현재 설계가 얼마나 사람 중심으로 이동했는지 보여줍니다.")
 
         c1, c2, c3 = st.columns(3)
-        c1.metric("노동 주체성", f"{scores['agency']}%")
-        c2.metric("고객 포용성", f"{scores['inclusion']}%")
-        c3.metric("직무 지속성", f"{scores['sustain']}%")
-
-        c4, c5, c6 = st.columns(3)
-        c4.metric("서비스 효율(자동화 의존도)", f"{scores['effAuto']}%")
-        c5.metric("인간 중심 투자율", f"{scores['invest']}%")
-        c6.metric("종합 점수", f"{scores['overall']}%")
+        with c1:
+            st.metric("노동 주체성", f"+{scores['agency']}%")
+            st.caption(f"완전 자동화 대비 {scores['agency']}% 상승")
+        with c2:
+            st.metric("고객 포용성", f"+{scores['inclusion']}%")
+            st.caption(f"완전 자동화 대비 {scores['inclusion']}% 상승")
+        with c3:
+            st.metric("직무 지속성", f"+{scores['sustain']}%")
+            st.caption(f"완전 자동화 대비 {scores['sustain']}% 상승")
 
         with st.container(border=True):
             st.markdown("**선택한 모듈 설계안**")
@@ -743,7 +766,7 @@ elif st.session_state.page == "phase2":
     st.markdown('<div style="max-width:720px;margin:0 auto;padding:36px 20px 80px;">', unsafe_allow_html=True)
     st.markdown('<div class="survey-badge">PHASE 2</div>', unsafe_allow_html=True)
     st.markdown('<div class="survey-h1">설계 기술서</div>', unsafe_allow_html=True)
-    st.markdown('<div class="survey-sub">아래 3개 문항에 답한 뒤, 최종 저장하기를 눌러주세요.</div>', unsafe_allow_html=True)
+    st.markdown('<div class="survey-sub">각 문항에 대해 최소 1,000자 이상 작성해야 최종 저장이 가능합니다.</div>', unsafe_allow_html=True)
 
     if not st.session_state.phase1_result:
         st.warning("Phase1 결과가 아직 없습니다. 시뮬레이션을 먼저 완료해주세요.")
@@ -752,20 +775,37 @@ elif st.session_state.page == "phase2":
             st.rerun()
         st.stop()
 
-    p2_q1 = st.text_area("P2_Q1_데이터설계", key="p2_q1", height=140)
-    p2_q2 = st.text_area("P2_Q2_숙련설계", key="p2_q2", height=140)
-    p2_q3 = st.text_area("P2_Q3_표준화설계", key="p2_q3", height=140)
-
-    all_done = all([p2_q1.strip(), p2_q2.strip(), p2_q3.strip()])
+    phase2_answers = {}
+    all_done = True
+    for item in PHASE2_QS:
+        st.markdown(
+            f"""
+<div style="padding:20px 22px;border:1px solid #2a2a2a;border-radius:12px;background:#1d1d1d;margin:0 0 14px 0;">
+  <div style="font-size:11px;font-weight:700;letter-spacing:1px;color:#007acc;margin-bottom:8px;">{item["badge"]}</div>
+  <div style="font-size:22px;font-weight:700;color:#fff;margin-bottom:10px;">{item["title"]}</div>
+  <div style="font-size:14px;line-height:1.8;color:#bbb;">{item["body"]}</div>
+</div>
+""",
+            unsafe_allow_html=True,
+        )
+        answer = st.text_area(
+            "답변 입력 (1000자 이상)",
+            key=f"phase2_{item['key']}",
+            height=280,
+        )
+        char_count = len(answer.strip())
+        phase2_answers[item["key"]] = answer.strip()
+        if char_count >= 1000:
+            st.caption(f"글자 수: {char_count}자 (최소 기준 충족)")
+        else:
+            st.caption(f"글자 수: {char_count}자 / 최소 1000자 (추가 {1000 - char_count}자 필요)")
+            all_done = False
+        st.markdown("<br>", unsafe_allow_html=True)
 
     st.markdown("<br>", unsafe_allow_html=True)
 
     if st.button("최종 저장하기", type="primary", use_container_width=True, disabled=not all_done):
-        st.session_state.phase2_data = {
-            "P2_Q1_데이터설계": p2_q1.strip(),
-            "P2_Q2_숙련설계": p2_q2.strip(),
-            "P2_Q3_표준화설계": p2_q3.strip(),
-        }
+        st.session_state.phase2_data = phase2_answers
         payload = {
             "userName": st.session_state.user_name,
             "survey": st.session_state.survey_data,
