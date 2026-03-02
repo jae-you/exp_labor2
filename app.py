@@ -6,7 +6,7 @@ import requests
 import streamlit as st
 
 # ══════════════════════════════════════════════════════
-GAS_URL = "https://script.google.com/macros/s/AKfycbxRyEu00v19D2h2mYiUPMTKIHLzFDUlBA8PaciUQdqAS08I_7ryeiWu63fohzCE_CjABw/exec"
+GAS_URL = "https://script.google.com/macros/s/AKfycbwNpsV4wyjNpvw6vCX0nplDKAdqjoK1Y9A9fTWpj6pX-TBRq9ED89TJ2mSPB0iLP_DIYg/exec"
 # ══════════════════════════════════════════════════════
 
 # ✅ IMPORTANT:
@@ -338,14 +338,11 @@ for k, v in [
 
 def _gas_save(payload: dict) -> tuple[bool, str]:
     """
-    GAS는 GET + ?save=encodeURIComponent(JSON) 형태로 받는다고 가정.
-    (너가 올린 GAS 코드 구조에 맞춘 호출)
+    최종 응답은 길이가 길어서 GET 쿼리스트링 한도를 쉽게 넘는다.
+    따라서 GAS 웹앱에 JSON POST로 저장한다.
     """
-    raw = json.dumps(payload, ensure_ascii=False)
-    save = urllib.parse.quote(raw)
-    url = f"{GAS_URL}?save={save}"
     try:
-        r = requests.get(url, timeout=20)
+        r = requests.post(GAS_URL, json=payload, timeout=20)
         ok = (r.status_code == 200) and ("ok" in (r.text or "").lower())
         return ok, f"{r.status_code} / {r.text}"
     except Exception as e:
