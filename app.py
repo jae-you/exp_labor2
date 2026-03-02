@@ -743,16 +743,9 @@ elif st.session_state.page == "sim":
             for item in phase1_result["history"]:
                 st.write(f"Module {item['step']}: {item['choice']}")
 
-        action_left, action_right = st.columns(2)
-        with action_left:
-            if st.button("선택 다시 하기", use_container_width=True):
-                _reset_phase1_flow()
-                st.session_state.page = "sim"
-                st.rerun()
-        with action_right:
-            if st.button("다음으로 넘어가기", type="primary", use_container_width=True):
-                st.session_state.page = "phase2"
-                st.rerun()
+        if st.button("다음으로 넘어가기", type="primary", use_container_width=True):
+            st.session_state.page = "phase2"
+            st.rerun()
 
     st.markdown("</div>", unsafe_allow_html=True)
 
@@ -810,7 +803,8 @@ elif st.session_state.page == "phase2":
             "phase2": st.session_state.phase2_data,
         }
 
-        ok, msg = _gas_save(payload)
+        with st.spinner("잠시 기다려주세요. 응답을 저장하고 있습니다..."):
+            ok, msg = _gas_save(payload)
         if ok:
             st.success("저장 완료!")
             st.session_state.page = "done"
