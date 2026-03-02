@@ -1,12 +1,9 @@
 # app.py
 import json
-import os
 import urllib.parse
-from pathlib import Path
 
 import requests
 import streamlit as st
-import streamlit.components.v1 as components
 
 # ══════════════════════════════════════════════════════
 GAS_URL = "https://script.google.com/macros/s/AKfycbxRyEu00v19D2h2mYiUPMTKIHLzFDUlBA8PaciUQdqAS08I_7ryeiWu63fohzCE_CjABw/exec"
@@ -312,47 +309,11 @@ for k, v in [
     ("survey_data", {}),
     ("phase1_result", None),  # {history, scores}
     ("phase2_data", {}),
+    ("sim_step", 0),
+    ("sim_choices", []),
 ]:
     if k not in st.session_state:
         st.session_state[k] = v
-
-
-def _get_query_param(name: str):
-    """Streamlit 버전 호환용 query param getter"""
-    try:
-        # streamlit >= 1.30
-        qp = st.query_params
-        return qp.get(name)
-    except Exception:
-        qp = st.experimental_get_query_params()
-        v = qp.get(name)
-        if not v:
-            return None
-        return v[0]
-
-
-def _clear_query_params():
-    """Streamlit 버전 호환용 query param clear"""
-    try:
-        st.query_params.clear()
-    except Exception:
-        st.experimental_set_query_params()
-
-
-def _load_sim_html() -> str:
-    # sim.html 경로 탐색 (app.py 기준, 또는 현재 작업 디렉토리)
-    candidates = [
-        Path(__file__).resolve().parent / "sim.html",
-        Path(os.getcwd()) / "sim.html",
-        Path("sim.html"),
-    ]
-    for c in candidates:
-        if c.exists():
-            return c.read_text(encoding="utf-8")
-    st.error("sim.html을 찾을 수 없습니다. app.py와 같은 폴더에 sim.html을 놓아주세요.")
-    st.error(f"탐색한 경로: {[str(x) for x in candidates]}")
-    st.stop()
-
 
 def _gas_save(payload: dict) -> tuple[bool, str]:
     """
@@ -368,6 +329,75 @@ def _gas_save(payload: dict) -> tuple[bool, str]:
         return ok, f"{r.status_code} / {r.text}"
     except Exception as e:
         return False, str(e)
+
+
+def _norm(value: int, min_value: int, max_value: int) -> int:
+    if max_value == min_value:
+        return 0
+    pct = round((value - min_value) / (max_value - min_value) * 100)
+    return max(0, min(100, pct))
+
+
+def _reset_phase1_flow() -> None:
+    st.session_state.sim_step = 0
+    st.session_state.sim_choices = []
+    st.session_state.phase1_result = None
+    st.session_state.phase2_data = {}
+    for key in ["p2_q1", "p2_q2", "p2_q3"]:
+        st.session_state.pop(key, None)
+    for task in TASKS:
+        st.session_state.pop(f"sim_choice_{task['id']}", None)
+
+
+def _build_phase1_result() -> dict:
+    metrics = {"cost": 1000, "eff": 0, "agency": 0, "inclusion": 0, "sustain": 0}
+    history = []
+
+    for idx, picked_type in enumerate(st.session_state.sim_choices):
+        task = TASKS[idx]
+        option = next((opt for opt in task["options"] if opt["type"] == picked_type), None)
+        if option is None:
+            continue
+
+        metrics["cost"] -= option["cost"]
+        metrics["eff"] += option["eff"]
+        metrics[task["metric"]] += option["human"]
+        history.append(
+            {
+                "step": idx + 1,
+                "choice": option["label"],
+                "type": option["type"],
+                "metric": task["metric"],
+            }
+        )
+
+    agency = min(100, round(_norm(metrics["agency"], 10, 180) * 1.3))
+    inclusion = min(100, round(_norm(metrics["inclusion"], 20, 155) * 1.0))
+    sustain = min(100, round(_norm(metrics["sustain"], 20, 95) * 1.5))
+    eff_auto = _norm(metrics["eff"], 270, 508)
+    invest = min(100, round((1000 - metrics["cost"]) / 2100 * 100))
+    overall = round((agency + inclusion + sustain) / 3)
+
+    if overall >= 70:
+        persona = "인간 중심의 파트너"
+    elif overall >= 40:
+        persona = "실용적 균형주의자"
+    else:
+        persona = "냉혹한 효율주의자"
+
+    return {
+        "history": history,
+        "scores": {
+            "agency": agency,
+            "inclusion": inclusion,
+            "sustain": sustain,
+            "effAuto": eff_auto,
+            "invest": invest,
+            "overall": overall,
+        },
+        "persona": persona,
+        "metrics": metrics,
+    }
 
 
 # ════════════════════════════════════════════════════════
@@ -585,6 +615,7 @@ elif st.session_state.page == "survey":
         ):
             st.session_state.survey_data = survey
             st.session_state.user_name = name_input.strip()
+            _reset_phase1_flow()
             st.session_state.page = "sim"
             st.rerun()
 
@@ -592,141 +623,118 @@ elif st.session_state.page == "survey":
 
 
 # ════════════════════════════════════════════════════════
-# PAGE 3: 시뮬레이션 — sim.html + 데이터 주입
-#  - sim.html의 기존 "최종 결과 제출" 버튼을
-#    "다음으로 넘어가기" 버튼으로 덮어써서 phase1 결과만 넘긴다.
-#  - 실제 Google Sheets 저장은 phase2 완료 후에만 수행한다.
+# PAGE 3: Phase 1 — Streamlit 네이티브 시뮬레이션
 # ════════════════════════════════════════════════════════
 elif st.session_state.page == "sim":
-    # 1) sim_result query param 수신 → phase2 이동
-    sim_result_raw = _get_query_param("sim_result")
-    if sim_result_raw and not st.session_state.phase1_result:
-        try:
-            sim_result_decoded = urllib.parse.unquote(sim_result_raw)
-            st.session_state.phase1_result = json.loads(sim_result_decoded)
-            st.session_state.page = "phase2"
-            _clear_query_params()
-            st.rerun()
-        except Exception as e:
-            st.error(f"sim_result 파싱 실패: {e}")
-
-    # 2) sim.html 로드
-    sim_html = _load_sim_html()
-    if not isinstance(sim_html, str) or len(sim_html.strip()) == 0:
-        st.error("sim.html 내용이 비어있습니다.")
-        st.stop()
-
-    config = {
-        "gasUrl": GAS_URL,
-        "userName": st.session_state.user_name,
-        "survey": st.session_state.survey_data,
-    }
-
-    inject = (
-        "<script>\n"
-        "window.SIM_CONFIG = " + json.dumps(config, ensure_ascii=False) + ";\n"
-        "window.SIM_TASKS  = " + json.dumps(TASKS, ensure_ascii=False) + ";\n"
-        "</script>\n"
+    st.markdown('<div style="max-width:960px;margin:0 auto;padding:36px 20px 80px;">', unsafe_allow_html=True)
+    st.markdown('<div class="survey-badge">PHASE 1</div>', unsafe_allow_html=True)
+    st.markdown('<div class="survey-h1">아키텍처 설계 시뮬레이션</div>', unsafe_allow_html=True)
+    st.markdown(
+        '<div class="survey-sub">6개 모듈을 순서대로 선택하고, 결과를 확인한 뒤 다음 단계로 이동하세요.</div>',
+        unsafe_allow_html=True,
     )
 
-    flow_patch = """
-<script>
-(function() {
-  if (window.__SIM_FLOW_PATCH_INSTALLED__) return;
-  window.__SIM_FLOW_PATCH_INSTALLED__ = true;
+    if st.session_state.sim_step < len(TASKS):
+        task_index = st.session_state.sim_step
+        task = TASKS[task_index]
+        progress_pct = int((task_index / len(TASKS)) * 100)
 
-  function goToPhase2() {
-    if (!window._finalData) {
-      alert("아직 시뮬레이션 결과가 준비되지 않았습니다. 모든 모듈을 완료해주세요.");
-      return;
-    }
+        st.progress(progress_pct if progress_pct > 0 else 1, text=f"Module {task_index + 1} / {len(TASKS)}")
+        st.markdown("<br>", unsafe_allow_html=True)
 
-    try {
-      var referrer = document.referrer || "";
-      var parentUrl = referrer ? referrer.split("#")[0].split("?")[0] : "";
-      var simResult = encodeURIComponent(JSON.stringify(window._finalData));
-      if (!parentUrl) {
-        throw new Error("parent_url_missing");
-      }
+        with st.container(border=True):
+            st.markdown(f"### {task['title']}")
+            st.write(task["desc"])
+            st.caption(f"기준 지표: {task['metric']} | 코드 기준점: `{task['codeBase']}`")
 
-      var targetUrl = parentUrl + "?sim_result=" + simResult;
-      window.open(targetUrl, "_top");
-    } catch (e) {
-      console.error("SIM phase2 redirect error:", e);
-      alert("다음 단계로 이동하는 중 오류가 발생했습니다. 다시 시도해주세요.");
-    }
-  }
+            c1, c2 = st.columns(2)
+            with c1:
+                st.markdown("**클라이언트 요구**")
+                st.write(task["contextClient"])
+            with c2:
+                st.markdown("**현장 상담사 우려**")
+                st.write(task["contextAgent"])
 
-  function patchSubmitUi() {
-    var btn = document.getElementById("final-btn");
-    var msg = document.getElementById("status-msg");
-    var zone = document.querySelector(".submit-zone");
-    if (!btn || !msg || !zone || typeof window.doSubmit !== "function") {
-      return false;
-    }
+        option_labels = []
+        option_map = {}
+        for opt in task["options"]:
+            label = (
+                f"{opt['type']}. {opt['label']} | "
+                f"{opt['desc']} | 비용 {opt['cost']} | 효율 {opt['eff']} | 인간중심 {opt['human']}"
+            )
+            option_labels.append(label)
+            option_map[label] = opt
 
-    var infoLines = zone.querySelectorAll("div");
-    if (infoLines.length >= 2) {
-      infoLines[1].textContent = "아래 버튼을 눌러 설계 기술서(Phase 2)로 이동하세요.";
-    }
+        prior_type = None
+        if task_index < len(st.session_state.sim_choices):
+            prior_type = st.session_state.sim_choices[task_index]
+        default_label = None
+        if prior_type:
+            for label, opt in option_map.items():
+                if opt["type"] == prior_type:
+                    default_label = label
+                    break
 
-    btn.textContent = "다음으로 넘어가기";
-    btn.disabled = false;
-    btn.style.background = "#0b84ff";
-
-    window.doSubmit = function() {
-      btn.disabled = true;
-      btn.textContent = "이동 중...";
-      msg.style.color = "#51cf66";
-      msg.textContent = "✅ Phase 1 결과를 확인했습니다. Phase 2로 이동합니다...";
-      goToPhase2();
-    };
-
-    return true;
-  }
-
-  if (!patchSubmitUi()) {
-    var retry = 0;
-    var timer = setInterval(function() {
-      retry += 1;
-      if (patchSubmitUi() || retry >= 40) clearInterval(timer);
-    }, 250);
-  }
-})();
-</script>
-"""
-
-    # 3) </head>, </body> 유무 체크해서 안전하게 주입
-    final_html = None
-    lower = sim_html.lower()
-
-    if "</head>" in lower:
-        idx = lower.find("</head>")
-        with_head = sim_html[:idx] + inject + sim_html[idx:]
-    else:
-        with_head = "<!doctype html><html><head>" + inject + "</head><body>" + sim_html + "</body></html>"
-
-    lower_with_head = with_head.lower()
-    if "</body>" in lower_with_head:
-        idx = lower_with_head.rfind("</body>")
-        final_html = with_head[:idx] + flow_patch + with_head[idx:]
-    else:
-        final_html = with_head + flow_patch
-
-    # 4) 타입/길이 검증
-    if not isinstance(final_html, str):
-        st.error(f"final_html 타입 이상: {type(final_html)}")
-        st.stop()
-
-    if len(final_html) > 2_500_000:
-        st.error(
-            f"final_html이 너무 큽니다({len(final_html)} bytes). "
-            "TASKS/HTML이 너무 길면 components.html이 실패할 수 있어요."
+        picked_label = st.radio(
+            "설계안을 선택하세요",
+            option_labels,
+            index=option_labels.index(default_label) if default_label else 0,
+            key=f"sim_choice_{task['id']}",
         )
-        st.stop()
+        picked = option_map[picked_label]
 
-    # 5) 렌더
-    components.html(final_html, height=900, scrolling=True)
+        st.code(picked["code"], language="python")
+
+        nav_left, nav_right = st.columns([1, 2])
+        with nav_left:
+            if task_index > 0 and st.button("이전 모듈", use_container_width=True):
+                st.session_state.sim_step -= 1
+                st.rerun()
+        with nav_right:
+            if st.button("이 선택으로 다음 모듈", type="primary", use_container_width=True):
+                if task_index < len(st.session_state.sim_choices):
+                    st.session_state.sim_choices[task_index] = picked["type"]
+                else:
+                    st.session_state.sim_choices.append(picked["type"])
+                st.session_state.sim_step += 1
+                st.rerun()
+    else:
+        phase1_result = _build_phase1_result()
+        scores = phase1_result["scores"]
+        st.session_state.phase1_result = phase1_result
+
+        st.progress(100, text=f"Module {len(TASKS)} / {len(TASKS)} 완료")
+        st.success("모든 모듈 설계가 완료되었습니다. 결과를 확인한 뒤 다음 단계로 이동하세요.")
+
+        st.markdown(f"### 아키텍처 페르소나: {phase1_result['persona']}")
+
+        c1, c2, c3 = st.columns(3)
+        c1.metric("노동 주체성", f"{scores['agency']}%")
+        c2.metric("고객 포용성", f"{scores['inclusion']}%")
+        c3.metric("직무 지속성", f"{scores['sustain']}%")
+
+        c4, c5, c6 = st.columns(3)
+        c4.metric("서비스 효율(자동화 의존도)", f"{scores['effAuto']}%")
+        c5.metric("인간 중심 투자율", f"{scores['invest']}%")
+        c6.metric("종합 점수", f"{scores['overall']}%")
+
+        with st.container(border=True):
+            st.markdown("**선택한 모듈 설계안**")
+            for item in phase1_result["history"]:
+                st.write(f"Module {item['step']}: {item['choice']}")
+
+        action_left, action_right = st.columns(2)
+        with action_left:
+            if st.button("선택 다시 하기", use_container_width=True):
+                _reset_phase1_flow()
+                st.session_state.page = "sim"
+                st.rerun()
+        with action_right:
+            if st.button("다음으로 넘어가기", type="primary", use_container_width=True):
+                st.session_state.page = "phase2"
+                st.rerun()
+
+    st.markdown("</div>", unsafe_allow_html=True)
 
 # ════════════════════════════════════════════════════════
 # PAGE 4: Phase 2 + 최종 저장(1회)
