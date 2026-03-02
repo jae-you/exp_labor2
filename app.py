@@ -593,8 +593,9 @@ elif st.session_state.page == "survey":
 
 # ════════════════════════════════════════════════════════
 # PAGE 3: 시뮬레이션 — sim.html + 데이터 주입
-#  - sim.html이 postMessage({type:"SIM_DONE"})를 보내면
-#    브릿지가 query param sim_result로 1회 전환 → phase2로 이동
+#  - sim.html의 기존 "최종 결과 제출" 버튼을
+#    "다음으로 넘어가기" 버튼으로 덮어써서 phase1 결과만 넘긴다.
+#  - 실제 Google Sheets 저장은 phase2 완료 후에만 수행한다.
 # ════════════════════════════════════════════════════════
 elif st.session_state.page == "sim":
     # 1) sim_result query param 수신 → phase2 이동
@@ -628,38 +629,85 @@ elif st.session_state.page == "sim":
         "</script>\n"
     )
 
-    bridge = """
+    flow_patch = """
 <script>
 (function() {
-  if (window.__SIM_BRIDGE_INSTALLED__) return;
-  window.__SIM_BRIDGE_INSTALLED__ = true;
+  if (window.__SIM_FLOW_PATCH_INSTALLED__) return;
+  window.__SIM_FLOW_PATCH_INSTALLED__ = true;
 
-  window.addEventListener("message", function(ev) {
-    if (!ev.data || ev.data.type !== "SIM_DONE") return;
+  function goToPhase2() {
+    if (!window._finalData) {
+      alert("아직 시뮬레이션 결과가 준비되지 않았습니다. 모든 모듈을 완료해주세요.");
+      return;
+    }
 
     try {
-      const payload = ev.data.payload || {};
-      const parentUrl = window.location.origin + window.location.pathname;
-      const simResult = encodeURIComponent(JSON.stringify(payload));
-      window.location.href = parentUrl + "?sim_result=" + simResult;
+      var parentWin = window.parent || window;
+      var parentLoc = parentWin.location;
+      var parentUrl = parentLoc.origin + parentLoc.pathname;
+      var simResult = encodeURIComponent(JSON.stringify(window._finalData));
+      parentWin.location.href = parentUrl + "?sim_result=" + simResult;
     } catch (e) {
-      console.error("SIM bridge error:", e);
-      alert("결과 전달 중 오류가 발생했습니다. 새로고침 후 다시 시도해주세요.");
+      console.error("SIM phase2 redirect error:", e);
+      alert("다음 단계로 이동하는 중 오류가 발생했습니다. 다시 시도해주세요.");
     }
-  }, false);
+  }
+
+  function patchSubmitUi() {
+    var btn = document.getElementById("final-btn");
+    var msg = document.getElementById("status-msg");
+    var zone = document.querySelector(".submit-zone");
+    if (!btn || !msg || !zone || typeof window.doSubmit !== "function") {
+      return false;
+    }
+
+    var infoLines = zone.querySelectorAll("div");
+    if (infoLines.length >= 2) {
+      infoLines[1].textContent = "아래 버튼을 눌러 설계 기술서(Phase 2)로 이동하세요.";
+    }
+
+    btn.textContent = "다음으로 넘어가기";
+    btn.disabled = false;
+    btn.style.background = "#0b84ff";
+
+    window.doSubmit = function() {
+      btn.disabled = true;
+      btn.textContent = "이동 중...";
+      msg.style.color = "#51cf66";
+      msg.textContent = "✅ Phase 1 결과를 확인했습니다. Phase 2로 이동합니다...";
+      goToPhase2();
+    };
+
+    return true;
+  }
+
+  if (!patchSubmitUi()) {
+    var retry = 0;
+    var timer = setInterval(function() {
+      retry += 1;
+      if (patchSubmitUi() || retry >= 40) clearInterval(timer);
+    }, 250);
+  }
 })();
 </script>
 """
 
-    # 3) </head> 유무 체크해서 안전하게 주입
+    # 3) </head>, </body> 유무 체크해서 안전하게 주입
     final_html = None
     lower = sim_html.lower()
 
     if "</head>" in lower:
         idx = lower.find("</head>")
-        final_html = sim_html[:idx] + inject + bridge + sim_html[idx:]
+        with_head = sim_html[:idx] + inject + sim_html[idx:]
     else:
-        final_html = "<!doctype html><html><head>" + inject + bridge + "</head><body>" + sim_html + "</body></html>"
+        with_head = "<!doctype html><html><head>" + inject + "</head><body>" + sim_html + "</body></html>"
+
+    lower_with_head = with_head.lower()
+    if "</body>" in lower_with_head:
+        idx = lower_with_head.rfind("</body>")
+        final_html = with_head[:idx] + flow_patch + with_head[idx:]
+    else:
+        final_html = with_head + flow_patch
 
     # 4) 타입/길이 검증
     if not isinstance(final_html, str):
@@ -683,7 +731,7 @@ elif st.session_state.page == "phase2":
     st.markdown('<div style="max-width:720px;margin:0 auto;padding:36px 20px 80px;">', unsafe_allow_html=True)
     st.markdown('<div class="survey-badge">PHASE 2</div>', unsafe_allow_html=True)
     st.markdown('<div class="survey-h1">설계 기술서</div>', unsafe_allow_html=True)
-    st.markdown('<div class="survey-sub">아래 3개 문항에 답한 뒤, 최종 제출을 눌러주세요.</div>', unsafe_allow_html=True)
+    st.markdown('<div class="survey-sub">아래 3개 문항에 답한 뒤, 최종 저장하기를 눌러주세요.</div>', unsafe_allow_html=True)
 
     if not st.session_state.phase1_result:
         st.warning("Phase1 결과가 아직 없습니다. 시뮬레이션을 먼저 완료해주세요.")
@@ -700,16 +748,17 @@ elif st.session_state.page == "phase2":
 
     st.markdown("<br>", unsafe_allow_html=True)
 
-    if st.button("최종 결과 제출하기", type="primary", use_container_width=True, disabled=not all_done):
+    if st.button("최종 저장하기", type="primary", use_container_width=True, disabled=not all_done):
+        st.session_state.phase2_data = {
+            "P2_Q1_데이터설계": p2_q1.strip(),
+            "P2_Q2_숙련설계": p2_q2.strip(),
+            "P2_Q3_표준화설계": p2_q3.strip(),
+        }
         payload = {
             "userName": st.session_state.user_name,
             "survey": st.session_state.survey_data,
             "phase1": st.session_state.phase1_result,  # {history, scores}
-            "phase2": {
-                "P2_Q1_데이터설계": p2_q1.strip(),
-                "P2_Q2_숙련설계": p2_q2.strip(),
-                "P2_Q3_표준화설계": p2_q3.strip(),
-            },
+            "phase2": st.session_state.phase2_data,
         }
 
         ok, msg = _gas_save(payload)
