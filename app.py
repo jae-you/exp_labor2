@@ -642,11 +642,15 @@ elif st.session_state.page == "sim":
     }
 
     try {
-      var parentWin = window.parent || window;
-      var parentLoc = parentWin.location;
-      var parentUrl = parentLoc.origin + parentLoc.pathname;
+      var referrer = document.referrer || "";
+      var parentUrl = referrer ? referrer.split("#")[0].split("?")[0] : "";
       var simResult = encodeURIComponent(JSON.stringify(window._finalData));
-      parentWin.location.href = parentUrl + "?sim_result=" + simResult;
+      if (!parentUrl) {
+        throw new Error("parent_url_missing");
+      }
+
+      var targetUrl = parentUrl + "?sim_result=" + simResult;
+      window.open(targetUrl, "_top");
     } catch (e) {
       console.error("SIM phase2 redirect error:", e);
       alert("다음 단계로 이동하는 중 오류가 발생했습니다. 다시 시도해주세요.");
