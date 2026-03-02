@@ -6,7 +6,7 @@ import requests
 import streamlit as st
 
 # ══════════════════════════════════════════════════════
-GAS_URL = "https://script.google.com/macros/s/AKfycbwWw6TIjOBAdVz0fc_D2Wq7cFikcAhgsTr6tnNTfQTxx1x6A443OLEsAEfbpcLZeU2r/exec"
+GAS_URL = "https://script.google.com/macros/s/AKfycbxzeKbFGhAjSc-3xFPEPySJ745P2Fd4mu7zyB50qy2Zi-rauavzzErbTN9VtJmxpKMg-w/exec"
 # ══════════════════════════════════════════════════════
 
 # ✅ IMPORTANT:
@@ -676,10 +676,7 @@ elif st.session_state.page == "sim":
         option_labels = []
         option_map = {}
         for opt in task["options"]:
-            label = (
-                f"{opt['type']}. {opt['label']} | "
-                f"{opt['desc']} | 효율 {opt['eff']} | 인간중심 {opt['human']}"
-            )
+            label = f"{opt['type']}. {opt['label']} | {opt['desc']}"
             option_labels.append(label)
             option_map[label] = opt
 
