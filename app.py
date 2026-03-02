@@ -6,7 +6,7 @@ import requests
 import streamlit as st
 
 # ══════════════════════════════════════════════════════
-GAS_URL = "https://script.google.com/macros/s/AKfycbwNpsV4wyjNpvw6vCX0nplDKAdqjoK1Y9A9fTWpj6pX-TBRq9ED89TJ2mSPB0iLP_DIYg/exec"
+GAS_URL = "https://script.google.com/macros/s/AKfycbwWw6TIjOBAdVz0fc_D2Wq7cFikcAhgsTr6tnNTfQTxx1x6A443OLEsAEfbpcLZeU2r/exec"
 # ══════════════════════════════════════════════════════
 
 # ✅ IMPORTANT:
