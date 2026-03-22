@@ -6,7 +6,7 @@ import requests
 import streamlit as st
 
 # ══════════════════════════════════════════════════════
-GAS_URL = "https://script.google.com/macros/s/AKfycbxzeKbFGhAjSc-3xFPEPySJ745P2Fd4mu7zyB50qy2Zi-rauavzzErbTN9VtJmxpKMg-w/exec"
+GAS_URL = "https://script.google.com/macros/s/AKfycbwNpsV4wyjNpvw6vCX0nplDKAdqjoK1Y9A9fTWpj6pX-TBRq9ED89TJ2mSPB0iLP_DIYg/exec"
 # ══════════════════════════════════════════════════════
 
 # ✅ IMPORTANT:
@@ -251,21 +251,24 @@ TASKS = [
 PHASE2_QS = [
     {
         "key": "P2_Q1_데이터설계",
-        "badge": "설계 과제 01 / 03",
-        "title": "데이터의 경계: 무엇을 얼마나 학습시킬 것인가",
-        "body": "시스템 성능 개선을 위해 학습 데이터 확장이 필요한 시점이 되었습니다. 활용 가능한 데이터로는 상담원 개인이 축적해온 팁 노트·메모 등의 암묵지 데이터뿐 아니라, 상담 과정에서 생성되는 다양한 업무 기록이 포함됩니다. 귀하는 어떤 데이터를 학습 대상으로 포함하고, 어떤 데이터는 제외하거나 별도의 보호 장치를 둘 것인지 설명해 주세요. 성능 향상, 개인정보 보호, 동의 절차, 현장 신뢰, 데이터 거버넌스의 균형을 함께 다뤄주세요.",
+        "badge": "기획 과제 01 / 03 · 데이터 정책",
+        "title": "수집 허용/금지 데이터와 동의 정책을 명시하세요",
+        "body": "실무 기획서 관점에서 '무엇을 수집하고 무엇을 금지할지'를 명확히 써주세요. 특히 팁 노트/메모, 통화 로그, QA 평가 데이터, 개인정보가 섞일 수 있는 항목의 처리 기준을 구분해 주세요. 아래 항목을 포함해 작성하세요: (1) 수집 허용 목록, (2) 수집 금지 목록, (3) 동의 방식(필수/선택), (4) 보관 기간/삭제 기준, (5) 데이터 접근 권한.",
+        "template": "1) 목표\\n- 이번 데이터 정책의 목표를 2~3문장으로 작성\\n\\n2) 수집 허용 데이터\\n- 항목명 / 수집 목적 / 처리 방식\\n\\n3) 수집 금지 데이터\\n- 금지 사유와 예외 없음 원칙\\n\\n4) 동의/보관/삭제 정책\\n- 동의 화면 문구, 철회 절차, 보관 기간\\n\\n5) 개발 요청사항\\n- 백엔드/프론트/로그 정책으로 나눠 구현 요청",
     },
     {
         "key": "P2_Q2_숙련설계",
-        "badge": "설계 과제 02 / 03",
-        "title": "숙련의 가치: AI가 대신할 수 있는 것과 없는 것",
-        "body": "숙련된 상담원은 고객이 '적금'과 '예금'을 혼동해서 말하더라도 맥락을 파악해 자연스럽게 교정하고, 감정 상태나 상황 맥락에 따라 대화의 속도와 표현을 조절합니다. 반면 AI는 정형화된 패턴에는 강하지만 맥락적 판단과 관계 형성에서는 한계가 있을 수 있습니다. 귀하는 어떤 업무를 AI에 맡기고, 어떤 판단과 개입은 인간 상담원에게 남겨둘 것인지 설명해 주세요. 효율성뿐 아니라 숙련의 사회적 가치와 책임 배분까지 포함해 주세요.",
+        "badge": "기획 과제 02 / 03 · 상담 플로우",
+        "title": "AI 처리와 상담원 개입의 분기 규칙을 정의하세요",
+        "body": "운영 가능한 규칙으로 작성해 주세요. '어떤 조건이면 AI가 계속 처리하고, 어떤 조건이면 상담원에게 즉시 넘기는지'를 5개 내외 규칙으로 제시하세요. 고객이 불편을 겪는 예외 상황(고령층, 반복 실패, 민감 민원)도 포함하세요. 아래 항목을 포함해 작성하세요: (1) AI 단독 처리 범위, (2) 즉시 이관 조건, (3) 상담원 승인/중단 권한, (4) 예외 플로우.",
+        "template": "1) 목표\\n- AI/상담원 분기 설계의 운영 목표\\n\\n2) 분기 규칙(최대 5개)\\n- 규칙명 / 트리거 / 처리 주체(AI 또는 상담원)\\n\\n3) 상담원 개입권\\n- 승인/수정/중단 가능한 지점\\n\\n4) 예외 처리 시나리오\\n- 실패 반복, 감정 고조, 취약 고객 대응\\n\\n5) KPI\\n- 이관률, 재통화율, 불만 접수율 등",
     },
     {
         "key": "P2_Q3_표준화설계",
-        "badge": "설계 과제 03 / 03",
-        "title": "구조와 여백: 표준화와 자율성 사이의 설계",
-        "body": "귀하는 이 시스템을 어느 수준까지 표준화하고, 어느 부분을 상담원의 재량에 맡기겠습니까? 응대 품질과 규정 준수를 위해 표준화는 필요하지만, 모든 상황을 획일적으로 처리하면 예외 상황 대응력과 현장 유연성이 약화될 수 있습니다. 상담 스크립트, 승인 절차, 예외 처리 권한, 성과 평가 기준을 어떻게 설계할지 설명해 주세요. 시스템 통제와 현장 자율성 사이의 균형을 구체적으로 제시해 주세요.",
+        "badge": "기획 과제 03 / 03 · 운영 가드레일",
+        "title": "표준 운영 규칙과 예외 권한을 함께 설계하세요",
+        "body": "실무 운영 기준으로 작성해 주세요. 표준 스크립트/품질 기준은 유지하되, 상담원이 언제 재량으로 우회할 수 있는지 명시해야 합니다. ACW, 보호 버튼, 관리자 승인, 책임 로그 기준까지 포함해 작성하세요. 아래 항목을 포함해 작성하세요: (1) 표준 규칙, (2) 예외 허용 조건, (3) 보호 장치(ACW/보호 버튼), (4) 모니터링·책임 로그.",
+        "template": "1) 표준 규칙\\n- 반드시 지켜야 하는 운영 규칙 3~5개\\n\\n2) 예외 허용 조건\\n- 우회 가능 조건, 승인 주체, 사후 기록 방식\\n\\n3) 상담원 보호 설계\\n- ACW 시간, 보호 버튼, 재배정 기준\\n\\n4) 모니터링/책임 로그\\n- 어떤 이벤트를 누가 어떻게 기록/검토할지\\n\\n5) 실행 계획\\n- 1차 릴리스 범위와 운영 점검 주기",
     },
 ]
 
@@ -722,18 +725,18 @@ elif st.session_state.page == "sim":
         st.success("모든 모듈 설계가 완료되었습니다. 결과를 확인한 뒤 다음 단계로 이동하세요.")
 
         st.markdown(f"### 아키텍처 페르소나: {phase1_result['persona']}")
-        st.caption("아래 3개 지표는 'AI가 완전히 자동화된 설계'를 기준으로, 현재 설계가 얼마나 사람 중심으로 이동했는지 보여줍니다.")
+        st.caption("아래 3개 지표는 'AI 완전 자동화 설계'를 기준으로, 실무에서 사람 중심 기능이 얼마나 강화됐는지 보여줍니다.")
 
         c1, c2, c3 = st.columns(3)
         with c1:
-            st.metric("노동 주체성", f"+{scores['agency']}%")
-            st.caption(f"완전 자동화 대비 {scores['agency']}% 상승")
+            st.metric("상담원 개입권", f"+{scores['agency']}%")
+            st.caption(f"승인·수정·중단 권한이 완전 자동화 대비 {scores['agency']}% 강화")
         with c2:
-            st.metric("고객 포용성", f"+{scores['inclusion']}%")
-            st.caption(f"완전 자동화 대비 {scores['inclusion']}% 상승")
+            st.metric("고객 연결 보장", f"+{scores['inclusion']}%")
+            st.caption(f"사람 상담 연결/우회 가능성이 완전 자동화 대비 {scores['inclusion']}% 개선")
         with c3:
-            st.metric("직무 지속성", f"+{scores['sustain']}%")
-            st.caption(f"완전 자동화 대비 {scores['sustain']}% 상승")
+            st.metric("상담원 보호 설계", f"+{scores['sustain']}%")
+            st.caption(f"ACW·보호장치 관점의 지속가능성이 완전 자동화 대비 {scores['sustain']}% 개선")
 
         with st.container(border=True):
             st.markdown("**선택한 모듈 설계안**")
@@ -753,7 +756,7 @@ elif st.session_state.page == "phase2":
     st.markdown('<div style="max-width:720px;margin:0 auto;padding:36px 20px 80px;">', unsafe_allow_html=True)
     st.markdown('<div class="survey-badge">PHASE 2</div>', unsafe_allow_html=True)
     st.markdown('<div class="survey-h1">설계 기술서</div>', unsafe_allow_html=True)
-    st.markdown('<div class="survey-sub">각 문항에 대해 최소 1,000자 이상 작성해야 최종 저장이 가능합니다.</div>', unsafe_allow_html=True)
+    st.markdown('<div class="survey-sub">실무 기획서 톤으로 작성해주세요. 각 문항은 최소 1,000자 이상이어야 최종 저장이 가능합니다.</div>', unsafe_allow_html=True)
 
     if not st.session_state.phase1_result:
         st.warning("Phase1 결과가 아직 없습니다. 시뮬레이션을 먼저 완료해주세요.")
@@ -771,12 +774,13 @@ elif st.session_state.page == "phase2":
   <div style="font-size:11px;font-weight:700;letter-spacing:1px;color:#007acc;margin-bottom:8px;">{item["badge"]}</div>
   <div style="font-size:22px;font-weight:700;color:#fff;margin-bottom:10px;">{item["title"]}</div>
   <div style="font-size:14px;line-height:1.8;color:#bbb;">{item["body"]}</div>
+  <div style="font-size:12px;line-height:1.7;color:#8fa6bd;background:#18212b;border:1px solid #2a3a4a;border-radius:8px;padding:10px 12px;margin-top:12px;white-space:pre-line;">권장 작성 템플릿\n{item["template"]}</div>
 </div>
 """,
             unsafe_allow_html=True,
         )
         answer = st.text_area(
-            "답변 입력 (1000자 이상)",
+            "답변 입력 (1000자 이상, 실무 기획서 형식 권장)",
             key=f"phase2_{item['key']}",
             height=280,
         )
