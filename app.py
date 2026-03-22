@@ -395,8 +395,6 @@ def _build_phase1_result() -> dict:
     agency = min(100, round(_norm(metrics["agency"], 10, 180) * 1.3))
     inclusion = min(100, round(_norm(metrics["inclusion"], 20, 155) * 1.0))
     sustain = min(100, round(_norm(metrics["sustain"], 20, 95) * 1.5))
-    eff_auto = _norm(metrics["eff"], 270, 508)
-    invest = min(100, round((1000 - metrics["cost"]) / 2100 * 100))
     overall = round((agency + inclusion + sustain) / 3)
 
     if overall >= 70:
@@ -412,12 +410,14 @@ def _build_phase1_result() -> dict:
             "agency": agency,
             "inclusion": inclusion,
             "sustain": sustain,
-            "effAuto": eff_auto,
-            "invest": invest,
-            "overall": overall,
         },
         "persona": persona,
-        "metrics": metrics,
+        "metrics": {
+            "agency": metrics["agency"],
+            "inclusion": metrics["inclusion"],
+            "sustain": metrics["sustain"],
+            "eff": metrics["eff"],
+        },
     }
 
 
@@ -797,10 +797,26 @@ elif st.session_state.page == "phase2":
 
     if st.button("최종 저장하기", type="primary", use_container_width=True, disabled=not all_done):
         st.session_state.phase2_data = phase2_answers
+        phase1 = st.session_state.phase1_result or {}
+        phase1_payload = {
+            "history": phase1.get("history", []),
+            "scores": {
+                "agency": (phase1.get("scores", {}) or {}).get("agency"),
+                "inclusion": (phase1.get("scores", {}) or {}).get("inclusion"),
+                "sustain": (phase1.get("scores", {}) or {}).get("sustain"),
+            },
+            "persona": phase1.get("persona"),
+            "metrics": {
+                "agency": (phase1.get("metrics", {}) or {}).get("agency"),
+                "inclusion": (phase1.get("metrics", {}) or {}).get("inclusion"),
+                "sustain": (phase1.get("metrics", {}) or {}).get("sustain"),
+                "eff": (phase1.get("metrics", {}) or {}).get("eff"),
+            },
+        }
         payload = {
             "userName": st.session_state.user_name,
             "survey": st.session_state.survey_data,
-            "phase1": st.session_state.phase1_result,  # {history, scores}
+            "phase1": phase1_payload,
             "phase2": st.session_state.phase2_data,
         }
 
