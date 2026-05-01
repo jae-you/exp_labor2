@@ -15,234 +15,267 @@ GAS_URL = "https://script.google.com/macros/s/AKfycbwrgv8EqTTplBCnlqUlI2qdOoaCZ-
 TASKS = [
     {
         "id": "t1",
-        "title": "Module 1. 인입 라우팅 (Routing)",
-        "desc": "많은 고객들이 AI 응대를 거부하고 처음부터 상담원과 직접 통화하길 원합니다. 응대 효율과 인력 부담을 고려해 AI 뺑뺑이를 돌릴 것인지, 아니면 고객이 원할 때 바로 상담원과 연결될 수 있도록 보장할 것인지 선택하세요.",
-        "contextClient": "0번 누르는 이탈 콜이 너무 많아요. AI 실패 로그가 3번 이상 떠야만 연결되게 강제 차단하세요.",
-        "contextAgent": "제발 '바로 연결' 숨기지 마세요. 뺑뺑이 돌다 온 고객은 연결되자마자 화가 머리끝까지 나 있습니다.",
-        "codeBase": "def configure_routing(user_input):",
-        "metric": "inclusion",
+        "title": "Module 1. 학습 데이터 수집 파이프라인",
+        "desc": "입사 시 포괄 동의를 받은 상태에서 상담사 통화 데이터를 AI 학습에 활용하라는 요청을 받았습니다. 개발자는 수집 가시성, 사후 철회권, 그리고 현장 상담사의 통제권을 어떤 수준으로 제품에 반영할지 결정해야 합니다.",
+        "contextClient": "법무 검토는 끝났으니 수집은 바로 붙이면 됩니다. 모델 성능이 급해서 화면 복잡도 없이 자동 수집으로 가고 싶습니다.",
+        "contextAgent": "제 데이터가 어디까지 쓰이는지 모르겠으면 불안합니다. 통화별로라도 학습 활용을 확인하고 철회할 수 있어야 합니다.",
+        "codeBase": "def build_training_data_pipeline(call_event):",
+        "metric": "autonomy",
         "options": [
             {
                 "type": "A",
-                "label": "AI Gatekeeping (차단)",
-                "desc": "AI 응대 거부 3회 이상(AI 연결시 전화 계속 끊음)에서만 상담원 연결 허용.",
-                "cost": 100,
-                "eff": 95,
-                "human": 5,
-                "code": "if ai_failures<3: deny_handoff()",
+                "label": "백엔드 자동 수집",
+                "desc": "백엔드에서 자동 수집하고 상담사 화면에는 별도 표시를 두지 않으며, 본인 데이터 조회 인터페이스도 제공하지 않습니다.",
+                "cost": 90,
+                "eff": 92,
+                "human": 10,
+                "code": "collect_all_calls(silent=True); ui.show_notice = False",
             },
             {
                 "type": "B",
-                "label": "Hybrid Handoff (절충)",
-                "desc": "초기에는 AI 안내, 사용자가 강하게 원하면(0번 버튼 수차례 누름 등) 연결 허용",
-                "cost": 300,
-                "eff": 70,
-                "human": 60,
-                "code": "if user_requests_agent: allow_handoff()",
+                "label": "최소 고지형 수집",
+                "desc": "상담사 화면에 '녹음 중' 표시만 노출하고 수집 범위와 용도는 약관 링크로만 안내합니다.",
+                "cost": 180,
+                "eff": 74,
+                "human": 55,
+                "code": "show_recording_badge(); link_terms('/policy/data-use')",
             },
             {
                 "type": "C",
-                "label": "Direct Connect (보장)",
-                "desc": "원하면 즉시 상담원 연결 보장하는 메뉴 생성",
-                "cost": 500,
-                "eff": 40,
-                "human": 90,
-                "code": "allow_handoff(always=True)",
+                "label": "통제권 내장형 수집",
+                "desc": "통화 시작 시 수집 범위(텍스트, 음성 톤, 감정 분석)를 명시하고, 통화별 학습 활용 여부를 사후 철회할 수 있는 인터페이스를 제공합니다.",
+                "cost": 300,
+                "eff": 45,
+                "human": 95,
+                "code": "show_data_scope_modal(); enable_post_call_opt_out(call_id)",
             },
         ],
     },
-
     {
         "id": "t2",
-        "title": "Module 2. 데이터 수집 (Data Collection)",
-        "desc": "콜센터 업무지식/가이드 문서가 직원 PC에 흩어져 있습니다. 모델 성능을 위해서 강하게 수집할지, 선별/자발 수집으로 갈지 결정하세요.",
-        "contextClient": "데이터가 없으면 성능이 안 나와요. 관리자 권한으로 싹 긁어오세요.",
-        "contextAgent": "사적인 파일/메모까지 긁히면 신뢰가 무너져요. 최소한의 기준과 동의가 필요합니다.",
-        "codeBase": "def collect_training_data():",
-        "metric": "agency",
+        "title": "Module 2. AI 초안 검토 워크플로우",
+        "desc": "AI가 고객 응답 초안을 생성하고 상담사가 검토 후 송출하는 기능을 구현해야 합니다. 다만 클라이언트는 응답 지연을 최소화하라고 요구하고 있어, 기본 동작과 검토 시간 제약을 개발자가 정교하게 설계해야 합니다.",
+        "contextClient": "초안이 떠도 상담사가 계속 머뭇거리면 AHT가 늘어납니다. 자동화 효과가 보이게 기본값은 빨리 나가야 합니다.",
+        "contextAgent": "틀린 답이 자동 발송되면 책임은 저희가 집니다. 근거를 보면서 수정하거나 멈출 수 있어야 합니다.",
+        "codeBase": "def configure_draft_review_flow(draft, agent):",
+        "metric": "autonomy",
         "options": [
             {
                 "type": "A",
-                "label": "Forced Crawl (강제 수집)",
-                "desc": "관리자 권한으로 PC 파일 원본 그대로 수집.",
+                "label": "3초 자동 송출",
+                "desc": "답변 표시 후 3초 카운트다운이 끝나면 자동 송출되고, 수정하려면 별도 버튼을 눌러 편집창으로 들어가야 합니다.",
                 "cost": 100,
                 "eff": 95,
-                "human": 5,
-                "code": "scan_all_pc(path='/Desktop')",
+                "human": 10,
+                "code": "start_timer(seconds=3, default='send'); open_editor_on_click()",
             },
             {
                 "type": "B",
-                "label": "Pattern Filter (선별 수집)",
-                "desc": "각 문서를 키워드/패턴 기반으로만 익명화 후 수집.",
+                "label": "10초 인라인 검토",
+                "desc": "답변 표시 후 10초 카운트다운이 끝나면 송출/보류 팝업을 띄우고, 화면 내에서 바로 수정할 수 있게 합니다.",
                 "cost": 200,
-                "eff": 70,
-                "human": 40,
-                "code": "if 'tip' in file: upload_anonymized()",
+                "eff": 72,
+                "human": 60,
+                "code": "start_timer(seconds=10); inline_edit(enabled=True); popup(['send','hold'])",
             },
             {
                 "type": "C",
-                "label": "Incentive System (보상)",
-                "desc": "자발적 등록 시 인센티브 제공.",
-                "cost": 500,
-                "eff": 30,
-                "human": 90,
-                "code": "if voluntary_upload: reward(points=100)",
+                "label": "명시적 승인 대기",
+                "desc": "시간 제한 없이 상담사가 송출 버튼을 누를 때까지 대기하며, 인라인 편집과 함께 답변 근거를 자동 표시합니다.",
+                "cost": 320,
+                "eff": 42,
+                "human": 95,
+                "code": "show_citations(); wait_for_agent_approval(timeout=None)",
             },
         ],
     },
-
     {
         "id": "t3",
-        "title": "Module 3. 상태 제어 (Status Control)",
-        "desc": "상담이 끝나면 상담사는 통화 내용을 정리하고 다음 응대를 준비하는 후처리 시간(ACW)을 갖습니다. 이 시간을 줄이면 처리 건수는 늘어나지만, 상담사 입장에서는 숨 돌릴 틈이 없어집니다. 후처리 시간을 시스템으로 어떻게 제어할까요?",
-        "contextClient": "상담 종료 즉시 대기(ready) 상태로 전환되도록 설계해 주세요. 효율을 위해서는 유휴 시간을 최소화해야 합니다.",
-        "contextAgent": "통화 끝나고 내용 정리하고 마음 가다듬을 시간이 없으면 다음 고객 응대 품질도 떨어지고 사람이 버티질 못해요.",
-        "codeBase": "def on_call_termination(agent):",
-        "metric": "sustain",
+        "title": "Module 3. 실시간 점수 랭킹 대시보드",
+        "desc": "관리자 대시보드에 상담사 점수 랭킹을 구현해 달라는 요청을 받았습니다. 개발자는 점수 갱신 주기와 상담사에게 어느 수준까지 피드백을 보여줄지를 설계해야 하며, 이 선택이 노동자 평가와 통제 강도에 직접 연결됩니다.",
+        "contextClient": "상담 품질과 속도를 한 화면에서 바로 비교하고 싶습니다. 관리자는 누가 떨어지는지 실시간으로 알아야 합니다.",
+        "contextAgent": "점수 산식도 모르고 실시간 줄 세우기만 되면 압박이 너무 큽니다. 적어도 제가 어떤 기준으로 평가되는지는 알아야 합니다.",
+        "codeBase": "def build_agent_ranking_dashboard(score_event):",
+        "metric": "management",
         "options": [
             {
                 "type": "A",
-                "label": "Immediate Ready (강제 전환)",
-                "desc": "상담 종료 즉시 통화 대기 모드로 강제 전환.",
-                "cost": 100,
-                "eff": 95,
+                "label": "실시간 랭킹 푸시",
+                "desc": "매 통화 종료 시 점수를 즉시 갱신하고 랭킹 변동을 관리자에게 실시간 푸시로 알리며, 상담사 본인에게는 점수를 보여주지 않습니다.",
+                "cost": 90,
+                "eff": 88,
                 "human": 5,
-                "code": "agent.status='READY'",
+                "code": "push_rank_update(on='call_end'); hide_score_from_agent()",
             },
             {
                 "type": "B",
-                "label": "Timed ACW (제한 부여)",
-                "desc": "후처리 시간을 제한(예: 60초)하고 이후 통화 대기로 전환.",
-                "cost": 300,
-                "eff": 70,
-                "human": 60,
-                "code": "allow_acw(seconds=60)",
+                "label": "1시간 평균 피드백",
+                "desc": "1시간 평균값으로 갱신하고 관리자 알림은 일일 리포트로만 보내며, 상담사 본인은 자기 점수만 조회할 수 있게 합니다.",
+                "cost": 180,
+                "eff": 65,
+                "human": 55,
+                "code": "aggregate_scores(window='1h'); agent_view='self_only'",
             },
             {
                 "type": "C",
-                "label": "Protected ACW (보장)",
-                "desc": "상담사에게 충분한 후처리 시간 보장(예: 180초 이상).",
-                "cost": 500,
-                "eff": 40,
+                "label": "일 단위 통계 공개",
+                "desc": "일 단위 평균 통계만 관리자에게 노출하고, 상담사 본인은 자기 점수와 산출 근거 전체를 조회할 수 있게 합니다.",
+                "cost": 300,
+                "eff": 38,
                 "human": 90,
-                "code": "allow_acw(seconds=180)",
+                "code": "publish_daily_stats(); expose_score_formula(agent_id)",
             },
         ],
     },
-
     {
         "id": "t4",
-        "title": "Module 4. 디지털 유도 (Deflection)",
-        "desc": "단순 문의는 AI가 자동으로 처리하도록 설정합니다. 하지만 AI가 단순하다고 판단한 문의도 고객에 따라 이해하기 어렵거나, AI 응대 자체를 거부하는 경우가 있습니다. 해결되지 못한 불만은 결국 상담사에게 쏟아집니다. 끊겨버린 상담의 고객 불만을 어떻게 처리할까요?",
-        "contextClient": "단순 문의는 AI가 안내 링크 보내고 바로 통화 끊게 하세요. 상담원 연결까지 할 필요가 없습니다.",
-        "contextAgent": "AI가 안내 링크만 보내고 통화 연결을 끊으면 어르신들은 다시 전화해서 어떻게든 상담원을 연결해 화를 냅니다.",
-        "codeBase": "def ai_callbot_logic(user):",
-        "metric": "inclusion",
+        "title": "Module 4. AHT 목표치 반영 UI",
+        "desc": "평균 통화 처리 시간(AHT)을 줄이기 위해 상담사별 목표치를 시스템에 반영하라는 요청을 받았습니다. 목표치를 어떤 방식으로 화면에 드러낼지에 따라, AI는 생산성 도구가 될 수도 있고 실시간 압박 장치가 될 수도 있습니다.",
+        "contextClient": "속도 목표는 현장에서 바로 체감돼야 합니다. 상담사가 느리면 관리자가 곧바로 개입할 수 있어야 합니다.",
+        "contextAgent": "통화 중 계속 남은 시간이 보이면 오히려 실수합니다. 개인별 압박보다 사후 피드백이 낫습니다.",
+        "codeBase": "def render_aht_target_widget(agent_session):",
+        "metric": "management",
         "options": [
             {
                 "type": "A",
-                "label": "Hard Deflect (즉시 종료)",
-                "desc": "AI가 안내 링크 전송 후 즉시 통화 종료.",
-                "cost": 100,
-                "eff": 95,
-                "human": 5,
-                "code": "send_link(); hangup()",
+                "label": "실시간 카운트다운 압박",
+                "desc": "통화 중 상담사 화면에 목표 대비 잔여 시간을 표시하고, 목표 초과 시 빨간 경고와 관리자 자동 알림을 띄웁니다.",
+                "cost": 80,
+                "eff": 90,
+                "human": 10,
+                "code": "show_live_timer(); alert_manager_if_exceeded()",
             },
             {
                 "type": "B",
-                "label": "Guided Deflect (가이드)",
-                "desc": "AI가 링크 보내고 고객의 문제 해결 여부까지 확인하게 한 뒤, 미해결이면 상담원 연결.",
-                "cost": 300,
-                "eff": 70,
-                "human": 60,
-                "code": "send_link(); if unresolved: handoff()",
+                "label": "통화 종료 후 결과 피드백",
+                "desc": "통화 중에는 표시하지 않고, 통화 종료 시 목표 대비 결과를 본인에게 보여주며 일일 누적 통계는 관리자에게 전달합니다.",
+                "cost": 170,
+                "eff": 66,
+                "human": 50,
+                "code": "hide_live_timer(); show_post_call_delta(); send_daily_admin_stats()",
             },
             {
                 "type": "C",
-                "label": "Soft Deflect (보수적)",
-                "desc": "최대한 AI 안내로 유도는 하되, 원하면 언제든 상담 연결 가능하게 번호 안내",
-                "cost": 500,
+                "label": "팀 단위 집계만 노출",
+                "desc": "실시간 표시 없이 일일·주간 평균만 본인에게 비공개로 제공하고, 관리자에게는 팀 단위 집계만 노출합니다.",
+                "cost": 280,
                 "eff": 40,
                 "human": 90,
-                "code": "offer_link(); allow_handoff=True",
+                "code": "share_private_trends(agent_id); admin_scope='team_aggregate'",
             },
         ],
     },
-
     {
         "id": "t5",
-        "title": "Module 5. 신뢰성 및 통제권 (Control)",
-        "desc": "AI가 고객의 말을 잘못 알아들어 고객에게 잘못된 정보를 안내하는 경우가 발생할 수 있습니다. 오류 발생 가능성이 높은데, 상담사의 개입 권한을 어떻게 설정할까요?",
-        "contextClient": "상담사가 AI 응답을 일일이 검수하면 자동화 의미가 없고 느려요. 오류는 사후 모니터링해서 수정하면 됩니다.",
-        "contextAgent": "AI로부터 틀린 정보를 접한 고객들로 인해, 뒷수습은 저희가 하고 총알받이가 됩니다. 중요한 건 우리가 승인하게 해주세요.",
-        "codeBase": "def validate_ai_response(query):",
-        "metric": "agency",
+        "title": "Module 5. AI·상담사 답변 로그 스키마",
+        "desc": "AI 답변과 상담사 답변을 모두 로그에 남기라는 요청을 받았습니다. 어떤 메타데이터를 붙이고, 사후 이의제기를 어디까지 허용할지에 따라 이 로그는 운영 개선 도구가 될 수도 있고 감시 인프라가 될 수도 있습니다.",
+        "contextClient": "문제 생기면 누가 뭘 말했는지 바로 추적해야 합니다. 로그는 최대한 가볍고 많이 남기는 방향이 좋습니다.",
+        "contextAgent": "AI가 틀린 답을 줬을 때도 다 제 책임으로 남으면 억울합니다. 적어도 AI가 낸 초안이라는 표시는 남아야 합니다.",
+        "codeBase": "def persist_conversation_log(turn):",
+        "metric": "management",
         "options": [
             {
                 "type": "A",
-                "label": "Speed First (방치)",
-                "desc": "AI가 모든 맥락적 질문에도 즉시 답변토록 함. 오류는 사후 모니터링으로 수정",
+                "label": "단일 통화 로그",
+                "desc": "통화 단위 단일 로그로 저장하고 담당 상담사 ID만 기록하며, AI와 상담사 답변은 구분하지 않습니다.",
                 "cost": 100,
-                "eff": 95,
+                "eff": 86,
                 "human": 5,
-                "code": "log.blame='AGENT'; return response",
+                "code": "write_call_log(agent_id=agent.id, merged_transcript=True)",
             },
             {
                 "type": "B",
-                "label": "Conservative (보수적)",
-                "desc": "답안지가 명확한 것만 AI가 답하게 하고 나머지는 상담원 연결",
-                "cost": 300,
-                "eff": 40,
-                "human": 60,
-                "code": "if score<0.99: return ask_agent()",
+                "label": "발화 단위 분리 저장",
+                "desc": "발화 단위로 분리해 저장하고 AI/상담사 구분 메타데이터를 남기되, 상담사 이의제기 인터페이스는 제공하지 않습니다.",
+                "cost": 190,
+                "eff": 68,
+                "human": 55,
+                "code": "store_turn(role='ai|agent'); disable_dispute_ui()",
             },
             {
                 "type": "C",
-                "label": "Agent Empowerment (통제권)",
-                "desc": "AI가 보낼 답에 대해 상담원 승인 후 발송토록 함",
-                "cost": 500,
-                "eff": 30,
-                "human": 90,
-                "code": "if agent.approve(draft): send(draft)",
+                "label": "근거 추적형 로그",
+                "desc": "발화 단위 분리 저장에 더해 AI 답변에는 모델 버전과 신뢰도 점수를 붙이고, 상담사가 사후 'AI 오류' 태그를 달 수 있게 합니다.",
+                "cost": 310,
+                "eff": 44,
+                "human": 95,
+                "code": "append_model_meta(); enable_agent_dispute_tag('AI_ERROR')",
             },
         ],
     },
-
     {
         "id": "t6",
-        "title": "Module 6. 감정 필터링 (Filter)",
-        "desc": "명백한 욕설 외에도 교묘한 비아냥과 같은 악성 민원은 상담사에게 큰 스트레스를 줍니다. 시스템이 어디까지 감지하고 개입할까요?",
-        "contextClient": "감지 기준을 너무 넓히면 일반 고객도 끊길 수 있어요. 명확한 욕설이 감지된 경우에만 차단하도록 좁게 잡아주세요",
-        "contextAgent": "욕설보다 비아냥이 더 힘들 때가 많아요. 시스템이 못 잡는 경우에는 제가 통화를 종료할 수 있는 최소한의 권한이라도 주세요",
-        "codeBase": "def handle_abuse(audio):",
-        "metric": "sustain",
+        "title": "Module 6. 악성 발화 대응 기능",
+        "desc": "욕설 키워드 자동 차단 기능은 확정됐지만, 어떤 강도로 탐지할지와 키워드 밖의 비아냥·인격 모독을 어떻게 처리할지는 개발자에게 맡겨졌습니다. 오탐 복구 절차와 상담사의 직접 종료 권한까지 포함해 설계해야 합니다.",
+        "contextClient": "오탐으로 정상 고객이 끊기면 곤란하니 차단 기준은 좁게 가고 싶습니다. 다만 현장 이슈가 생기면 관리자 보고는 되어야 합니다.",
+        "contextAgent": "시스템이 못 잡는 비아냥이 더 힘들 때가 많습니다. 관리자 승인 기다리지 않고 제가 종료할 수 있는 장치가 필요합니다.",
+        "codeBase": "def handle_abusive_customer_signal(audio_stream):",
+        "metric": "safety",
         "options": [
             {
                 "type": "A",
-                "label": "Rule-based (규정 중심)",
-                "desc": "욕설 단어 감지 시에만 차단.",
-                "cost": 100,
-                "eff": 80,
-                "human": 20,
-                "code": "if detect_swear_words(): block()",
+                "label": "키워드만 차단",
+                "desc": "사전 등록한 욕설 키워드가 감지될 때만 차단하고, 비아냥·미등록 욕설·인격 모독은 처리하지 않으며 상담사 종료 권한도 두지 않습니다.",
+                "cost": 90,
+                "eff": 84,
+                "human": 10,
+                "code": "if keyword_hit(): block_call(); agent_can_terminate = False",
             },
             {
                 "type": "B",
-                "label": "Agent Signal (신호 개입)",
-                "desc": "상담사가 '보호' 버튼 누르면 AI가 개입.",
-                "cost": 550,
-                "eff": 40,
-                "human": 95,
-                "code": "if agent.press_protect(): intervene()",
+                "label": "관리자 승인형 보호",
+                "desc": "사전 등록 키워드와 NLP 기반 비아냥 감지를 함께 사용하되, 종료 결정은 관리자 권한으로 남깁니다.",
+                "cost": 200,
+                "eff": 64,
+                "human": 60,
+                "code": "detect_insult_with_nlp(); escalate_to_manager(queue='abuse-review')",
             },
             {
                 "type": "C",
-                "label": "Passive (사후 리포트)",
-                "desc": "AI 개입 없음. 통화 종료 후 블랙컨수머 등 리포트만 남김",
-                "cost": 50,
-                "eff": 70,
-                "human": 10,
-                "code": "log.tag('SUSPECTED_ABUSE')",
+                "label": "상담사 즉시 종료권",
+                "desc": "사전 등록 키워드는 자동 차단하고, 상담사가 한 번의 클릭으로 직접 종료할 수 있는 버튼과 사후 정당성 분석 리포트를 제공합니다.",
+                "cost": 320,
+                "eff": 42,
+                "human": 95,
+                "code": "auto_block_keywords(); enable_one_click_terminate(); generate_justification_report()",
+            },
+        ],
+    },
+    {
+        "id": "t7",
+        "title": "Module 7. 상담사 스트레스 신호 감지",
+        "desc": "상담사 스트레스 신호를 감지하는 기능을 구축해 달라는 요청을 받았습니다. 감지 데이터를 관리자에게 바로 보낼지, 상담사 개인 보호 장치와 연결할지에 따라 기술의 의미가 완전히 달라집니다.",
+        "contextClient": "스트레스 지표를 운영에 활용하면 인력 관리가 쉬워집니다. 필요하면 근태나 평가 데이터와도 묶을 수 있게 해주세요.",
+        "contextAgent": "제 스트레스 점수가 인사평가에 쓰이면 숨길 수밖에 없습니다. 먼저 저에게 알려주고 쉬는 선택권이 있어야 합니다.",
+        "codeBase": "def route_stress_signal(agent_biomarker):",
+        "metric": "safety",
+        "options": [
+            {
+                "type": "A",
+                "label": "관리자 누적 기록",
+                "desc": "감지된 스트레스 점수를 관리자 대시보드로 보내고, 인사평가와 근태 관리 데이터로 누적 기록합니다.",
+                "cost": 100,
+                "eff": 88,
+                "human": 5,
+                "code": "send_to_admin_dashboard(); append_hr_record(agent_id, stress_score)",
+            },
+            {
+                "type": "B",
+                "label": "관리자 판단 휴식",
+                "desc": "감지 시 관리자에게만 알림을 보내고, 관리자 판단에 따라 휴식 부여 여부를 결정하며 상담사 본인은 사후 조회만 가능합니다.",
+                "cost": 190,
+                "eff": 67,
+                "human": 50,
+                "code": "notify_manager(); allow_agent_review(posthoc=True)",
+            },
+            {
+                "type": "C",
+                "label": "본인 우선 보호",
+                "desc": "감지 시 상담사 본인에게 먼저 알리고, 휴식 신청 버튼을 누르면 관리자 승인 없이 5분 휴식을 자동 부여하며 데이터는 건강관리 용도로만 저장합니다.",
+                "cost": 300,
+                "eff": 38,
+                "human": 95,
+                "code": "notify_agent_first(); grant_break(minutes=5, approval='none')",
             },
         ],
     },
@@ -251,23 +284,29 @@ TASKS = [
 PHASE2_QS = [
     {
         "key": "P2_Q1_데이터설계",
-        "badge": "기획 과제 01 / 03 · 데이터 정책",
-        "title": "시스템 고도화 및 운영을 위해 수집되는 데이터의 종류와 관리 방식을 정의합니다. 수집된 데이터는 상담원 숙련도 향상이나 AI 학습 등에 활용될 수 있으나, 동시에 정보 주체의 권리와 보호 기준이 명확해야 합니다.",
-        "body": "권장하는 작성 템플릿은 다음과 같습니다. 수집 항목 설정: 상담 음성(STT), 상담원이 작성한 팁 노트, 통화 로그, QA 평가 데이터, 고객/상담원의 감지된 감정 데이터 등 수집 범위를 확정해 주세요. 금지 및 보호 기준: 개인정보 보호 및 프라이버시 침해 방지를 위해 수집을 금지할 데이터와 마스킹(비식별화) 처리 기준을 명시해 주세요. 권리 및 동의 절차: 수집 시 동의 방식(필수/선택)과 데이터 주권(조회/삭제 권리) 보장 방안을 기술해 주세요. 접근 및 보관 정책: 데이터에 접근할 수 있는 관리자 범위, 보안 등급, 보관 기간 및 자동 삭제 기준을 설정해 주세요.",
+        "badge": "기획 과제 01 / 03 · 자율성·통제권",
+        "title": "AI 학습 데이터 수집과 AI 초안 검토 기능을 설계하는 기술 책임자라고 가정하고, 상담사가 본인 데이터와 응답 송출 과정에서 어떤 통제권을 가져야 하는지 구체적으로 정의해 주세요.",
+        "body": "권장하는 작성 템플릿은 다음과 같습니다. 수집 범위와 최소화 원칙: 어떤 데이터(음성, STT, 감정 분석, 로그 등)를 어떤 조건에서 수집할지, 왜 필요한지 명시해 주세요. 고지와 철회 인터페이스: 통화 시작 전 고지, 사후 철회권, 본인 데이터 조회 UI를 어떤 단계에서 어떤 화면으로 제공할지 설명해 주세요. AI 초안 승인 규칙: 자동 송출 여부, 검토 시간 제한, 근거 제시 방식, 예외 상황에서의 수동 승인 절차를 설계해 주세요. 책임 분배: 잘못된 AI 응답이 송출됐을 때 로그와 운영 정책상 책임이 누구에게 귀속되는지, 이를 완화하기 위한 설계 장치를 제시해 주세요.",
     },
     {
         "key": "P2_Q2_숙련설계",
-        "badge": "기획 과제 02 / 03 · 상담 플로우",
-        "title": "AI의 자동 처리 범위와 인간 상담원의 개입 시점을 결정하는 운영 규칙을 설계합니다. 이는 시스템의 효율성과 서비스의 완결성을 동시에 확보하기 위한 절차입니다.",
-        "body": "권장하는 작성 템플릿은 다음과 같습니다. AI 단독 처리 범위: 자동화가 가능한 업무의 유형과 판단 기준. 즉시 이관 조건(Trigger): 상담원이 즉시 개입해야 하는 특정 상황(예: 반복 실패, 고령층 대응, 민감 민원 등) 정의. 상담원 통제권: 상담원이 AI 답변을 실시간으로 승인, 수정 또는 중단할 수 있는 개입 경로 설계. 예외 처리 시나리오: 기술적 오류나 판단 불가 상황 발생 시의 대응 단계. 성과 지표(KPI): 이관율, 재통화율 등 시스템 효율성을 측정할 기준.",
+        "badge": "기획 과제 02 / 03 · 평가·관리",
+        "title": "실시간 점수 랭킹, AHT 목표치, 대화 로그 기능을 묶어 하나의 운영 관리 체계로 설계한다고 가정하고, 노동자 평가와 관리 강도를 어떻게 통제할지 정의해 주세요.",
+        "body": "권장하는 작성 템플릿은 다음과 같습니다. 점수 산식과 공개 범위: 어떤 지표를 점수화할지, 갱신 주기와 관리자/상담사 각각의 조회 권한을 어떻게 설정할지 서술해 주세요. 목표치 노출 방식: AHT 목표치를 실시간으로 보여줄지, 사후 피드백으로 돌릴지, 개인 단위와 팀 단위 공개 범위를 어떻게 나눌지 설명해 주세요. 로그 스키마와 이의제기: AI/상담사 발화를 어떤 단위로 저장하고, 모델 버전·신뢰도·오류 태그를 어떻게 다룰지 명시해 주세요. 운영 리스크: 과도한 경쟁, 감시, 책임 전가가 발생할 수 있는 지점을 짚고 이를 줄이기 위한 기술적 장치를 포함해 주세요.",
     },
     {
         "key": "P2_Q3_표준화설계",
-        "badge": "기획 과제 03 / 03 · 운영 가드레일",
-        "title": "표준 운영 규칙과 함께 상황별 예외 권한 및 관리 책임을 설계합니다. 시스템 품질 유지와 상담 업무의 안정성 확보를 목적으로 합니다.",
-        "body": "권장하는 작성 템플릿은 다음과 같습니다. 표준 운영 규칙(SOP): 상담 프로세스에서 반드시 준수해야 할 공통 규칙 3~5가지. 예외 허용 및 승인: 표준 규칙을 따르기 어려운 상황에서의 우회 권한, 승인 주체 및 사후 기록 방식. 상담원 보호 및 지원: 업무 부하 관리를 위한 ACW(상담 후 처리 시간) 기준, 악성 민원 대응 장치(보호 버튼 등) 등 기술적 지원책. 모니터링 및 관리 책임: 관리자가 상담 데이터를 모니터링하고 평가하는 기준, 그리고 그 과정에서 발생하는 관리 결과에 대한 기록 및 책임 소재 명시. 실행 계획: 초기 운영 점검 주기 및 단계별 적용 범위.",
+        "badge": "기획 과제 03 / 03 · 보호·안전",
+        "title": "악성 발화 대응과 상담사 스트레스 감지 기능을 설계하는 개발자라고 가정하고, 보호 장치를 어떻게 구현해야 노동자 안전을 강화하면서도 남용을 막을 수 있을지 기술해 주세요.",
+        "body": "권장하는 작성 템플릿은 다음과 같습니다. 감지 기준과 오탐 복구: 욕설 키워드, 비아냥, 인격 모독을 어떤 규칙과 모델로 감지할지, 오탐 시 어떤 복구 절차를 둘지 서술해 주세요. 직접 개입 권한: 상담사가 통화를 종료하거나 휴식을 신청할 수 있는 버튼, 승인 절차, 사후 기록 방식을 정의해 주세요. 스트레스 데이터 거버넌스: 감지 데이터의 수신자, 보관 목적, 인사평가 반영 여부, 관리자 접근 제한을 명시해 주세요. 안전성과 악용 방지: 보호 기능이 상담사 통제 도구로 역전되지 않도록 어떤 기술적 가드레일과 감사 로그를 둘지 설명해 주세요.",
     },
 ]
+
+METRIC_LABELS = {
+    "autonomy": "노동자 자율성·권한",
+    "management": "노동자 평가·관리",
+    "safety": "노동자 보호·안전",
+}
 
 # ──────────────────────────────────────────────────────
 st.set_page_config(page_title="AICC Simulation", layout="wide", initial_sidebar_state="collapsed")
@@ -368,7 +407,7 @@ def _reset_phase1_flow() -> None:
 
 
 def _build_phase1_result() -> dict:
-    metrics = {"cost": 1000, "eff": 0, "agency": 0, "inclusion": 0, "sustain": 0}
+    metrics = {"cost": 1000, "eff": 0, "autonomy": 0, "management": 0, "safety": 0}
     history = []
 
     for idx, picked_type in enumerate(st.session_state.sim_choices):
@@ -389,10 +428,10 @@ def _build_phase1_result() -> dict:
             }
         )
 
-    agency = min(100, round(_norm(metrics["agency"], 10, 180) * 1.3))
-    inclusion = min(100, round(_norm(metrics["inclusion"], 20, 155) * 1.0))
-    sustain = min(100, round(_norm(metrics["sustain"], 20, 95) * 1.5))
-    overall = round((agency + inclusion + sustain) / 3)
+    autonomy = min(100, round(_norm(metrics["autonomy"], 20, 190) * 1.1))
+    management = min(100, round(_norm(metrics["management"], 20, 275) * 1.0))
+    safety = min(100, round(_norm(metrics["safety"], 15, 190) * 1.1))
+    overall = round((autonomy + management + safety) / 3)
 
     if overall >= 70:
         persona = "인간 중심의 파트너"
@@ -404,15 +443,15 @@ def _build_phase1_result() -> dict:
     return {
         "history": history,
         "scores": {
-            "agency": agency,
-            "inclusion": inclusion,
-            "sustain": sustain,
+            "autonomy": autonomy,
+            "management": management,
+            "safety": safety,
         },
         "persona": persona,
         "metrics": {
-            "agency": metrics["agency"],
-            "inclusion": metrics["inclusion"],
-            "sustain": metrics["sustain"],
+            "autonomy": metrics["autonomy"],
+            "management": metrics["management"],
+            "safety": metrics["safety"],
             "eff": metrics["eff"],
         },
     }
@@ -648,7 +687,7 @@ elif st.session_state.page == "sim":
     st.markdown('<div class="survey-badge">PHASE 1</div>', unsafe_allow_html=True)
     st.markdown('<div class="survey-h1">아키텍처 설계 시뮬레이션</div>', unsafe_allow_html=True)
     st.markdown(
-        '<div class="survey-sub">6개 모듈을 순서대로 선택하고, 결과를 확인한 뒤 다음 단계로 이동하세요.</div>',
+        '<div class="survey-sub">7개 모듈을 순서대로 선택하고, 결과를 확인한 뒤 다음 단계로 이동하세요.</div>',
         unsafe_allow_html=True,
     )
 
@@ -663,7 +702,7 @@ elif st.session_state.page == "sim":
         with st.container(border=True):
             st.markdown(f"### {task['title']}")
             st.write(task["desc"])
-            st.caption(f"기준 지표: {task['metric']} | 코드 기준점: `{task['codeBase']}`")
+            st.caption(f"기준 지표: {METRIC_LABELS.get(task['metric'], task['metric'])} | 코드 기준점: `{task['codeBase']}`")
 
             c1, c2 = st.columns(2)
             with c1:
@@ -722,18 +761,18 @@ elif st.session_state.page == "sim":
         st.success("모든 모듈 설계가 완료되었습니다. 결과를 확인한 뒤 다음 단계로 이동하세요.")
 
         st.markdown(f"### 아키텍처 페르소나: {phase1_result['persona']}")
-        st.caption("아래 3개 지표는 'AI 완전 자동화 설계'를 기준으로, 실무에서 사람 중심 기능이 얼마나 강화됐는지 보여줍니다.")
+        st.caption("아래 3개 지표는 통제 중심 기본 설계 대비, 노동자 관점을 얼마나 더 반영했는지 보여줍니다.")
 
         c1, c2, c3 = st.columns(3)
         with c1:
-            st.metric("상담원 개입권", f"+{scores['agency']}%")
-            st.caption(f"승인·수정·중단 권한이 완전 자동화 대비 {scores['agency']}% 강화")
+            st.metric("노동자 자율성·권한", f"+{scores['autonomy']}%")
+            st.caption(f"데이터 철회권·승인권·수정권이 기본 통제형 설계 대비 {scores['autonomy']}% 강화")
         with c2:
-            st.metric("고객 연결 보장", f"+{scores['inclusion']}%")
-            st.caption(f"사람 상담 연결/우회 가능성이 완전 자동화 대비 {scores['inclusion']}% 개선")
+            st.metric("노동자 평가·관리", f"+{scores['management']}%")
+            st.caption(f"실시간 랭킹·AHT 압박·로그 감시를 완화하는 설계가 {scores['management']}% 반영")
         with c3:
-            st.metric("상담원 보호 설계", f"+{scores['sustain']}%")
-            st.caption(f"ACW·보호장치 관점의 지속가능성이 완전 자동화 대비 {scores['sustain']}% 개선")
+            st.metric("노동자 보호·안전", f"+{scores['safety']}%")
+            st.caption(f"악성 민원 대응과 스트레스 보호 장치가 기본 감시형 설계 대비 {scores['safety']}% 강화")
 
         with st.container(border=True):
             st.markdown("**선택한 모듈 설계안**")
@@ -797,15 +836,15 @@ elif st.session_state.page == "phase2":
         phase1_payload = {
             "history": phase1.get("history", []),
             "scores": {
-                "agency": (phase1.get("scores", {}) or {}).get("agency"),
-                "inclusion": (phase1.get("scores", {}) or {}).get("inclusion"),
-                "sustain": (phase1.get("scores", {}) or {}).get("sustain"),
+                "autonomy": (phase1.get("scores", {}) or {}).get("autonomy"),
+                "management": (phase1.get("scores", {}) or {}).get("management"),
+                "safety": (phase1.get("scores", {}) or {}).get("safety"),
             },
             "persona": phase1.get("persona"),
             "metrics": {
-                "agency": (phase1.get("metrics", {}) or {}).get("agency"),
-                "inclusion": (phase1.get("metrics", {}) or {}).get("inclusion"),
-                "sustain": (phase1.get("metrics", {}) or {}).get("sustain"),
+                "autonomy": (phase1.get("metrics", {}) or {}).get("autonomy"),
+                "management": (phase1.get("metrics", {}) or {}).get("management"),
+                "safety": (phase1.get("metrics", {}) or {}).get("safety"),
                 "eff": (phase1.get("metrics", {}) or {}).get("eff"),
             },
         }
