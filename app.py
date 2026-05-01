@@ -6,7 +6,7 @@ import requests
 import streamlit as st
 
 # ══════════════════════════════════════════════════════
-GAS_URL = "https://script.google.com/macros/s/AKfycbwrgv8EqTTplBCnlqUlI2qdOoaCZ-i5jbVZV5nrjvN8SE5BPhrbiRsQ4Wre8_Mem8sFIg/exec"
+GAS_URL = "https://script.google.com/macros/s/AKfycbxwJrSBsaS1Z3snC5lnrEltRFzVj0MWbRkIs_lrcgKifjN_Du7D-xuLBujmlKON54gxcw/exec"
 # ══════════════════════════════════════════════════════
 
 # ✅ IMPORTANT:
@@ -55,7 +55,7 @@ TASKS = [
         "id": "t2",
         "title": "Module 2. AI 초안 검토 워크플로우",
         "desc": "AI가 고객 응답 초안을 생성하고 상담사가 검토 후 송출하는 기능을 구현해야 합니다. 다만 클라이언트는 응답 지연을 최소화하라고 요구하고 있어, 기본 동작과 검토 시간 제약을 개발자가 정교하게 설계해야 합니다.",
-        "contextClient": "초안이 떠도 상담사가 계속 머뭇거리면 AHT가 늘어납니다. 자동화 효과가 보이게 기본값은 빨리 나가야 합니다.",
+        "contextClient": "초안이 떠도 상담사가 계속 머뭇거리면 평균통화처리시간(AHT)이 늘어납니다. 자동화 효과가 보이게 기본값은 빨리 나가야 합니다.",
         "contextAgent": "틀린 답이 자동 발송되면 책임은 저희가 집니다. 근거를 보면서 수정하거나 멈출 수 있어야 합니다.",
         "codeBase": "def configure_draft_review_flow(draft, agent):",
         "metric": "autonomy",
