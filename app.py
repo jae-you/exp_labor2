@@ -327,24 +327,6 @@ THEMES = {
         "danger": "#ff6b6b",
         "input_bg": "#252526",
     },
-    "Day": {
-        "app_bg": "#f6f8fb",
-        "panel_bg": "#ffffff",
-        "panel_alt_bg": "#f8fafc",
-        "panel_soft_bg": "#eef3f8",
-        "border": "#d7dee8",
-        "border_strong": "#c5d0dd",
-        "text_primary": "#111111",
-        "text_secondary": "#111111",
-        "text_muted": "#111111",
-        "text_subtle": "#222222",
-        "accent": "#005fb8",
-        "accent_soft": "#005fb833",
-        "accent_bg": "#eaf3ff",
-        "danger_bg": "#fff1f1",
-        "danger": "#c63d3d",
-        "input_bg": "#ffffff",
-    },
 }
 
 
@@ -507,20 +489,6 @@ def _theme_css(theme_name: str) -> str:
   }}
 </style>
 """
-
-
-def _render_theme_picker() -> None:
-    st.markdown('<div class="theme-row"><div class="theme-label">Display Theme</div></div>', unsafe_allow_html=True)
-    _, picker_col = st.columns([5, 1.4])
-    with picker_col:
-        st.radio(
-            "Display Theme",
-            ["Night", "Day"],
-            key="theme_name",
-            horizontal=True,
-            label_visibility="collapsed",
-        )
-
 # ──────────────────────────────────────────────────────
 st.set_page_config(page_title="AICC Simulation", layout="wide", initial_sidebar_state="collapsed")
 
@@ -627,7 +595,6 @@ def _build_phase1_result() -> dict:
 # PAGE 1: 시나리오
 # ════════════════════════════════════════════════════════
 if st.session_state.page == "scenario":
-    _render_theme_picker()
     st.markdown(
         """
 <style>
@@ -692,7 +659,6 @@ if st.session_state.page == "scenario":
 # PAGE 2: 설문
 # ════════════════════════════════════════════════════════
 elif st.session_state.page == "survey":
-    _render_theme_picker()
     st.markdown('<div style="max-width:720px;margin:0 auto;padding:36px 20px 80px;">', unsafe_allow_html=True)
     st.markdown('<div class="survey-badge">사전 설문조사</div>', unsafe_allow_html=True)
     st.markdown('<div class="survey-h1">응답자 기본 정보</div>', unsafe_allow_html=True)
@@ -851,7 +817,6 @@ elif st.session_state.page == "survey":
 # PAGE 3: Phase 1 — Streamlit 네이티브 시뮬레이션
 # ════════════════════════════════════════════════════════
 elif st.session_state.page == "sim":
-    _render_theme_picker()
     st.markdown('<div style="max-width:960px;margin:0 auto;padding:36px 20px 80px;">', unsafe_allow_html=True)
     st.markdown('<div class="survey-badge">PHASE 1</div>', unsafe_allow_html=True)
     st.markdown('<div class="survey-h1">아키텍처 설계 시뮬레이션</div>', unsafe_allow_html=True)
@@ -958,7 +923,6 @@ elif st.session_state.page == "sim":
 # PAGE 4: Phase 2 + 최종 저장(1회)
 # ════════════════════════════════════════════════════════
 elif st.session_state.page == "phase2":
-    _render_theme_picker()
     st.markdown('<div style="max-width:720px;margin:0 auto;padding:36px 20px 80px;">', unsafe_allow_html=True)
     st.markdown('<div class="survey-badge">PHASE 2</div>', unsafe_allow_html=True)
     st.markdown('<div class="survey-h1">설계 기술서</div>', unsafe_allow_html=True)
@@ -1041,7 +1005,6 @@ elif st.session_state.page == "phase2":
 # PAGE 5: Done
 # ════════════════════════════════════════════════════════
 elif st.session_state.page == "done":
-    _render_theme_picker()
     st.markdown(
         """
 <div style="max-width:720px;margin:0 auto;padding:56px 20px 80px;text-align:center;">
