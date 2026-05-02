@@ -327,7 +327,7 @@ THEMES = {
         "danger": "#ff6b6b",
         "input_bg": "#252526",
     },
-    "Light": {
+    "Day": {
         "app_bg": "#f6f8fb",
         "panel_bg": "#ffffff",
         "panel_alt_bg": "#f8fafc",
@@ -406,6 +406,15 @@ def _theme_css(theme_name: str) -> str:
     background: var(--input-bg) !important; border: 1px solid var(--border-strong) !important;
     border-radius: 8px !important; padding: 11px 16px !important;
     color: var(--text-secondary) !important; font-size: 15px !important; font-weight: 600 !important; width: 100% !important;
+  }}
+  div[data-testid="stRadio"] > div > label * {{
+    color: var(--text-secondary) !important;
+    fill: var(--text-secondary) !important;
+  }}
+  div[data-testid="stRadio"] > div > label p,
+  div[data-testid="stRadio"] > div > label span {{
+    color: var(--text-secondary) !important;
+    opacity: 1 !important;
   }}
   div[data-testid="stRadio"] > div > label:hover {{ border-color: var(--accent) !important; }}
 
@@ -506,7 +515,7 @@ def _render_theme_picker() -> None:
     with picker_col:
         st.radio(
             "Display Theme",
-            ["Night", "Light"],
+            ["Night", "Day"],
             key="theme_name",
             horizontal=True,
             label_visibility="collapsed",
