@@ -317,9 +317,9 @@ THEMES = {
         "border": "#2a2a2a",
         "border_strong": "#2e2e2e",
         "text_primary": "#ffffff",
-        "text_secondary": "#e0e0e0",
-        "text_muted": "#b8b8b8",
-        "text_subtle": "#7b7b7b",
+        "text_secondary": "#f4f4f4",
+        "text_muted": "#f0f0f0",
+        "text_subtle": "#e2e2e2",
         "accent": "#007acc",
         "accent_soft": "#007acc44",
         "accent_bg": "#1a2535",
@@ -334,10 +334,10 @@ THEMES = {
         "panel_soft_bg": "#eef3f8",
         "border": "#d7dee8",
         "border_strong": "#c5d0dd",
-        "text_primary": "#16202a",
-        "text_secondary": "#263442",
-        "text_muted": "#4c5b6a",
-        "text_subtle": "#728194",
+        "text_primary": "#111111",
+        "text_secondary": "#111111",
+        "text_muted": "#111111",
+        "text_subtle": "#222222",
         "accent": "#005fb8",
         "accent_soft": "#005fb833",
         "accent_bg": "#eaf3ff",
@@ -382,21 +382,21 @@ def _theme_css(theme_name: str) -> str:
     border-color: var(--border) !important;
   }}
 
-  .survey-badge {{ display: inline-block; font-size: 10px; font-weight: 700; letter-spacing: 2px; color: var(--accent); text-transform: uppercase; border: 1px solid var(--accent-soft); border-radius: 4px; padding: 4px 10px; margin-bottom: 12px; }}
-  .survey-h1 {{ font-size: 22px; font-weight: 700; color: var(--text-primary); margin-bottom: 4px; }}
-  .survey-sub {{ font-size: 12px; color: var(--text-subtle); margin-bottom: 28px; font-weight: 300; }}
+  .survey-badge {{ display: inline-block; font-size: 12px; font-weight: 700; letter-spacing: 1.5px; color: var(--accent); text-transform: uppercase; border: 1px solid var(--accent-soft); border-radius: 4px; padding: 5px 11px; margin-bottom: 12px; }}
+  .survey-h1 {{ font-size: 26px; font-weight: 700; color: var(--text-primary); margin-bottom: 6px; }}
+  .survey-sub {{ font-size: 15px; color: var(--text-secondary); margin-bottom: 28px; font-weight: 400; line-height: 1.7; }}
   .survey-divider {{ height: 1px; background: var(--border); margin: 12px 0 28px; }}
-  .stop-box {{ background: var(--danger-bg); border-left: 3px solid var(--danger); border-radius: 0 8px 8px 0; padding: 14px 18px; font-size: 13px; color: var(--danger); line-height: 1.7; margin-top: 6px; }}
-  .q-prefix {{ display: block; font-size: 10px; font-weight: 700; color: var(--accent); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 2px; }}
-  .q-note-txt {{ display: block; font-size: 11px; color: var(--text-subtle); font-weight: 300; margin-top: 2px; margin-bottom: 6px; }}
+  .stop-box {{ background: var(--danger-bg); border-left: 3px solid var(--danger); border-radius: 0 8px 8px 0; padding: 16px 18px; font-size: 15px; color: var(--danger); line-height: 1.8; margin-top: 6px; font-weight: 600; }}
+  .q-prefix {{ display: block; font-size: 12px; font-weight: 700; color: var(--accent); letter-spacing: 0.8px; text-transform: uppercase; margin-bottom: 4px; }}
+  .q-note-txt {{ display: block; font-size: 13px; color: var(--text-secondary); font-weight: 500; margin-top: 2px; margin-bottom: 8px; }}
   .theme-row {{ max-width: 960px; margin: 0 auto; padding: 18px 20px 0; }}
-  .theme-label {{ font-size: 11px; color: var(--text-subtle); margin-bottom: 6px; font-weight: 600; letter-spacing: 0.5px; }}
+  .theme-label {{ font-size: 13px; color: var(--text-secondary); margin-bottom: 6px; font-weight: 700; letter-spacing: 0.4px; }}
 
   div[data-testid="stRadio"] > label,
   div[data-testid="stNumberInput"] > label,
   div[data-testid="stTextInput"] > label,
   div[data-testid="stTextArea"] > label {{
-    font-size: 15px !important; font-weight: 500 !important;
+    font-size: 17px !important; font-weight: 600 !important;
     color: var(--text-secondary) !important; line-height: 1.6 !important;
     margin-bottom: 8px !important;
   }}
@@ -405,7 +405,7 @@ def _theme_css(theme_name: str) -> str:
   div[data-testid="stRadio"] > div > label {{
     background: var(--input-bg) !important; border: 1px solid var(--border-strong) !important;
     border-radius: 8px !important; padding: 11px 16px !important;
-    color: var(--text-secondary) !important; font-size: 13px !important; width: 100% !important;
+    color: var(--text-secondary) !important; font-size: 15px !important; font-weight: 600 !important; width: 100% !important;
   }}
   div[data-testid="stRadio"] > div > label:hover {{ border-color: var(--accent) !important; }}
 
@@ -414,12 +414,87 @@ def _theme_css(theme_name: str) -> str:
   div[data-testid="stTextArea"] textarea {{
     background: var(--input-bg) !important; border: 1px solid var(--border-strong) !important;
     border-radius: 8px !important; color: var(--text-secondary) !important;
-    font-size: 14px !important;
+    font-size: 16px !important;
   }}
 
   div[data-testid="stAlert"] {{
     background: var(--panel-alt-bg);
     color: var(--text-secondary);
+  }}
+
+  p, li, div[data-testid="stMarkdownContainer"] p {{
+    color: var(--text-secondary);
+    font-size: 16px;
+    line-height: 1.8;
+  }}
+
+  div[data-testid="stMarkdownContainer"] *,
+  div[data-testid="stText"] *,
+  label,
+  span {{
+    color: var(--text-secondary);
+  }}
+
+  h1, h2, h3, h4, h5, h6,
+  div[data-testid="stHeading"] *,
+  strong, b {{
+    color: var(--text-primary) !important;
+  }}
+
+  div[data-testid="stCaptionContainer"] {{
+    color: var(--text-secondary) !important;
+  }}
+
+  div[data-testid="stCaptionContainer"] p {{
+    color: var(--text-secondary) !important;
+    font-size: 14px !important;
+    font-weight: 600 !important;
+    line-height: 1.7 !important;
+  }}
+
+  code, pre {{
+    font-size: 15px !important;
+  }}
+
+  div[data-testid="stCodeBlock"] * ,
+  div[data-testid="stCode"] * {{
+    color: var(--text-primary) !important;
+  }}
+
+  div[data-testid="stMetric"] {{
+    background: var(--panel-bg);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 10px 12px;
+  }}
+
+  div[data-testid="stMetric"] label,
+  div[data-testid="stMetricLabel"] *,
+  div[data-testid="stMetricValue"] *,
+  div[data-testid="stMetricDelta"] * {{
+    color: var(--text-primary) !important;
+  }}
+
+  button[kind],
+  div[data-testid="stButton"] button {{
+    color: var(--text-primary) !important;
+    font-size: 15px !important;
+    font-weight: 700 !important;
+  }}
+
+  div[data-testid="stBaseButton-secondary"] button {{
+    background: var(--panel-bg) !important;
+    border-color: var(--border-strong) !important;
+  }}
+
+  div[data-testid="stProgress"] * {{
+    color: var(--text-primary) !important;
+  }}
+
+  div[data-testid="stStatusWidget"] *,
+  div[data-testid="stSpinner"] *,
+  div[data-testid="stNotification"] * {{
+    color: var(--text-primary) !important;
   }}
 </style>
 """
@@ -548,21 +623,21 @@ if st.session_state.page == "scenario":
         """
 <style>
 .sc-wrap { max-width:800px; margin:0 auto; padding:48px 24px 32px; }
-.sc-badge { display:inline-block; font-size:10px; font-weight:700; letter-spacing:2px; color:var(--accent); text-transform:uppercase; border:1px solid var(--accent-soft); border-radius:4px; padding:4px 10px; margin-bottom:16px; }
-.sc-h1  { font-size:26px; font-weight:700; color:var(--text-primary); margin-bottom:6px; }
-.sc-sub { font-size:13px; color:var(--text-subtle); margin-bottom:28px; font-weight:300; }
+.sc-badge { display:inline-block; font-size:12px; font-weight:700; letter-spacing:1.5px; color:var(--accent); text-transform:uppercase; border:1px solid var(--accent-soft); border-radius:4px; padding:5px 11px; margin-bottom:16px; }
+.sc-h1  { font-size:30px; font-weight:700; color:var(--text-primary); margin-bottom:8px; }
+.sc-sub { font-size:16px; color:var(--text-secondary); margin-bottom:28px; font-weight:400; line-height:1.7; }
 .sc-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:14px; }
 .sc-card { background:var(--panel-bg); border:1px solid var(--border); border-radius:10px; padding:20px 22px; }
-.sc-lbl  { font-size:10px; font-weight:700; letter-spacing:2px; text-transform:uppercase; color:var(--accent); margin-bottom:8px; }
-.sc-ttl  { font-size:14px; font-weight:700; color:var(--text-primary); margin-bottom:6px; }
-.sc-txt  { font-size:12px; color:var(--text-muted); line-height:1.9; font-weight:300; }
+.sc-lbl  { font-size:11px; font-weight:700; letter-spacing:1.5px; text-transform:uppercase; color:var(--accent); margin-bottom:8px; }
+.sc-ttl  { font-size:17px; font-weight:700; color:var(--text-primary); margin-bottom:8px; }
+.sc-txt  { font-size:15px; color:var(--text-secondary); line-height:1.85; font-weight:500; }
 .sc-txt strong { color:var(--text-secondary); font-weight:500; }
-.sc-instr { background:var(--accent-bg); border-left:3px solid var(--accent); border-radius:0 8px 8px 0; padding:16px 20px; margin-bottom:14px; font-size:13px; color:var(--text-muted); line-height:1.9; font-weight:300; }
+.sc-instr { background:var(--accent-bg); border-left:3px solid var(--accent); border-radius:0 8px 8px 0; padding:16px 20px; margin-bottom:14px; font-size:15px; color:var(--text-secondary); line-height:1.85; font-weight:500; }
 .sc-instr strong { color:var(--text-primary); font-weight:700; }
 .sc-fn { background:var(--panel-soft-bg); border-radius:8px; padding:14px 18px; margin-bottom:28px; }
-.sc-fn-title { font-size:10px; font-weight:700; letter-spacing:1px; color:var(--text-subtle); text-transform:uppercase; margin-bottom:7px; }
-.sc-fn-body  { font-size:11px; color:var(--text-subtle); line-height:1.9; font-weight:300; }
-.sc-fn-body span { color:var(--text-subtle); }
+.sc-fn-title { font-size:11px; font-weight:700; letter-spacing:1px; color:var(--text-secondary); text-transform:uppercase; margin-bottom:7px; }
+.sc-fn-body  { font-size:14px; color:var(--text-secondary); line-height:1.85; font-weight:500; }
+.sc-fn-body span { color:var(--text-secondary); }
 </style>
 <div class="sc-wrap">
  <div class="sc-badge">AICC Architect Simulation</div>
