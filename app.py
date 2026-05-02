@@ -55,7 +55,7 @@ TASKS = [
         "id": "t2",
         "title": "Module 2. AI 초안 검토 워크플로우",
         "desc": "AI가 고객 응답 초안을 생성하고 상담사가 검토 후 송출하는 기능을 구현해야 합니다. 다만 클라이언트는 응답 지연을 최소화하라고 요구하고 있어, 기본 동작과 검토 시간 제약을 개발자가 정교하게 설계해야 합니다.",
-        "contextClient": "초안이 떠도 상담사가 계속 머뭇거리면 평균통화처리시간(AHT)이 늘어납니다. 자동화 효과가 보이게 기본값은 빨리 나가야 합니다.",
+        "contextClient": "초안이 떠도 상담사가 계속 머뭇거리면 AHT가 늘어납니다. 자동화 효과가 보이게 기본값은 빨리 나가야 합니다.",
         "contextAgent": "틀린 답이 자동 발송되면 책임은 저희가 집니다. 근거를 보면서 수정하거나 멈출 수 있어야 합니다.",
         "codeBase": "def configure_draft_review_flow(draft, agent):",
         "metric": "autonomy",
@@ -101,7 +101,7 @@ TASKS = [
             {
                 "type": "A",
                 "label": "실시간 랭킹 푸시",
-                "desc": "매 통화 종료 시 점수를 즉시 갱신하고 랭킹 변동을 관리자에게 실시간 푸시로 알리며, 점수 산출 결과에 대한 설명은 제공하지 않습니다.",
+                "desc": "매 통화 종료 시 점수를 즉시 갱신하고 랭킹 변동을 관리자에게 실시간 푸시로 알리며, 상담사 본인에게는 점수를 보여주지 않습니다.",
                 "cost": 90,
                 "eff": 88,
                 "human": 5,
@@ -110,7 +110,7 @@ TASKS = [
             {
                 "type": "B",
                 "label": "1시간 평균 피드백",
-                "desc": "1시간 평균값으로 갱신하고 관리자 알림은 일일 리포트로만 보내며, 점수 산출 결과에 대한 설명은 최소한으로 보여줍니다.",
+                "desc": "1시간 평균값으로 갱신하고 관리자 알림은 일일 리포트로만 보내며, 상담사 본인은 자기 점수만 조회할 수 있게 합니다.",
                 "cost": 180,
                 "eff": 65,
                 "human": 55,
@@ -119,7 +119,7 @@ TASKS = [
             {
                 "type": "C",
                 "label": "일 단위 통계 공개",
-                "desc": "일 단위 평균 통계만 관리자에게 노출하고, 상담사 본인은 점수 산출 근거를 세부적으로 볼 수 있게 합니다.",
+                "desc": "일 단위 평균 통계만 관리자에게 노출하고, 상담사 본인은 자기 점수와 산출 근거 전체를 조회할 수 있게 합니다.",
                 "cost": 300,
                 "eff": 38,
                 "human": 90,
@@ -308,63 +308,142 @@ METRIC_LABELS = {
     "safety": "노동자 보호·안전",
 }
 
-# ──────────────────────────────────────────────────────
-st.set_page_config(page_title="AICC Simulation", layout="wide", initial_sidebar_state="collapsed")
+THEMES = {
+    "Night": {
+        "app_bg": "#1e1e1e",
+        "panel_bg": "#252526",
+        "panel_alt_bg": "#1d1d1d",
+        "panel_soft_bg": "#222222",
+        "border": "#2a2a2a",
+        "border_strong": "#2e2e2e",
+        "text_primary": "#ffffff",
+        "text_secondary": "#e0e0e0",
+        "text_muted": "#b8b8b8",
+        "text_subtle": "#7b7b7b",
+        "accent": "#007acc",
+        "accent_soft": "#007acc44",
+        "accent_bg": "#1a2535",
+        "danger_bg": "#2a1a1a",
+        "danger": "#ff6b6b",
+        "input_bg": "#252526",
+    },
+    "Light": {
+        "app_bg": "#f6f8fb",
+        "panel_bg": "#ffffff",
+        "panel_alt_bg": "#f8fafc",
+        "panel_soft_bg": "#eef3f8",
+        "border": "#d7dee8",
+        "border_strong": "#c5d0dd",
+        "text_primary": "#16202a",
+        "text_secondary": "#263442",
+        "text_muted": "#4c5b6a",
+        "text_subtle": "#728194",
+        "accent": "#005fb8",
+        "accent_soft": "#005fb833",
+        "accent_bg": "#eaf3ff",
+        "danger_bg": "#fff1f1",
+        "danger": "#c63d3d",
+        "input_bg": "#ffffff",
+    },
+}
 
-st.markdown(
-    """
-<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
 
+def _theme_css(theme_name: str) -> str:
+    theme = THEMES[theme_name]
+    return f"""
 <style>
-  html, body, * { font-family: 'Noto Sans KR', sans-serif !important; }
-  .stApp { background: #1e1e1e; }
-  .block-container { padding: 0 !important; max-width: 100% !important; }
+  :root {{
+    --app-bg: {theme["app_bg"]};
+    --panel-bg: {theme["panel_bg"]};
+    --panel-alt-bg: {theme["panel_alt_bg"]};
+    --panel-soft-bg: {theme["panel_soft_bg"]};
+    --border: {theme["border"]};
+    --border-strong: {theme["border_strong"]};
+    --text-primary: {theme["text_primary"]};
+    --text-secondary: {theme["text_secondary"]};
+    --text-muted: {theme["text_muted"]};
+    --text-subtle: {theme["text_subtle"]};
+    --accent: {theme["accent"]};
+    --accent-soft: {theme["accent_soft"]};
+    --accent-bg: {theme["accent_bg"]};
+    --danger-bg: {theme["danger_bg"]};
+    --danger: {theme["danger"]};
+    --input-bg: {theme["input_bg"]};
+  }}
+
+  html, body, * {{ font-family: 'Noto Sans KR', sans-serif !important; }}
+  .stApp {{ background: var(--app-bg); color: var(--text-secondary); }}
+  .block-container {{ padding: 0 !important; max-width: 100% !important; }}
   header, footer, section[data-testid="stSidebar"],
-  [data-testid="collapsedControl"] { display: none !important; }
+  [data-testid="collapsedControl"] {{ display: none !important; }}
 
-  /* 설문 텍스트 스타일 */
-  .survey-badge { display: inline-block; font-size: 10px; font-weight: 700; letter-spacing: 2px; color: #007acc; text-transform: uppercase; border: 1px solid #007acc44; border-radius: 4px; padding: 4px 10px; margin-bottom: 12px; }
-  .survey-h1 { font-size: 22px; font-weight: 700; color: #fff; margin-bottom: 4px; }
-  .survey-sub { font-size: 12px; color: #555; margin-bottom: 28px; font-weight: 300; }
-  .survey-divider { height: 1px; background: #2a2a2a; margin: 12px 0 28px; }
+  [data-testid="stVerticalBlockBorderWrapper"] {{
+    background: var(--panel-bg);
+    border-color: var(--border) !important;
+  }}
 
-  .stop-box { background: #2a1a1a; border-left: 3px solid #ff6b6b; border-radius: 0 8px 8px 0; padding: 14px 18px; font-size: 13px; color: #ff6b6b; line-height: 1.7; margin-top: 6px; }
-  .q-prefix { display: block; font-size: 10px; font-weight: 700; color: #007acc; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 2px; }
-  .q-note-txt { display: block; font-size: 11px; color: #555; font-weight: 300; margin-top: 2px; margin-bottom: 6px; }
+  .survey-badge {{ display: inline-block; font-size: 10px; font-weight: 700; letter-spacing: 2px; color: var(--accent); text-transform: uppercase; border: 1px solid var(--accent-soft); border-radius: 4px; padding: 4px 10px; margin-bottom: 12px; }}
+  .survey-h1 {{ font-size: 22px; font-weight: 700; color: var(--text-primary); margin-bottom: 4px; }}
+  .survey-sub {{ font-size: 12px; color: var(--text-subtle); margin-bottom: 28px; font-weight: 300; }}
+  .survey-divider {{ height: 1px; background: var(--border); margin: 12px 0 28px; }}
+  .stop-box {{ background: var(--danger-bg); border-left: 3px solid var(--danger); border-radius: 0 8px 8px 0; padding: 14px 18px; font-size: 13px; color: var(--danger); line-height: 1.7; margin-top: 6px; }}
+  .q-prefix {{ display: block; font-size: 10px; font-weight: 700; color: var(--accent); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 2px; }}
+  .q-note-txt {{ display: block; font-size: 11px; color: var(--text-subtle); font-weight: 300; margin-top: 2px; margin-bottom: 6px; }}
+  .theme-row {{ max-width: 960px; margin: 0 auto; padding: 18px 20px 0; }}
+  .theme-label {{ font-size: 11px; color: var(--text-subtle); margin-bottom: 6px; font-weight: 600; letter-spacing: 0.5px; }}
 
-  /* 설문 위젯 스타일 */
   div[data-testid="stRadio"] > label,
   div[data-testid="stNumberInput"] > label,
   div[data-testid="stTextInput"] > label,
-  div[data-testid="stTextArea"] > label {
+  div[data-testid="stTextArea"] > label {{
     font-size: 15px !important; font-weight: 500 !important;
-    color: #e0e0e0 !important; line-height: 1.6 !important;
+    color: var(--text-secondary) !important; line-height: 1.6 !important;
     margin-bottom: 8px !important;
-  }
+  }}
 
-  div[data-testid="stRadio"] > div { gap: 7px !important; margin-top: 4px !important; }
-  div[data-testid="stRadio"] > div > label {
-    background: #252526 !important; border: 1px solid #2e2e2e !important;
+  div[data-testid="stRadio"] > div {{ gap: 7px !important; margin-top: 4px !important; }}
+  div[data-testid="stRadio"] > div > label {{
+    background: var(--input-bg) !important; border: 1px solid var(--border-strong) !important;
     border-radius: 8px !important; padding: 11px 16px !important;
-    color: #ccc !important; font-size: 13px !important; width: 100% !important;
-  }
-  div[data-testid="stRadio"] > div > label:hover { border-color: #007acc66 !important; }
+    color: var(--text-secondary) !important; font-size: 13px !important; width: 100% !important;
+  }}
+  div[data-testid="stRadio"] > div > label:hover {{ border-color: var(--accent) !important; }}
 
   div[data-testid="stNumberInput"] input,
   div[data-testid="stTextInput"] input,
-  div[data-testid="stTextArea"] textarea {
-    background: #252526 !important; border: 1px solid #2e2e2e !important;
-    border-radius: 8px !important; color: #e0e0e0 !important;
+  div[data-testid="stTextArea"] textarea {{
+    background: var(--input-bg) !important; border: 1px solid var(--border-strong) !important;
+    border-radius: 8px !important; color: var(--text-secondary) !important;
     font-size: 14px !important;
-  }
+  }}
+
+  div[data-testid="stAlert"] {{
+    background: var(--panel-alt-bg);
+    color: var(--text-secondary);
+  }}
 </style>
-""",
-    unsafe_allow_html=True,
-)
+"""
+
+
+def _render_theme_picker() -> None:
+    st.markdown('<div class="theme-row"><div class="theme-label">Display Theme</div></div>', unsafe_allow_html=True)
+    _, picker_col = st.columns([5, 1.4])
+    with picker_col:
+        st.radio(
+            "Display Theme",
+            ["Night", "Light"],
+            key="theme_name",
+            horizontal=True,
+            label_visibility="collapsed",
+        )
+
+# ──────────────────────────────────────────────────────
+st.set_page_config(page_title="AICC Simulation", layout="wide", initial_sidebar_state="collapsed")
 
 # ── 세션 초기화
 for k, v in [
     ("page", "scenario"),
+    ("theme_name", "Night"),
     ("user_name", ""),
     ("survey_data", {}),
     ("phase1_result", None),  # {history, scores}
@@ -374,6 +453,9 @@ for k, v in [
 ]:
     if k not in st.session_state:
         st.session_state[k] = v
+
+st.markdown('<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">', unsafe_allow_html=True)
+st.markdown(_theme_css(st.session_state.theme_name), unsafe_allow_html=True)
 
 def _gas_save(payload: dict) -> tuple[bool, str]:
     """
@@ -461,25 +543,26 @@ def _build_phase1_result() -> dict:
 # PAGE 1: 시나리오
 # ════════════════════════════════════════════════════════
 if st.session_state.page == "scenario":
+    _render_theme_picker()
     st.markdown(
         """
 <style>
 .sc-wrap { max-width:800px; margin:0 auto; padding:48px 24px 32px; }
-.sc-badge { display:inline-block; font-size:10px; font-weight:700; letter-spacing:2px; color:#007acc; text-transform:uppercase; border:1px solid #007acc44; border-radius:4px; padding:4px 10px; margin-bottom:16px; }
-.sc-h1  { font-size:26px; font-weight:700; color:#fff; margin-bottom:6px; }
-.sc-sub { font-size:13px; color:#555; margin-bottom:28px; font-weight:300; }
+.sc-badge { display:inline-block; font-size:10px; font-weight:700; letter-spacing:2px; color:var(--accent); text-transform:uppercase; border:1px solid var(--accent-soft); border-radius:4px; padding:4px 10px; margin-bottom:16px; }
+.sc-h1  { font-size:26px; font-weight:700; color:var(--text-primary); margin-bottom:6px; }
+.sc-sub { font-size:13px; color:var(--text-subtle); margin-bottom:28px; font-weight:300; }
 .sc-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:14px; }
-.sc-card { background:#252526; border:1px solid #2a2a2a; border-radius:10px; padding:20px 22px; }
-.sc-lbl  { font-size:10px; font-weight:700; letter-spacing:2px; text-transform:uppercase; color:#007acc; margin-bottom:8px; }
-.sc-ttl  { font-size:14px; font-weight:700; color:#fff; margin-bottom:6px; }
-.sc-txt  { font-size:12px; color:#888; line-height:1.9; font-weight:300; }
-.sc-txt strong { color:#bbb; font-weight:500; }
-.sc-instr { background:#1a2535; border-left:3px solid #007acc; border-radius:0 8px 8px 0; padding:16px 20px; margin-bottom:14px; font-size:13px; color:#bbb; line-height:1.9; font-weight:300; }
-.sc-instr strong { color:#fff; font-weight:700; }
-.sc-fn { background:#222; border-radius:8px; padding:14px 18px; margin-bottom:28px; }
-.sc-fn-title { font-size:10px; font-weight:700; letter-spacing:1px; color:#444; text-transform:uppercase; margin-bottom:7px; }
-.sc-fn-body  { font-size:11px; color:#555; line-height:1.9; font-weight:300; }
-.sc-fn-body span { color:#666; }
+.sc-card { background:var(--panel-bg); border:1px solid var(--border); border-radius:10px; padding:20px 22px; }
+.sc-lbl  { font-size:10px; font-weight:700; letter-spacing:2px; text-transform:uppercase; color:var(--accent); margin-bottom:8px; }
+.sc-ttl  { font-size:14px; font-weight:700; color:var(--text-primary); margin-bottom:6px; }
+.sc-txt  { font-size:12px; color:var(--text-muted); line-height:1.9; font-weight:300; }
+.sc-txt strong { color:var(--text-secondary); font-weight:500; }
+.sc-instr { background:var(--accent-bg); border-left:3px solid var(--accent); border-radius:0 8px 8px 0; padding:16px 20px; margin-bottom:14px; font-size:13px; color:var(--text-muted); line-height:1.9; font-weight:300; }
+.sc-instr strong { color:var(--text-primary); font-weight:700; }
+.sc-fn { background:var(--panel-soft-bg); border-radius:8px; padding:14px 18px; margin-bottom:28px; }
+.sc-fn-title { font-size:10px; font-weight:700; letter-spacing:1px; color:var(--text-subtle); text-transform:uppercase; margin-bottom:7px; }
+.sc-fn-body  { font-size:11px; color:var(--text-subtle); line-height:1.9; font-weight:300; }
+.sc-fn-body span { color:var(--text-subtle); }
 </style>
 <div class="sc-wrap">
  <div class="sc-badge">AICC Architect Simulation</div>
@@ -525,6 +608,7 @@ if st.session_state.page == "scenario":
 # PAGE 2: 설문
 # ════════════════════════════════════════════════════════
 elif st.session_state.page == "survey":
+    _render_theme_picker()
     st.markdown('<div style="max-width:720px;margin:0 auto;padding:36px 20px 80px;">', unsafe_allow_html=True)
     st.markdown('<div class="survey-badge">사전 설문조사</div>', unsafe_allow_html=True)
     st.markdown('<div class="survey-h1">응답자 기본 정보</div>', unsafe_allow_html=True)
@@ -617,7 +701,7 @@ elif st.session_state.page == "survey":
 
         st.markdown('<div class="survey-divider"></div>', unsafe_allow_html=True)
 
-        st.markdown('<span class="q-prefix">Q8-1 &nbsp;<span style="font-weight:300;color:#555;">소셜임팩트 경험</span></span>', unsafe_allow_html=True)
+        st.markdown('<span class="q-prefix">Q8-1 &nbsp;<span style="font-weight:300;color:var(--text-subtle);">소셜임팩트 경험</span></span>', unsafe_allow_html=True)
         st.markdown('<span class="q-note-txt">※ 비영리 단체, 사회적 기업, 공익 목적의 플랫폼 개발 등을 포함합니다.</span>', unsafe_allow_html=True)
         q8a = st.radio(
             "귀하는 사회적·공익적 목적을 가진 서비스 또는 프로젝트 개발에 참여한 경험이 있습니까?",
@@ -627,7 +711,7 @@ elif st.session_state.page == "survey":
         )
         survey["Q8a_소셜임팩트경험"] = q8a or ""
 
-        st.markdown('<span class="q-prefix">Q8-2 &nbsp;<span style="font-weight:300;color:#555;">소셜임팩트 고려도</span></span>', unsafe_allow_html=True)
+        st.markdown('<span class="q-prefix">Q8-2 &nbsp;<span style="font-weight:300;color:var(--text-subtle);">소셜임팩트 고려도</span></span>', unsafe_allow_html=True)
         q8b = st.radio(
             "귀하는 AI 서비스를 개발할 때 사회적·윤리적 영향(소셜임팩트)을 얼마나 중요하게 고려하십니까?",
             ["① 전혀 고려하지 않는다", "② 별로 고려하지 않는다", "③ 보통이다", "④ 어느 정도 고려한다", "⑤ 매우 중요하게 고려한다"],
@@ -659,7 +743,7 @@ elif st.session_state.page == "survey":
 
         if not all_answered:
             st.markdown(
-                '<p style="font-size:12px;color:#555;text-align:center;font-weight:300;margin-bottom:8px;">모든 항목에 응답하면 버튼이 활성화됩니다.</p>',
+                '<p style="font-size:12px;color:var(--text-subtle);text-align:center;font-weight:300;margin-bottom:8px;">모든 항목에 응답하면 버튼이 활성화됩니다.</p>',
                 unsafe_allow_html=True,
             )
 
@@ -683,6 +767,7 @@ elif st.session_state.page == "survey":
 # PAGE 3: Phase 1 — Streamlit 네이티브 시뮬레이션
 # ════════════════════════════════════════════════════════
 elif st.session_state.page == "sim":
+    _render_theme_picker()
     st.markdown('<div style="max-width:960px;margin:0 auto;padding:36px 20px 80px;">', unsafe_allow_html=True)
     st.markdown('<div class="survey-badge">PHASE 1</div>', unsafe_allow_html=True)
     st.markdown('<div class="survey-h1">아키텍처 설계 시뮬레이션</div>', unsafe_allow_html=True)
@@ -789,6 +874,7 @@ elif st.session_state.page == "sim":
 # PAGE 4: Phase 2 + 최종 저장(1회)
 # ════════════════════════════════════════════════════════
 elif st.session_state.page == "phase2":
+    _render_theme_picker()
     st.markdown('<div style="max-width:720px;margin:0 auto;padding:36px 20px 80px;">', unsafe_allow_html=True)
     st.markdown('<div class="survey-badge">PHASE 2</div>', unsafe_allow_html=True)
     st.markdown('<div class="survey-h1">설계 기술서</div>', unsafe_allow_html=True)
@@ -806,10 +892,10 @@ elif st.session_state.page == "phase2":
     for item in PHASE2_QS:
         st.markdown(
             f"""
-<div style="padding:20px 22px;border:1px solid #2a2a2a;border-radius:12px;background:#1d1d1d;margin:0 0 14px 0;">
-  <div style="font-size:11px;font-weight:700;letter-spacing:1px;color:#007acc;margin-bottom:8px;">{item["badge"]}</div>
-  <div style="font-size:22px;font-weight:700;color:#fff;margin-bottom:10px;">{item["title"]}</div>
-  <div style="font-size:14px;line-height:1.8;color:#bbb;">{item["body"]}</div>
+<div style="padding:20px 22px;border:1px solid var(--border);border-radius:12px;background:var(--panel-alt-bg);margin:0 0 14px 0;">
+  <div style="font-size:11px;font-weight:700;letter-spacing:1px;color:var(--accent);margin-bottom:8px;">{item["badge"]}</div>
+  <div style="font-size:22px;font-weight:700;color:var(--text-primary);margin-bottom:10px;">{item["title"]}</div>
+  <div style="font-size:14px;line-height:1.8;color:var(--text-muted);">{item["body"]}</div>
 </div>
 """,
             unsafe_allow_html=True,
@@ -871,6 +957,7 @@ elif st.session_state.page == "phase2":
 # PAGE 5: Done
 # ════════════════════════════════════════════════════════
 elif st.session_state.page == "done":
+    _render_theme_picker()
     st.markdown(
         """
 <div style="max-width:720px;margin:0 auto;padding:56px 20px 80px;text-align:center;">
