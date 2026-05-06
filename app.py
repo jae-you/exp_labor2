@@ -791,7 +791,7 @@ elif st.session_state.page == "survey":
 
         st.markdown('<div class="survey-divider"></div>', unsafe_allow_html=True)
         st.markdown('<span class="q-prefix">참여자 이름</span>', unsafe_allow_html=True)
-        name_input = st.text_input("성함을 입력해주세요 (데이터 식별용)", placeholder="예: 홍길동", key="name_input")
+        name_input = st.text_input("성함과 전화번호를 입력해주세요 (데이터 식별 및 사례 용)", placeholder="예: 홍길동, 010-0000-0000", key="name_input")
 
         st.markdown("<br>", unsafe_allow_html=True)
 
